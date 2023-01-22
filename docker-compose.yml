@@ -1,0 +1,20 @@
+services:
+
+  builder:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile-builder
+      args:
+        - CMAKE_VERSION=${CMAKE_VERSION}
+    image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder:latest
+
+  builder-dev:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile-builder-dev
+      args:
+        - CI_REGISTRY=${REGISTRY_HOST}
+        - CI_REGISTRY_BUILDER_IMAGE=${REGISTRY_REPO_PATH}/builder
+        - GDB_VERSION=${GDB_VERSION}
+    image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-dev:latest
+
