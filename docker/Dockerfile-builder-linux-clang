@@ -1,4 +1,4 @@
-FROM gcc:latest
+FROM silkeh/clang:15-stretch
 
 ARG CMAKE_VERSION
 

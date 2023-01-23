@@ -1,20 +1,46 @@
 services:
-
-  builder:
+  # ----------------------------------------------------- Builders -----------------------------------------------------
+  builder-linux-gcc:
     build:
       context: .
-      dockerfile: docker/Dockerfile-builder
+      dockerfile: docker/Dockerfile-builder-linux-gcc
       args:
+        - GCC_VERSION=${GCC_VERSION}
         - CMAKE_VERSION=${CMAKE_VERSION}
-    image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder:latest
+    image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-gcc:latest
 
-  builder-dev:
+  builder-linux-gcc-dev:
     build:
       context: .
-      dockerfile: docker/Dockerfile-builder-dev
+      dockerfile: docker/Dockerfile-builder-linux-gcc-dev
       args:
         - CI_REGISTRY=${REGISTRY_HOST}
-        - CI_REGISTRY_BUILDER_IMAGE=${REGISTRY_REPO_PATH}/builder
+        - CI_REGISTRY_BUILDER_ROOT_IMAGE=${REGISTRY_REPO_PATH}/builder-linux-gcc
         - GDB_VERSION=${GDB_VERSION}
-    image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-dev:latest
+    image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-gcc-dev:latest
 
+  builder-linux-clang:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile-builder-linux-clang
+      args:
+        - CMAKE_VERSION=${CMAKE_VERSION}
+    image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-clang:latest
+
+  builder-windows-mingw:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile-builder-windows-mingw
+      args:
+        - CMAKE_VERSION=${CMAKE_VERSION}
+        - PKG_CONFIG_VERSION=${PKG_CONFIG_VERSION}
+        - BINUTILS_VERSION=${BINUTILS_VERSION}
+        - MINGW_VERSION=${MINGW_VERSION}
+        - GCC_VERSION=${GCC_VERSION}
+    image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-windows-mingw:latest
+  # ---------------------------------------------------- Execution -----------------------------------------------------
+  dev:
+    image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-gcc-dev:latest
+    container_name: "Linux GCC dev env"
+    volumes:
+      - .:/app
