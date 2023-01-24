@@ -9,7 +9,6 @@ variables:
   PROJECT_PATH: /app
   BUILD_TYPE: Release
   BUILD_PATH: ${PROJECT_PATH}/_build
-  BUILD_JOB: build_linux
   CPP_SRC_FILES: $(find ${PROJECT_PATH} -regex '.*\.\(cpp\|hpp\)')
   CXX: g++
   MAX_CODE_QUALITY_ISSUE_PER_FILE: 20
@@ -38,7 +37,6 @@ build_linux:
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-gcc:latest
   script:
     - cmake -H $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH
-    - set-env BUILD_JOB=build_linux
   artifacts:
     paths:
       - $BUILD_PATH
@@ -56,7 +54,6 @@ build_linux_debug:
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-gcc-dev:latest
   script:
     - cmake -H $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTING=1 && cmake --build $BUILD_PATH
-    - set-env BUILD_JOB=build_linux_debug
   artifacts:
     paths:
       - $BUILD_PATH
@@ -76,7 +73,6 @@ build_windows:
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-windows-mingw:latest
   script:
     - cmake -H $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_SYSTEM_NAME=Windows && cmake --build $BUILD_PATH
-    - set-env BUILD_JOB=build_windows
   artifacts:
     paths:
       - '*.exe'
@@ -112,8 +108,7 @@ clang_tidy:
 
 # This job is responsible for building and running all tests. It uses the CTest framework to run the
 # tests and generates a JUnit-style report for GitLab to display the test results. It also captures any output from
-# failing tests and makes it available in the artifacts for debugging. This job depends on the build_linux,
-# build_linux_debug or build_windows jobs
+# failing tests and makes it available in the artifacts for debugging.
 test:
   stage: test
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-clang:latest
@@ -125,7 +120,7 @@ test:
     reports:
       junit: ctest.log
   dependencies:
-    - $BUILD_JOB
+    - clang_check
 
 # This job is responsible for packaging the built artifacts from the previous build jobs and deploying them to the
 # desired target.
