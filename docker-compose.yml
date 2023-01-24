@@ -24,20 +24,30 @@ services:
       context: .
       dockerfile: docker/Dockerfile-builder-linux-clang
       args:
+        - CLANG_VERSION=${CLANG_VERSION}
         - CMAKE_VERSION=${CMAKE_VERSION}
     image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-clang:latest
+    # Clang compilation used more than my whole 64Go RAM and crashed the system lol
+    # docker build $(for i in `cat .env`; do out+="--build-arg $i " ; done; echo $out;out="") \
+    # -f docker/Dockerfile-builder-linux-clang -m 32G -t registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-clang:latest .
 
   builder-windows-mingw:
     build:
       context: .
       dockerfile: docker/Dockerfile-builder-windows-mingw
       args:
+        - MINGW_VERSION=${MINGW_VERSION}
         - CMAKE_VERSION=${CMAKE_VERSION}
         - PKG_CONFIG_VERSION=${PKG_CONFIG_VERSION}
         - BINUTILS_VERSION=${BINUTILS_VERSION}
-        - MINGW_VERSION=${MINGW_VERSION}
         - GCC_VERSION=${GCC_VERSION}
     image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-windows-mingw:latest
+
+  deploy:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile-deploy
+    image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/deploy:latest
   # ---------------------------------------------------- Execution -----------------------------------------------------
   dev:
     image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-gcc-dev:latest

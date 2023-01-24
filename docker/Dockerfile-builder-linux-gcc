@@ -14,7 +14,13 @@ RUN wget https://gitlab.kitware.com/cmake/cmake/-/archive/v${CMAKE_VERSION}/cmak
     ./bootstrap --parallel=${makeCores} -- -DCMAKE_USE_OPENSSL=OFF && make -j ${makeCores} && make install && \
     rm -rf /tmp/cmake-v${CMAKE_VERSION}.tar.gz /tmp/cmake-v${CMAKE_VERSION}
 
-COPY . /app
+# Install Python with PIP and Conan packages manager
+RUN apt-get update && apt-get install python3 \
+    && wget https://bootstrap.pypa.io/get-pip.py \
+    && python3 get-pip.py \
+    && pip3 install conan \
+    && rm -rf get-pip.py
+
 WORKDIR /app
 
 CMD ["/bin/bash"]
