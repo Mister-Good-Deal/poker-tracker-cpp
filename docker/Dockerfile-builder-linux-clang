@@ -1,32 +1,16 @@
-FROM ubuntu:22.04
+ARG CI_REGISTRY
+ARG CI_REGISTRY_BUILDER_ROOT_IMAGE
+
+FROM ${CI_REGISTRY}/${CI_REGISTRY_BUILDER_ROOT_IMAGE}:latest
 
 ARG CLANG_VERSION
-ARG CMAKE_VERSION
-
- # Define the number of parallel CPU core to execute MAKE commands
-RUN export makeCores=$(($(nproc)-1))
-
-# Install required dev tools packages
-RUN apt-get update && apt-get install -y build-essential gcc g++ git python3 wget
-
-# Install CMake with the given CMAKE_VERSION version from https://github.com/Kitware/CMake
-RUN wget https://gitlab.kitware.com/cmake/cmake/-/archive/v${CMAKE_VERSION}/cmake-v${CMAKE_VERSION}.tar.gz \
-    -q -O /tmp/cmake-v${CMAKE_VERSION}.tar.gz && \
-    cd /tmp && tar -xvzf cmake-v${CMAKE_VERSION}.tar.gz && cd cmake-v${CMAKE_VERSION} && \
-    ./bootstrap --parallel=${makeCores} -- -DCMAKE_USE_OPENSSL=OFF && make -j ${makeCores} && make install && \
-    rm -rf /tmp/cmake-v${CMAKE_VERSION}.tar.gz /tmp/cmake-v${CMAKE_VERSION}
+ARG MAX_CPU_CORES
 
 # Install Clang with the given CLANG_VERSION version from https://github.com/llvm/llvm-project
 RUN git clone https://github.com/llvm/llvm-project.git && cd llvm-project && git checkout llvmorg-${CLANG_VERSION} && \
-    mkdir -p build && cmake -S llvm -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_PROJECTS=clang && \
-    cd build && make -j ${makeCores} && sudo make install && \
+    mkdir -p build && cmake -S llvm -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_PROJECTS=clang \
+    && cd build && make -j ${MAX_CPU_CORES} && make install && \
     cd ../.. && rm -rf llvm-project
-
-# Install Python PIP and Conan packages manager
-RUN wget https://bootstrap.pypa.io/get-pip.py \
-    && python3 get-pip.py \
-    && pip3 install conan \
-    && rm -rf get-pip.py
 
 WORKDIR /app
 

@@ -172,13 +172,6 @@ RUN set -ex \
     && apt-get autoremove --purge -y \
     && apt-get clean
 
-# Install Python with PIP and Conan packages manager
-RUN apt-get install python3 \
-    && wget https://bootstrap.pypa.io/get-pip.py \
-    && python3 get-pip.py \
-    && pip3 install conan \
-    && rm -rf get-pip.py
-
 WORKDIR /app
 
 CMD ["/bin/bash"]
