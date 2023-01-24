@@ -9,6 +9,7 @@ variables:
   PROJECT_PATH: /app
   BUILD_TYPE: Release
   BUILD_PATH: ${PROJECT_PATH}/_build
+  BUILD_JOB: build_linux
   CPP_SRC_FILES: $(find ${PROJECT_PATH} -regex '.*\.\(cpp\|hpp\)')
   CXX: g++
   MAX_CODE_QUALITY_ISSUE_PER_FILE: 20
