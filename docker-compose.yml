@@ -57,6 +57,11 @@ services:
   # ---------------------------------------------------- Execution -----------------------------------------------------
   dev:
     image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-gcc-dev:latest
-    container_name: "Linux GCC dev env"
+    container_name: "Linux_GCC_dev_env"
+    ports:
+      - "3022:22"
+    tty: true
+    stdin_open: true
     volumes:
       - .:/app
+    entrypoint: docker/docker-entrypoint-dev.sh
