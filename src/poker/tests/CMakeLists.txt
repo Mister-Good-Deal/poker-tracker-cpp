@@ -1,14 +1,13 @@
+find_package(GTest REQUIRED)
+
 function(add_class_test class_name test_file)
-    add_executable(${class_name}Test ${test_file})
-    target_link_libraries(${class_name}Test
-            poker_game
-            CONAN_PKG::gtest
-            )
-    target_include_directories(${class_name}Test
-            PRIVATE
-            ${PROJECT_SOURCE_DIR}/test
-            )
-    add_test(NAME ${class_name}Test COMMAND ${class_name}Test)
+    set(targetName "${class_name}Test")
+
+    add_executable(${targetName} ${test_file})
+
+    target_link_libraries(${targetName} poker_game GTest::gtest GTest::gmock)
+    target_include_directories(${targetName} PRIVATE ${PROJECT_SOURCE_DIR}/tests)
+    gtest_add_tests(TARGET ${targetName} SOURCES ${test_file} TEST_LIST testsList)
 endfunction()
 
 add_class_test(card CardTest.cpp)

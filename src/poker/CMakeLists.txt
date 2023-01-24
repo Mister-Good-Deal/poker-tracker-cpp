@@ -16,8 +16,9 @@ else ()
     set(CMAKE_GENERATOR "Unix Makefiles")
 endif ()
 
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(TARGETS)
+# Required libs
+find_package(OpenCV REQUIRED)
+find_package(SDL2 REQUIRED)
 
 add_library(
     poker_game
@@ -30,12 +31,14 @@ target_include_directories(poker_game PUBLIC ${PROJECT_SOURCE_DIR})
 
 target_link_libraries(
     poker_game
-    CONAN_PKG::opencv
-    CONAN_PKG::sdl2
+    ${OpenCV_LIBS}
+    ${SDL2_LIBRARIES}
 )
 
 add_executable(main.cpp main)
 
 # Add the test subdirectory for building tests
-enable_testing()
-add_subdirectory(tests)
+if (BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()

@@ -1,1 +1,2 @@
 /docker/gitlab-runner/config/
+/src/poker/cmake-build-*
