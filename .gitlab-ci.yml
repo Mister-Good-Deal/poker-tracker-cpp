@@ -19,6 +19,7 @@ cache:
   paths:
     - $PROJECT_PATH
 
+# This job runs the clang-check tool to analyze the source code and generates a report in clang-check-report.plist
 clang_check:
   stage: check
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-clang:latest
@@ -30,11 +31,13 @@ clang_check:
     reports:
       codequality: clang-check-report.plist
 
+# This job builds the Linux version of the application with the Release configuration
 build_linux:
   stage: build
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-gcc:latest
   script:
     - cmake -H $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH
+    - set-env BUILD_JOB=build_linux
   artifacts:
     paths:
       - $BUILD_PATH
@@ -44,13 +47,15 @@ build_linux:
   variables:
     BUILD_TYPE: Release
   dependencies:
-    - check
+    - clang_check
 
+# This job builds the Linux version of the application with the Debug configuration
 build_linux_debug:
   stage: build
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-gcc-dev:latest
   script:
-    - cmake -H $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH
+    - cmake -H $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTING=1 && cmake --build $BUILD_PATH
+    - set-env BUILD_JOB=build_linux_debug
   artifacts:
     paths:
       - $BUILD_PATH
@@ -60,29 +65,38 @@ build_linux_debug:
   variables:
     BUILD_TYPE: Debug
   dependencies:
-    - check
+    - clang_check
 
+# This job is responsible for building the project for the Windows platform using MinGW Makefiles. It uses the
+# 'builder-windows-mingw' image and sets the 'CMAKE_SYSTEM_NAME' to 'Windows' during configuration. It also sets the
+# 'BUILD_TYPE' to 'Release' and saves the artifacts generated in the build process.
 build_windows:
   stage: build
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-windows-mingw:latest
   script:
     - cmake -H $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_SYSTEM_NAME=Windows && cmake --build $BUILD_PATH
+    - set-env BUILD_JOB=build_windows
   artifacts:
     paths:
       - '*.exe'
   only:
     - main
   dependencies:
-    - check
+    - clang_check
 
+# This job is responsible for running clang-format on the project source files and checking if the code formatting
+# adheres to the project's code style. It uses the 'builder-linux-clang' image and checks the code formatting using the
+# '--Werror' and '--Wclang-format-violations' options.
 clang_format:
   stage: lint
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-clang:latest
   script:
     - clang-format --Werror --Wclang-format-violations --dry-run $CPP_SRC_FILES
   dependencies:
-    - check
+    - clang_check
 
+# This job is responsible for running clang-tidy on the project source files and checking for potential issues and bugs.
+# It uses the 'builder-linux-clang'
 clang_tidy:
   stage: lint
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-clang:latest
@@ -93,25 +107,34 @@ clang_tidy:
     reports:
       codequality: clang-tidy-report.yaml
   dependencies:
-    - check
+    - clang_check
 
+# This job is responsible for building and running all tests. It uses the CTest framework to run the
+# tests and generates a JUnit-style report for GitLab to display the test results. It also captures any output from
+# failing tests and makes it available in the artifacts for debugging. This job depends on the build_linux,
+# build_linux_debug or build_windows jobs
 test:
   stage: test
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-clang:latest
   script:
-    - cmake --build $BUILD_PATH --target test
-    - $BUILD_PATH/test
+    - cmake -H $PROJECT_PATH -B $BUILD_PATH -DBUILD_TESTS=1 DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH --target test
+    - ctest -T Test --output-on-failure --extra-verbose -j $(nproc) --output-log ctest.log --no-compress-output
+    - if [ -e Testing/Temporary/LastTest.log ]; then cat Testing/Temporary/LastTest.log; fi
+  artifacts:
+    reports:
+      junit: ctest.log
   dependencies:
-    - build
+    - $BUILD_JOB
 
+# This job is responsible for packaging the built artifacts from the previous build jobs and deploying them to the
+# desired target.
 deploy:
   stage: deploy
   image: registry.gitlab.laneuville.me/rom1/poker-bot/deploy:latest
   script:
     - echo "Creating release"
     - gitlab-artifacts download build_windows build_linux
-    # todo version.txt
-    - git tag $CI_COMMIT_TAG
+    - git tag $(cat ${PROJECT_PATH}/VERSION.txt)
     - git push --tags
   only:
     - main
