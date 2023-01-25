@@ -9,7 +9,6 @@ variables:
   PROJECT_PATH: /app
   BUILD_TYPE: Release
   BUILD_PATH: ${PROJECT_PATH}/_build
-  CPP_SRC_FILES: $(find ${PROJECT_PATH} -regex '.*\.\(cpp\|hpp\)')
   CXX: g++
   MAX_CODE_QUALITY_ISSUE_PER_FILE: 20
 
@@ -25,8 +24,12 @@ clang_check:
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-clang:latest
   script:
     # Download the source code once for all the jobs using cache
-    - git clone $CI_REPOSITORY_URL /app
-    - clang-check -analyze -p $BUILD_PATH -extra-arg=-std=c++20 $CPP_SRC_FILES -o clang-check-report.plist --
+    - git clone --branch $CI_COMMIT_REF_NAME $CI_REPOSITORY_URL /app
+    - CPP_SRC_FILES=$(find ${PROJECT_PATH} -regex '.*\.\(cpp\|hpp\)')
+    - echo "CPP_SRC_FILES = $CPP_SRC_FILES" >> vars.env
+    - echo "CPP_SRC_FILES=${CPP_SRC_FILES}"
+#    - ${CPP_SRC_FILES}|xargs clang-check -analyze -p $BUILD_PATH -extra-arg=-std=c++20 --analyzer-output-path=clang-check-report.plist
+    - clang-check -analyze -p $BUILD_PATH -extra-arg=-std=c++20 --analyzer-output-path=clang-check-report.plist ${CPP_SRC_FILES}
   artifacts:
     reports:
       codequality: clang-check-report.plist
