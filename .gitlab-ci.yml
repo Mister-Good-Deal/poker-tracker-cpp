@@ -16,7 +16,7 @@ cache:
   # Enable per-branch caching
   key: $CI_COMMIT_REF_SLUG
   paths:
-    - $PROJECT_PATH
+    - /app
 
 # This job runs the clang-check tool to analyze the source code and generates a report in clang-check-report.plist
 clang_check:
@@ -50,7 +50,7 @@ build_linux:
     - release/*
   variables:
     BUILD_TYPE: Release
-  dependencies:
+  needs:
     - clang_check
   tags:
     - host
@@ -70,7 +70,7 @@ build_linux_debug:
     - release/*
   variables:
     BUILD_TYPE: Debug
-  dependencies:
+  needs:
     - clang_check
   tags:
     - host
@@ -89,7 +89,7 @@ build_windows:
       - '*.exe'
   only:
     - main
-  dependencies:
+  needs:
     - clang_check
   tags:
     - host
@@ -103,7 +103,7 @@ clang_format:
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-clang:latest
   script:
     - clang-format --Werror --Wclang-format-violations --dry-run $CPP_SRC_FILES
-  dependencies:
+  needs:
     - clang_check
   tags:
     - host
@@ -120,7 +120,7 @@ clang_tidy:
   artifacts:
     reports:
       codequality: clang-tidy-report.yaml
-  dependencies:
+  needs:
     - clang_check
   tags:
     - host
@@ -139,7 +139,7 @@ test:
   artifacts:
     reports:
       junit: ctest.log
-  dependencies:
+  needs:
     - clang_check
   tags:
     - host
@@ -157,7 +157,7 @@ deploy:
     - git push --tags
   only:
     - main
-  dependencies:
+  needs:
     - test
   tags:
     - host
