@@ -6,7 +6,7 @@ stages:
   - deploy
 
 variables:
-  PROJECT_PATH: $CI_PROJECT_DIR/app
+  PROJECT_PATH: $CI_PROJECT_DIR
   BUILD_TYPE: Release
   BUILD_PATH: ${PROJECT_PATH}/_build
   CXX: g++
@@ -33,6 +33,7 @@ clang_check:
     - echo "CI_BUILDS_DIR = $CI_BUILDS_DIR"
     - echo "CI_PROJECT_DIR = $CI_PROJECT_DIR"
     - echo "CI_COMMIT_REF_NAME = $CI_COMMIT_REF_NAME"
+    - echo "CI_COMMIT_REF_SLUG = $CI_COMMIT_REF_SLUG"
   artifacts:
     reports:
       codequality: clang-check-report.plist
