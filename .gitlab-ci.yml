@@ -113,7 +113,7 @@ clang_tidy:
 test:
   stage: test
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DBUILD_TESTS=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH --target test
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DBUILD_TESTS=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH --target poker_game_tests
     - ctest -T Test --output-on-failure --extra-verbose -j $(nproc) --output-log ctest.log --no-compress-output
     - if [ -e Testing/Temporary/LastTest.log ]; then cat Testing/Temporary/LastTest.log; fi
   artifacts:
