@@ -120,8 +120,7 @@ test:
     reports:
       junit: ctest.log
   needs:
-    - clang_format
-    - clang_tidy
+    - clang_check
 
 # This job is responsible for packaging the built artifacts from the previous build jobs and deploying them to the
 # desired target.
@@ -140,4 +139,6 @@ deploy:
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
   needs:
+    - clang_format
+    - clang_tidy
     - test
