@@ -27,7 +27,7 @@ default:
 clang_check:
   stage: check
   script:
-    - CPP_SRC_FILES=$(find ${PROJECT_PATH} -regex '.*\.\(cpp\|hpp\)')
+    - CPP_SRC_FILES=$(find ${PROJECT_PATH} -regex '.*\.\(cpp\|hpp\)' | tr "\n" " ")
     - echo "CPP_SRC_FILES=${CPP_SRC_FILES}" >> vars.env
     - echo "vars.env = $(cat vars.env)"
     - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
