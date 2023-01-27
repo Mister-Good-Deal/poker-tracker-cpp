@@ -23,6 +23,7 @@ find_package(SDL2 REQUIRED)
 add_library(
     poker_game
     Card.cpp
+    CardFactory.cpp
     Player.cpp
     Round.cpp
 )
@@ -35,7 +36,7 @@ target_link_libraries(
     ${SDL2_LIBRARIES}
 )
 
-add_executable(main.cpp main)
+add_executable(main main.cpp)
 
 # Add the test subdirectory for building tests
 if (BUILD_TESTS)
