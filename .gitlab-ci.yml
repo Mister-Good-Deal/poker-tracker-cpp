@@ -14,33 +14,27 @@ variables:
 
 default:
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-clang:latest
+  tags:
+    - host
+    - runner
   cache:
     # Enable per-branch caching
     key: $CI_COMMIT_REF_SLUG
     paths:
-      - $PROJECT_PATH
+      - $BUILD_PATH
 
 # This job runs the clang-check tool to analyze the source code and generates a report in clang-check-report.plist
 clang_check:
   stage: check
   script:
-    # Download the source code once for all the jobs using cache
-#    - git clone --branch $CI_COMMIT_REF_NAME $CI_REPOSITORY_URL $PROJECT_PATH
     - CPP_SRC_FILES=$(find ${PROJECT_PATH} -regex '.*\.\(cpp\|hpp\)')
     - echo "CPP_SRC_FILES=$CPP_SRC_FILES" >> vars.env
     - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-    - clang-check -analyze -extra-arg=-std=c++20 -p $BUILD_PATH --analyzer-output-path=$CI_BUILDS_DIR/clang-check-report.plist ${CPP_SRC_FILES}
-    - echo "CI_BUILDS_DIR = $CI_BUILDS_DIR"
-    - echo "CI_PROJECT_DIR = $CI_PROJECT_DIR"
-    - echo "CI_COMMIT_REF_NAME = $CI_COMMIT_REF_NAME"
-    - echo "CI_COMMIT_REF_SLUG = $CI_COMMIT_REF_SLUG"
+    - clang-check -analyze -extra-arg=-std=c++20 -p $BUILD_PATH --analyzer-output-path=${PROJECT_PATH}/clang-check-report.plist ${CPP_SRC_FILES}
   artifacts:
     reports:
       codequality: clang-check-report.plist
-      dotenv: var.env
-  tags:
-   - host
-   - runner
+      dotenv: vars.env
 
 # This job builds the Linux version of the application with the Release configuration
 build_linux:
@@ -58,15 +52,12 @@ build_linux:
     BUILD_TYPE: Release
   needs:
     - clang_check
-  tags:
-    - host
-    - runner
 
 # This job builds the Linux version of the application with the Debug configuration
 build_linux_debug:
   stage: build
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTING=1 && cmake --build $BUILD_PATH
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1 && cmake --build $BUILD_PATH
   artifacts:
     paths:
       - $BUILD_PATH
@@ -76,9 +67,6 @@ build_linux_debug:
     BUILD_TYPE: Debug
   needs:
     - clang_check
-  tags:
-    - host
-    - runner
 
 # This job is responsible for building the project for the Windows platform using MinGW Makefiles. It uses the
 # 'builder-windows-mingw' image and sets the 'CMAKE_SYSTEM_NAME' to 'Windows' during configuration. It also sets the
@@ -95,9 +83,6 @@ build_windows:
     - if: $CI_COMMIT_BRANCH == "main"
   needs:
     - clang_check
-  tags:
-    - host
-    - runner
 
 # This job is responsible for running clang-format on the project source files and checking if the code formatting
 # adheres to the project's code style. It uses the 'builder-linux-clang' image and checks the code formatting using the
@@ -108,12 +93,9 @@ clang_format:
     - clang-format --Werror --Wclang-format-violations --dry-run $CPP_SRC_FILES
   needs:
     - clang_check
-  tags:
-    - host
-    - runner
 
 # This job is responsible for running clang-tidy on the project source files and checking for potential issues and bugs.
-# It uses the 'builder-linux-clang'
+# It uses the 'builder-linux-clang' image
 clang_tidy:
   stage: lint
   script:
@@ -124,9 +106,6 @@ clang_tidy:
       codequality: clang-tidy-report.yaml
   needs:
     - clang_check
-  tags:
-    - host
-    - runner
 
 # This job is responsible for building and running all tests. It uses the CTest framework to run the
 # tests and generates a JUnit-style report for GitLab to display the test results. It also captures any output from
@@ -134,7 +113,7 @@ clang_tidy:
 test:
   stage: test
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DBUILD_TESTS=1 DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH --target test
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DBUILD_TESTS=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH --target test
     - ctest -T Test --output-on-failure --extra-verbose -j $(nproc) --output-log ctest.log --no-compress-output
     - if [ -e Testing/Temporary/LastTest.log ]; then cat Testing/Temporary/LastTest.log; fi
   artifacts:
@@ -143,9 +122,6 @@ test:
   needs:
     - clang_format
     - clang_tidy
-  tags:
-    - host
-    - runner
 
 # This job is responsible for packaging the built artifacts from the previous build jobs and deploying them to the
 # desired target.
@@ -153,14 +129,14 @@ deploy:
   stage: deploy
   image: registry.gitlab.laneuville.me/rom1/poker-bot/deploy:latest
   script:
-    - echo "Creating release"
+    - NEW_VERSION=$(cat VERSION.txt)
+    - GIT_VERSION=$(git describe --tags | grep -P '\d+\.\d+\.\d+' -o)
+    - if [ "$NEW_VERSION" = "`echo -e "$NEW_VERSION\n$GIT_VERSION" | sort -V | head -n1`" ]; then echo "VERSION.txt is lower or equals to current git version tag." && exit 1
+    - echo "Creating release for $CI_PROJECT_NAME v$NEW_VERSION"
     - gitlab-artifacts download build_windows build_linux
-    - git tag $(cat ${PROJECT_PATH}/VERSION.txt)
+    - git tag $NEW_VERSION
     - git push --tags
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
   needs:
     - test
-  tags:
-    - host
-    - runner
