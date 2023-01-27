@@ -12,16 +12,17 @@ variables:
   CXX: g++
   MAX_CODE_QUALITY_ISSUE_PER_FILE: 20
 
-cache:
-  # Enable per-branch caching
-  key: $CI_COMMIT_REF_SLUG
-  paths:
-    - $PROJECT_PATH
+default:
+  image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-clang:latest
+  cache:
+    # Enable per-branch caching
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - $PROJECT_PATH
 
 # This job runs the clang-check tool to analyze the source code and generates a report in clang-check-report.plist
 clang_check:
   stage: check
-  image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-clang:latest
   script:
     # Download the source code once for all the jobs using cache
     - git clone --branch $CI_COMMIT_REF_NAME $CI_REPOSITORY_URL $PROJECT_PATH
@@ -60,7 +61,6 @@ build_linux:
 # This job builds the Linux version of the application with the Debug configuration
 build_linux_debug:
   stage: build
-  image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-gcc-dev:latest
   script:
     - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTING=1 && cmake --build $BUILD_PATH
   artifacts:
@@ -100,7 +100,6 @@ build_windows:
 # '--Werror' and '--Wclang-format-violations' options.
 clang_format:
   stage: lint
-  image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-clang:latest
   script:
     - clang-format --Werror --Wclang-format-violations --dry-run $CPP_SRC_FILES
   needs:
@@ -113,7 +112,6 @@ clang_format:
 # It uses the 'builder-linux-clang'
 clang_tidy:
   stage: lint
-  image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-clang:latest
   script:
     - clang-tidy -checks='*' -warnings-as-errors='*,-*,<file-number>>$MAX_CODE_QUALITY_ISSUE_PER_FILE' \
       -p $BUILD_PATH -extra-arg=-std=c++20 -export-fixes=clang-tidy-report.yaml $CPP_SRC_FILES --
@@ -131,7 +129,6 @@ clang_tidy:
 # failing tests and makes it available in the artifacts for debugging.
 test:
   stage: test
-  image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-clang:latest
   script:
     - cmake -S $PROJECT_PATH -B $BUILD_PATH -DBUILD_TESTS=1 DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH --target test
     - ctest -T Test --output-on-failure --extra-verbose -j $(nproc) --output-log ctest.log --no-compress-output
