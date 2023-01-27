@@ -16,7 +16,7 @@ cache:
   # Enable per-branch caching
   key: $CI_COMMIT_REF_SLUG
   paths:
-    - /app
+    - $PROJECT_PATH
 
 # This job runs the clang-check tool to analyze the source code and generates a report in clang-check-report.plist
 clang_check:
@@ -24,7 +24,7 @@ clang_check:
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-clang:latest
   script:
     # Download the source code once for all the jobs using cache
-    - git clone --branch $CI_COMMIT_REF_NAME $CI_REPOSITORY_URL /app
+    - git clone --branch $CI_COMMIT_REF_NAME $CI_REPOSITORY_URL $PROJECT_PATH
     - CPP_SRC_FILES=$(find ${PROJECT_PATH} -regex '.*\.\(cpp\|hpp\)')
     - echo "CPP_SRC_FILES=$CPP_SRC_FILES" >> vars.env
     - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
@@ -32,6 +32,7 @@ clang_check:
   artifacts:
     reports:
       codequality: clang-check-report.plist
+      dotenv: var.env
   tags:
    - host
    - runner
@@ -45,9 +46,9 @@ build_linux:
   artifacts:
     paths:
       - $BUILD_PATH
-  only:
-    - main
-    - release/*
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH =~ /^release*/
   variables:
     BUILD_TYPE: Release
   needs:
@@ -65,9 +66,8 @@ build_linux_debug:
   artifacts:
     paths:
       - $BUILD_PATH
-  except:
-    - main
-    - release/*
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^(feature|hotfix)*/
   variables:
     BUILD_TYPE: Debug
   needs:
@@ -87,8 +87,8 @@ build_windows:
   artifacts:
     paths:
       - '*.exe'
-  only:
-    - main
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
   needs:
     - clang_check
   tags:
@@ -140,7 +140,8 @@ test:
     reports:
       junit: ctest.log
   needs:
-    - clang_check
+    - clang_format
+    - clang_tidy
   tags:
     - host
     - runner
@@ -155,8 +156,8 @@ deploy:
     - gitlab-artifacts download build_windows build_linux
     - git tag $(cat ${PROJECT_PATH}/VERSION.txt)
     - git push --tags
-  only:
-    - main
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
   needs:
     - test
   tags:
