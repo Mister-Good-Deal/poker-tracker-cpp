@@ -6,7 +6,7 @@ stages:
   - deploy
 
 variables:
-  PROJECT_PATH: /app
+  PROJECT_PATH: $CI_PROJECT_DIR/app
   BUILD_TYPE: Release
   BUILD_PATH: ${PROJECT_PATH}/_build
   CXX: g++
@@ -25,11 +25,14 @@ clang_check:
   stage: check
   script:
     # Download the source code once for all the jobs using cache
-    - git clone --branch $CI_COMMIT_REF_NAME $CI_REPOSITORY_URL $PROJECT_PATH
+#    - git clone --branch $CI_COMMIT_REF_NAME $CI_REPOSITORY_URL $PROJECT_PATH
     - CPP_SRC_FILES=$(find ${PROJECT_PATH} -regex '.*\.\(cpp\|hpp\)')
     - echo "CPP_SRC_FILES=$CPP_SRC_FILES" >> vars.env
     - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     - clang-check -analyze -extra-arg=-std=c++20 -p $BUILD_PATH --analyzer-output-path=$CI_BUILDS_DIR/clang-check-report.plist ${CPP_SRC_FILES}
+    - echo "CI_BUILDS_DIR = $CI_BUILDS_DIR"
+    - echo "CI_PROJECT_DIR = $CI_PROJECT_DIR"
+    - echo "CI_COMMIT_REF_NAME = $CI_COMMIT_REF_NAME"
   artifacts:
     reports:
       codequality: clang-check-report.plist
