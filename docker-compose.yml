@@ -1,5 +1,7 @@
 services:
+
   # ----------------------------------------------------- Builders -----------------------------------------------------
+
   builder-linux-gcc:
     build:
       context: .
@@ -32,10 +34,6 @@ services:
         - CLANG_VERSION=${CLANG_VERSION}
         - MAX_CPU_CORES=${MAX_CPU_CORES}
     image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-clang:latest
-    # Clang compilation used more than my whole 64Go RAM and crashed the system lol
-    # docker build $(for i in `cat .env`; do out+="--build-arg $i " ; done; echo $out;out="") \
-    # -f docker/Dockerfile-builder-linux-clang -t registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-clang:latest \
-    # --oom-kill-disable -m 32g .
 
   builder-windows-mingw:
     build:
@@ -54,7 +52,9 @@ services:
       context: .
       dockerfile: docker/Dockerfile-deploy
     image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/deploy:latest
+
   # ---------------------------------------------------- Execution -----------------------------------------------------
+
   dev:
     image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-gcc-dev:latest
     container_name: "Linux_GCC_dev_env"
