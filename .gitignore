@@ -1,2 +1,3 @@
 /docker/gitlab-runner/config/
 build
+/.clion.source.upload.marker

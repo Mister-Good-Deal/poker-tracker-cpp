@@ -2,7 +2,7 @@
 <project version="4">
   <component name="CMakeSharedSettings">
     <configurations>
-      <configuration PROFILE_NAME="Debug - Docker poker-bot" ENABLED="true" GENERATION_DIR="build" CONFIG_NAME="Debug" TOOLCHAIN_NAME="Docker poker-bot" />
+      <configuration PROFILE_NAME="Debug - Docker poker-bot" ENABLED="true" GENERATION_DIR="build" CONFIG_NAME="Debug" TOOLCHAIN_NAME="Docker poker-bot SSH" GENERATION_OPTIONS="-DBUILD_TESTS=1" />
     </configurations>
   </component>
 </project>

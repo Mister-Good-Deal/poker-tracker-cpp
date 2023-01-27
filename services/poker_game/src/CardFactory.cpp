@@ -65,7 +65,7 @@ CardFactory::CardFactory() {
     cardPrototypes["AC"] = Card(Rank::ACE, Suit::CLUB);
 }
 
-Card CardFactory::createCard(const std::string& shortCardName) {
+Card CardFactory::create(const std::string& shortCardName) {
     if (cardPrototypes.count(shortCardName) == 0) {
         throw std::invalid_argument("Invalid short card name: " + shortCardName);
     }

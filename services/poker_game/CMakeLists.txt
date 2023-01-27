@@ -22,13 +22,13 @@ find_package(SDL2 REQUIRED)
 
 add_library(
     poker_game
-    Card.cpp
-    CardFactory.cpp
-    Player.cpp
-    Round.cpp
+    src/Card.cpp
+    src/CardFactory.cpp
+    src/Player.cpp
+    src/Round.cpp
 )
 
-target_include_directories(poker_game PUBLIC ${PROJECT_SOURCE_DIR})
+target_include_directories(poker_game PUBLIC include src)
 
 target_link_libraries(
     poker_game

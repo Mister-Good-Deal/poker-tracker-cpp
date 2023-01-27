@@ -9,7 +9,7 @@ class CardFactory {
     public:
         CardFactory();
 
-        Card createCard(const std::string& cardName);
+        Card create(const std::string& cardName);
 
     private:
         std::map<std::string, Card> cardPrototypes;
