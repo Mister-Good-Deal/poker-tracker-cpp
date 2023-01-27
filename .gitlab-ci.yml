@@ -27,7 +27,7 @@ clang_check:
     - git clone --branch $CI_COMMIT_REF_NAME $CI_REPOSITORY_URL /app
     - CPP_SRC_FILES=$(find ${PROJECT_PATH} -regex '.*\.\(cpp\|hpp\)')
     - echo "CPP_SRC_FILES=$CPP_SRC_FILES" >> vars.env
-    - cmake -H $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     - clang-check -analyze -extra-arg=-std=c++20 -p $BUILD_PATH --analyzer-output-path=clang-check-report.plist ${CPP_SRC_FILES}
   artifacts:
     reports:
@@ -41,7 +41,7 @@ build_linux:
   stage: build
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-gcc:latest
   script:
-    - cmake -H $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH
   artifacts:
     paths:
       - $BUILD_PATH
@@ -61,7 +61,7 @@ build_linux_debug:
   stage: build
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-gcc-dev:latest
   script:
-    - cmake -H $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTING=1 && cmake --build $BUILD_PATH
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTING=1 && cmake --build $BUILD_PATH
   artifacts:
     paths:
       - $BUILD_PATH
@@ -83,7 +83,7 @@ build_windows:
   stage: build
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-windows-mingw:latest
   script:
-    - cmake -H $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_SYSTEM_NAME=Windows && cmake --build $BUILD_PATH
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_SYSTEM_NAME=Windows && cmake --build $BUILD_PATH
   artifacts:
     paths:
       - '*.exe'
@@ -133,7 +133,7 @@ test:
   stage: test
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-clang:latest
   script:
-    - cmake -H $PROJECT_PATH -B $BUILD_PATH -DBUILD_TESTS=1 DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH --target test
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DBUILD_TESTS=1 DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH --target test
     - ctest -T Test --output-on-failure --extra-verbose -j $(nproc) --output-log ctest.log --no-compress-output
     - if [ -e Testing/Temporary/LastTest.log ]; then cat Testing/Temporary/LastTest.log; fi
   artifacts:
