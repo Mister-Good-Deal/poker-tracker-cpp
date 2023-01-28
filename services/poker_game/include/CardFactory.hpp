@@ -70,6 +70,12 @@ namespace Factory {
     class CardFactory {
         public:
             CardFactory() = delete;
+
+            class invalid_card : public std::runtime_error {
+                public:
+                    explicit invalid_card(const std::string& arg) : runtime_error(arg){};
+            };
+
             static Card create(const std::string& cardName);
     };
 }

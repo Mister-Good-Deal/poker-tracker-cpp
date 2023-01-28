@@ -13,6 +13,7 @@ add_library(
     poker_game
     src/Card.cpp
     src/CardFactory.cpp
+    src/Hand.cpp
     src/Player.cpp
     src/Round.cpp
 )

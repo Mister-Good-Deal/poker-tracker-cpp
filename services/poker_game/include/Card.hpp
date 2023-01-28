@@ -6,7 +6,7 @@
 
 class Card {
     public:
-        enum class Rank : uint16_t {
+        enum class Rank : int16_t {
             TWO = 0,
             THREE,
             FOUR,
@@ -22,7 +22,7 @@ class Card {
             ACE
         };
 
-        enum class Suit : uint16_t {
+        enum class Suit : int16_t {
             HEART = 0,
             DIAMOND,
             CLUB,
@@ -87,8 +87,8 @@ class Card {
         [[nodiscard]] Rank getRank() const { return rank; }
         [[nodiscard]] Suit getSuit() const { return suit; }
 
-        std::string getFullName();
-        std::string getShortName();
+        [[nodiscard]] std::string getFullName() const;
+        [[nodiscard]] std::string getShortName() const;
 
     private:
         Rank rank;
