@@ -40,6 +40,5 @@ add_executable(main main.cpp)
 
 # Add the test subdirectory for building tests
 if (BUILD_TESTS)
-    enable_testing()
     add_subdirectory(tests)
-endif()
+endif ()

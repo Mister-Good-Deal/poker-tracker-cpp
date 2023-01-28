@@ -57,7 +57,7 @@ build_linux:
 build_linux_debug:
   stage: build
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1 && cmake --build $BUILD_PATH
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1 --log-context && cmake --build $BUILD_PATH
   artifacts:
     paths:
       - $BUILD_PATH
@@ -113,12 +113,13 @@ clang_tidy:
 test:
   stage: test
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DBUILD_TESTS=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH --target poker_game_tests
-    - ctest -T Test --output-on-failure --extra-verbose -j $(nproc) --output-log ctest.log --no-compress-output
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DBUILD_TESTS=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH
+    # @fixme Need to required tests for all subproject with --test-dir
+    - ctest --test-dir $BUILD_PATH/services/poker_game --output-on-failure --extra-verbose -j $(nproc) --output-junit poker_game_ctest.xml --no-compress-output
     - if [ -e Testing/Temporary/LastTest.log ]; then cat Testing/Temporary/LastTest.log; fi
   artifacts:
     reports:
-      junit: ctest.log
+      junit: $BUILD_PATH/poker_game_ctest.xml
   needs:
     - clang_check
 

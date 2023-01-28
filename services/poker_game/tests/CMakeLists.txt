@@ -1,19 +1,20 @@
 find_package(GTest REQUIRED)
 
-function(add_class_test class_name test_file)
-    set(targetName "${class_name}Test")
+function(add_class_test class_name)
+    set(target_name "${class_name}Test")
+    set(test_src_file "${target_name}.cpp")
 
-    add_executable(${targetName} ${test_file})
+    add_executable(${target_name} ${test_src_file})
 
-    target_link_libraries(${targetName} poker_game gtest_main GTest::gtest GTest::gmock)
-    target_include_directories(${targetName} PRIVATE ../include)
-    gtest_add_tests(TARGET ${targetName} SOURCES ${test_file} TEST_LIST testsList)
+    target_link_libraries(${target_name} poker_game GTest::Main GTest::gtest GTest::gmock)
+    target_include_directories(${target_name} PRIVATE ../include)
+    gtest_add_tests(TARGET ${target_name} SOURCES ${test_src_file} TEST_LIST testsList)
+    #  WORKING_DIRECTORY ${CTEST_BINARY_DIRECTORY}
 endfunction()
 
-add_class_test(Card CardTest.cpp)
-add_class_test(CardFactory CardFactoryTest.cpp)
-add_class_test(Player PlayerTest.cpp)
-add_class_test(Round RoundTest.cpp)
+message(NOTICE "The unit tests for ${CMAKE_PROJECT_NAME} are stored in ${CMAKE_BINARY_DIR}")
 
-add_executable(poker_game_tests main.cpp)
-target_link_libraries(poker_game_tests poker_game GTest::gtest GTest::gmock)
+add_class_test(Card)
+add_class_test(CardFactory)
+add_class_test(Player)
+add_class_test(Round)
