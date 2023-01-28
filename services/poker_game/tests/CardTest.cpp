@@ -15,7 +15,8 @@ TEST(CardTest, Constructor) {
     EXPECT_EQ(Card::Rank::ACE, card.getRank());
 }
 
-TEST(CardTest, ExpectCorrectFullName) {
+TEST(CardTest, CardsFullNameShouldBeCorrect) {
+    // Hearts
     EXPECT_STREQ(Card(Rank::TWO, Suit::HEART).getFullName().c_str(), "Two of Heart");
     EXPECT_STREQ(Card(Rank::THREE, Suit::HEART).getFullName().c_str(), "Three of Heart");
     EXPECT_STREQ(Card(Rank::FOUR, Suit::HEART).getFullName().c_str(), "Four of Heart");
@@ -29,7 +30,7 @@ TEST(CardTest, ExpectCorrectFullName) {
     EXPECT_STREQ(Card(Rank::QUEEN, Suit::HEART).getFullName().c_str(), "Queen of Heart");
     EXPECT_STREQ(Card(Rank::KING, Suit::HEART).getFullName().c_str(), "King of Heart");
     EXPECT_STREQ(Card(Rank::ACE, Suit::HEART).getFullName().c_str(), "Ace of Heart");
-
+    // Diamonds
     EXPECT_STREQ(Card(Rank::TWO, Suit::DIAMOND).getFullName().c_str(), "Two of Diamond");
     EXPECT_STREQ(Card(Rank::THREE, Suit::DIAMOND).getFullName().c_str(), "Three of Diamond");
     EXPECT_STREQ(Card(Rank::FOUR, Suit::DIAMOND).getFullName().c_str(), "Four of Diamond");
@@ -43,7 +44,7 @@ TEST(CardTest, ExpectCorrectFullName) {
     EXPECT_STREQ(Card(Rank::QUEEN, Suit::DIAMOND).getFullName().c_str(), "Queen of Diamond");
     EXPECT_STREQ(Card(Rank::KING, Suit::DIAMOND).getFullName().c_str(), "King of Diamond");
     EXPECT_STREQ(Card(Rank::ACE, Suit::DIAMOND).getFullName().c_str(), "Ace of Diamond");
-
+    // Club
     EXPECT_STREQ(Card(Rank::TWO, Suit::CLUB).getFullName().c_str(), "Two of Club");
     EXPECT_STREQ(Card(Rank::THREE, Suit::CLUB).getFullName().c_str(), "Three of Club");
     EXPECT_STREQ(Card(Rank::FOUR, Suit::CLUB).getFullName().c_str(), "Four of Club");
@@ -57,7 +58,7 @@ TEST(CardTest, ExpectCorrectFullName) {
     EXPECT_STREQ(Card(Rank::QUEEN, Suit::CLUB).getFullName().c_str(), "Queen of Club");
     EXPECT_STREQ(Card(Rank::KING, Suit::CLUB).getFullName().c_str(), "King of Club");
     EXPECT_STREQ(Card(Rank::ACE, Suit::CLUB).getFullName().c_str(), "Ace of Club");
-
+    // Spade
     EXPECT_STREQ(Card(Rank::TWO, Suit::SPADE).getFullName().c_str(), "Two of Spade");
     EXPECT_STREQ(Card(Rank::THREE, Suit::SPADE).getFullName().c_str(), "Three of Spade");
     EXPECT_STREQ(Card(Rank::FOUR, Suit::SPADE).getFullName().c_str(), "Four of Spade");
@@ -73,7 +74,8 @@ TEST(CardTest, ExpectCorrectFullName) {
     EXPECT_STREQ(Card(Rank::ACE, Suit::SPADE).getFullName().c_str(), "Ace of Spade");
 }
 
-TEST(CardTest, ExpectCorrectShortName) {
+TEST(CardTest, CardsShortNameShouldBeCorrect) {
+    // Hearts
     EXPECT_STREQ(Card(Rank::TWO, Suit::HEART).getShortName().c_str(), "2H");
     EXPECT_STREQ(Card(Rank::THREE, Suit::HEART).getShortName().c_str(), "3H");
     EXPECT_STREQ(Card(Rank::FOUR, Suit::HEART).getShortName().c_str(), "4H");
@@ -87,7 +89,7 @@ TEST(CardTest, ExpectCorrectShortName) {
     EXPECT_STREQ(Card(Rank::QUEEN, Suit::HEART).getShortName().c_str(), "QH");
     EXPECT_STREQ(Card(Rank::KING, Suit::HEART).getShortName().c_str(), "KH");
     EXPECT_STREQ(Card(Rank::ACE, Suit::HEART).getShortName().c_str(), "AH");
-
+    // Diamonds
     EXPECT_STREQ(Card(Rank::TWO, Suit::DIAMOND).getShortName().c_str(), "2D");
     EXPECT_STREQ(Card(Rank::THREE, Suit::DIAMOND).getShortName().c_str(), "3D");
     EXPECT_STREQ(Card(Rank::FOUR, Suit::DIAMOND).getShortName().c_str(), "4D");
@@ -101,7 +103,7 @@ TEST(CardTest, ExpectCorrectShortName) {
     EXPECT_STREQ(Card(Rank::QUEEN, Suit::DIAMOND).getShortName().c_str(), "QD");
     EXPECT_STREQ(Card(Rank::KING, Suit::DIAMOND).getShortName().c_str(), "KD");
     EXPECT_STREQ(Card(Rank::ACE, Suit::DIAMOND).getShortName().c_str(), "AD");
-
+    // Club
     EXPECT_STREQ(Card(Rank::TWO, Suit::CLUB).getShortName().c_str(), "2C");
     EXPECT_STREQ(Card(Rank::THREE, Suit::CLUB).getShortName().c_str(), "3C");
     EXPECT_STREQ(Card(Rank::FOUR, Suit::CLUB).getShortName().c_str(), "4C");
@@ -115,7 +117,7 @@ TEST(CardTest, ExpectCorrectShortName) {
     EXPECT_STREQ(Card(Rank::QUEEN, Suit::CLUB).getShortName().c_str(), "QC");
     EXPECT_STREQ(Card(Rank::KING, Suit::CLUB).getShortName().c_str(), "KC");
     EXPECT_STREQ(Card(Rank::ACE, Suit::CLUB).getShortName().c_str(), "AC");
-
+    // Spade
     EXPECT_STREQ(Card(Rank::TWO, Suit::SPADE).getShortName().c_str(), "2S");
     EXPECT_STREQ(Card(Rank::THREE, Suit::SPADE).getShortName().c_str(), "3S");
     EXPECT_STREQ(Card(Rank::FOUR, Suit::SPADE).getShortName().c_str(), "4S");
