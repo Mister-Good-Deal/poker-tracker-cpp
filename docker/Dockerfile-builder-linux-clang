@@ -1,0 +1,17 @@
+ARG CI_REGISTRY
+ARG CI_REGISTRY_BUILDER_ROOT_IMAGE
+
+FROM ${CI_REGISTRY}/${CI_REGISTRY_BUILDER_ROOT_IMAGE}:latest
+
+ARG CLANG_VERSION
+ARG MAX_CPU_CORES
+
+# Install Clang with the given CLANG_VERSION version from https://github.com/llvm/llvm-project
+RUN git clone https://github.com/llvm/llvm-project.git && cd llvm-project && git checkout llvmorg-${CLANG_VERSION} && \
+    mkdir -p build && cmake -S llvm -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra" \
+    && cd build && make -j ${MAX_CPU_CORES} && make install && \
+    cd ../.. && rm -rf llvm-project
+
+WORKDIR /app
+
+CMD ["/bin/bash"]

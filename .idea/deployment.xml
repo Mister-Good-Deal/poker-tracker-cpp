@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" serverName="Docker poker-bot SSH (61b19fb5-f53b-44f5-966b-448c58767df9)" remoteFilesAllowedToDisappearOnAutoupload="false">
+    <serverData>
+      <paths name="Docker cpp-back SSH (83a3b842-9d8e-4247-95ca-bca7de86a749)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/tmp/tmp.FLR0uHm8ON" local="$PROJECT_DIR$/src/poker" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/src/poker/cmake-build-debug" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
+      <paths name="Docker poker-bot SSH (61b19fb5-f53b-44f5-966b-448c58767df9)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/app" local="$PROJECT_DIR$" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/build" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
+    </serverData>
+  </component>
+</project>
