@@ -80,6 +80,7 @@ class Card {
     public:
         Card() = default;
         Card(Rank rank, Suit suit);
+        virtual ~Card() = default;
 
         auto operator==(const Card& rhs) const -> bool { return std::tie(rank, suit) == std::tie(rhs.rank, rhs.suit); }
         auto operator!=(const Card& rhs) const -> bool { return !(rhs == *this); }
