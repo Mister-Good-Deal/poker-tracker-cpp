@@ -16,5 +16,6 @@ message(NOTICE "The unit tests for ${CMAKE_PROJECT_NAME} are stored in ${CMAKE_B
 
 add_class_test(Card)
 add_class_test(CardFactory)
+add_class_test(Hand)
 add_class_test(Player)
 add_class_test(Round)

@@ -46,7 +46,7 @@ build_linux:
       - $BUILD_PATH
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_BRANCH == /^release*/
+    - if: $CI_COMMIT_BRANCH =~/^release/
   variables:
     BUILD_TYPE: Release
   needs:
@@ -61,7 +61,7 @@ build_linux_debug:
     paths:
       - $BUILD_PATH
   rules:
-    - if: $CI_COMMIT_BRANCH == /^(feature|hotfix)*/
+    - if: $CI_COMMIT_BRANCH =~/^(feature|hotfix)/
   variables:
     BUILD_TYPE: Debug
   needs:
@@ -98,8 +98,8 @@ clang_format:
 clang_tidy:
   stage: lint
   script:
-    - clang-tidy -checks='*' -warnings-as-errors='*,-*,<file-number>>$MAX_CODE_QUALITY_ISSUE_PER_FILE' -p $BUILD_PATH
-      -extra-arg=-std=c++20 -export-fixes=clang-tidy-report.yaml $CPP_SRC_FILES --
+    - clang-tidy -warnings-as-errors='*,-*,<file-number>>$MAX_CODE_QUALITY_ISSUE_PER_FILE' -p $BUILD_PATH
+      -export-fixes=clang-tidy-report.yaml $CPP_SRC_FILES --
   artifacts:
     reports:
       codequality: clang-tidy-report.yaml
