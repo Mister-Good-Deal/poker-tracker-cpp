@@ -95,7 +95,7 @@ clang_format:
 
 # This job is responsible for running clang-tidy on the project source files and checking for potential issues and bugs.
 # It uses the 'builder-linux-clang' image
-clang_tidy:
+.clang_tidy:
   stage: lint
   script:
     - clang-tidy -warnings-as-errors='*,-*,<file-number>>$MAX_CODE_QUALITY_ISSUE_PER_FILE' -p $BUILD_PATH
@@ -152,5 +152,5 @@ deploy:
     - if: $CI_COMMIT_BRANCH == "main"
   needs:
     - clang_format
-    - clang_tidy
+    - code_quality
     - test
