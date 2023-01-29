@@ -8,7 +8,12 @@ using Rank = Card::Rank;
 
 class Hand {
     public:
+        Hand() : firstCard(Card()), secondCard(Card()){};
         Hand(const Card& firstCard, const Card& secondCard);
+
+        auto operator==(const Hand& rhs) const -> bool;
+        auto operator!=(const Hand& rhs) const -> bool;
+        auto operator=(Hand other) -> Hand&;
 
         const std::vector<Rank> BROADWAY = {Rank::TEN, Rank::JACK, Rank::QUEEN, Rank::KING, Rank::ACE};
 
@@ -28,8 +33,8 @@ class Hand {
     private:
         Card firstCard;
         Card secondCard;
-        bool suited;
-        bool broadway;
-        bool plur;
-        bool connected;
+        bool suited    = false;
+        bool broadway  = false;
+        bool plur      = false;
+        bool connected = false;
 };

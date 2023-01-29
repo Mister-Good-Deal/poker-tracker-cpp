@@ -8,7 +8,7 @@
 class Player;
 
 class Round {
-        enum class Street : int {
+        enum class Street : int8_t {
             PREFLOP = 0,
             FLOP,
             TURN,

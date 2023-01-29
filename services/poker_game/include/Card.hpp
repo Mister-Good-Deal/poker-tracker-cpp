@@ -6,7 +6,7 @@
 
 class Card {
     public:
-        enum class Rank : int16_t {
+        enum class Rank : int8_t {
             TWO = 0,
             THREE,
             FOUR,
@@ -19,14 +19,16 @@ class Card {
             JACK,
             QUEEN,
             KING,
-            ACE
+            ACE,
+            UNKNOWN
         };
 
-        enum class Suit : int16_t {
+        enum class Suit : int8_t {
             HEART = 0,
             DIAMOND,
             CLUB,
-            SPADE
+            SPADE,
+            UNKNOWN
         };
 
         static constexpr auto rankToString(Rank rank) -> std::string {
@@ -78,12 +80,20 @@ class Card {
         }
 
     public:
-        Card() = default;
-        Card(Rank rank, Suit suit);
+        Card() : rank(Rank::UNKNOWN), suit(Suit::UNKNOWN){};
+        Card(const Card& other) = default;
+        Card(Card&& other);
+        Card(Rank rank, Suit suit) : rank(rank), suit(suit){};
+
         virtual ~Card() = default;
 
-        auto operator==(const Card& rhs) const -> bool { return std::tie(rank, suit) == std::tie(rhs.rank, rhs.suit); }
-        auto operator!=(const Card& rhs) const -> bool { return !(rhs == *this); }
+        auto operator=(Card other) -> Card&;
+        auto operator=(Card&& other) -> Card&;
+
+        auto operator==(const Card& other) const -> bool { return std::tie(rank, suit) == std::tie(other.rank, other.suit); }
+        auto operator!=(const Card& other) const -> bool { return !(other == *this); }
+
+        auto swap(Card& other) -> void;
 
         [[nodiscard]] auto getRank() const -> Rank { return rank; }
         [[nodiscard]] auto getSuit() const -> Suit { return suit; }
