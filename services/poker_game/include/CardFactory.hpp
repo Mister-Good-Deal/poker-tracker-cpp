@@ -78,4 +78,4 @@ namespace Factory {
 
             static Card create(const std::string& cardName);
     };
-}
+}  // namespace Factory

@@ -46,7 +46,7 @@ build_linux:
       - $BUILD_PATH
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_BRANCH == /^release*/
+    - if: $CI_COMMIT_BRANCH =~/^release/
   variables:
     BUILD_TYPE: Release
   needs:
@@ -61,7 +61,7 @@ build_linux_debug:
     paths:
       - $BUILD_PATH
   rules:
-    - if: $CI_COMMIT_BRANCH == /^(feature|hotfix)*/
+    - if: $CI_COMMIT_BRANCH =~/^(feature|hotfix)/
   variables:
     BUILD_TYPE: Debug
   needs:

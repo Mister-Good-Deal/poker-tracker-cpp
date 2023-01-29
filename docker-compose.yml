@@ -13,27 +13,27 @@ services:
         - OPENCV_VERSION=${OPENCV_VERSION}
     image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-gcc:latest
 
-  builder-linux-gcc-dev:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile-builder-linux-gcc-dev
-      args:
-        - CI_REGISTRY=${REGISTRY_HOST}
-        - CI_REGISTRY_BUILDER_ROOT_IMAGE=${REGISTRY_REPO_PATH}/builder-linux-gcc
-        - GDB_VERSION=${GDB_VERSION}
-        - GOOGLETEST_VERSION=${GOOGLETEST_VERSION}
-    image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-gcc-dev:latest
-
   builder-linux-clang:
     build:
       context: .
       dockerfile: docker/Dockerfile-builder-linux-clang
       args:
         - CI_REGISTRY=${REGISTRY_HOST}
-        - CI_REGISTRY_BUILDER_ROOT_IMAGE=${REGISTRY_REPO_PATH}/builder-linux-gcc-dev
+        - CI_REGISTRY_BUILDER_ROOT_IMAGE=${REGISTRY_REPO_PATH}/builder-linux-gcc
         - CLANG_VERSION=${CLANG_VERSION}
         - MAX_CPU_CORES=${MAX_CPU_CORES}
     image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-clang:latest
+
+  builder-linux-clang-dev:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile-builder-linux-clang-dev
+      args:
+        - CI_REGISTRY=${REGISTRY_HOST}
+        - CI_REGISTRY_BUILDER_ROOT_IMAGE=${REGISTRY_REPO_PATH}/builder-linux-clang
+        - GDB_VERSION=${GDB_VERSION}
+        - GOOGLETEST_VERSION=${GOOGLETEST_VERSION}
+    image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-clang-dev:latest
 
   builder-windows-mingw:
     build:
@@ -56,7 +56,7 @@ services:
   # ---------------------------------------------------- Execution -----------------------------------------------------
 
   dev:
-    image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-gcc-dev:latest
+    image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-clang-dev:latest
     container_name: "Linux_GCC_dev_env"
     ports:
       - "3022:22"
