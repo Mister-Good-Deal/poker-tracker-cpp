@@ -3,20 +3,22 @@
 #include <array>
 #include <string>
 
-#include "Card.hpp"
+#include "Hand.hpp"
 
 class Player {
     public:
-        Player(std::string name);
-        inline std::string         getName() const { return name; }
-        inline void                setName(std::string newName) { name = newName; }
-        inline std::array<Card, 2> getHand() const { return hand; }
-        inline void                setHand(std::array<Card, 2> newHand) { hand = newHand; }
-        inline int32_t             getStack() const { return stack; }
-        inline void                setStack(int32_t newStack) { stack = newStack; }
+        explicit Player(std::string name);
+
+        [[nodiscard]] auto getName() const -> std::string { return name; }
+        [[nodiscard]] auto getHand() const -> Hand { return hand; }
+        [[nodiscard]] auto getStack() const -> int32_t { return stack; }
+
+        void setName(std::string newName) { name = newName; }
+        void setHand(const Card& firstCard, const Card& secondCard) { hand = Hand(firstCard, secondCard); }
+        void setStack(int32_t newStack) { stack = newStack; }
 
     private:
-        std::string         name;
-        std::array<Card, 2> hand;
-        int32_t             stack;
+        std::string name;
+        Hand        hand;
+        int32_t     stack = 0;
 };
