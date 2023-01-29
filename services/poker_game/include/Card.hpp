@@ -29,7 +29,7 @@ class Card {
             SPADE
         };
 
-        static constexpr std::string rankToString(Rank rank) {
+        static constexpr auto rankToString(Rank rank) -> std::string {
             switch (rank) {
                 case Rank::TWO: return "Two";
                 case Rank::THREE: return "Three";
@@ -48,7 +48,7 @@ class Card {
             }
         }
 
-        static constexpr std::string rankToShortString(Rank rank) {
+        static constexpr auto rankToShortString(Rank rank) -> std::string {
             switch (rank) {
                 case Rank::TWO: return "2";
                 case Rank::THREE: return "3";
@@ -67,7 +67,7 @@ class Card {
             }
         }
 
-        static constexpr std::string suitToString(Suit suit) {
+        static constexpr auto suitToString(Suit suit) -> std::string {
             switch (suit) {
                 case Suit::HEART: return "Heart";
                 case Suit::DIAMOND: return "Diamond";
@@ -81,14 +81,14 @@ class Card {
         Card() = default;
         Card(Rank rank, Suit suit);
 
-        bool operator==(const Card& rhs) const { return std::tie(rank, suit) == std::tie(rhs.rank, rhs.suit); }
-        bool operator!=(const Card& rhs) const { return !(rhs == *this); }
+        auto operator==(const Card& rhs) const -> bool { return std::tie(rank, suit) == std::tie(rhs.rank, rhs.suit); }
+        auto operator!=(const Card& rhs) const -> bool { return !(rhs == *this); }
 
-        [[nodiscard]] Rank getRank() const { return rank; }
-        [[nodiscard]] Suit getSuit() const { return suit; }
+        [[nodiscard]] auto getRank() const -> Rank { return rank; }
+        [[nodiscard]] auto getSuit() const -> Suit { return suit; }
 
-        [[nodiscard]] std::string getFullName() const;
-        [[nodiscard]] std::string getShortName() const;
+        [[nodiscard]] auto getFullName() const -> std::string;
+        [[nodiscard]] auto getShortName() const -> std::string;
 
     private:
         Rank rank;

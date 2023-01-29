@@ -19,7 +19,7 @@ class Round {
     public:
         Round();
 
-        [[nodiscard]] int32_t getPot() const { return Pot; }
+        [[nodiscard]] auto getPot() const -> int32_t { return Pot; }
 
         void call(Player& player);
         void bet(Player& player, int32_t amount);

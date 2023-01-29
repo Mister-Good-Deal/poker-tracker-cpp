@@ -23,10 +23,10 @@ class MockHand : public Hand {
     public:
         MockHand(const Card& firstCard, const Card& secondCard) : Hand(firstCard, secondCard) {}
         // Proxy
-        bool isSuited() override { return (*this).Hand::isSuited(); }
-        bool isBroadway() override { return (*this).Hand::isBroadway(); }
-        bool isPlur() override { return (*this).Hand::isPlur(); }
-        bool isConnected() override { return (*this).Hand::isConnected(); }
+        auto isSuited() -> bool override { return (*this).Hand::isSuited(); }
+        auto isBroadway() -> bool override { return (*this).Hand::isBroadway(); }
+        auto isPlur() -> bool override { return (*this).Hand::isPlur(); }
+        auto isConnected() -> bool override { return (*this).Hand::isConnected(); }
 };
 
 class HandTest : public ::testing::Test {};

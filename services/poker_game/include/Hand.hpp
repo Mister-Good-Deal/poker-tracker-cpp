@@ -17,13 +17,13 @@ class Hand {
                 explicit invalid_hand(const std::string& arg) : runtime_error(arg){};
         };
 
-        std::tuple<Card, Card> cards() { return {firstCard, secondCard}; }
+        auto cards() -> std::tuple<Card, Card> { return {firstCard, secondCard}; }
 
     protected:
-        virtual bool isSuited();
-        virtual bool isBroadway();
-        virtual bool isPlur();
-        virtual bool isConnected();
+        virtual auto isSuited() -> bool;
+        virtual auto isBroadway() -> bool;
+        virtual auto isPlur() -> bool;
+        virtual auto isConnected() -> bool;
 
     private:
         Card firstCard;

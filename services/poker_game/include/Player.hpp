@@ -7,12 +7,12 @@
 
 class Player {
     public:
-        Player(std::string name);
-        inline std::string         getName() const { return name; }
+        explicit Player(std::string name);
+        [[nodiscard]] inline auto  getName() const -> std::string { return name; }
         inline void                setName(std::string newName) { name = newName; }
-        inline std::array<Card, 2> getHand() const { return hand; }
+        [[nodiscard]] inline auto  getHand() const -> std::array<Card, 2> { return hand; }
         inline void                setHand(std::array<Card, 2> newHand) { hand = newHand; }
-        inline int32_t             getStack() const { return stack; }
+        [[nodiscard]] inline auto  getStack() const -> int32_t { return stack; }
         inline void                setStack(int32_t newStack) { stack = newStack; }
 
     private:

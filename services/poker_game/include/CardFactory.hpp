@@ -9,7 +9,7 @@ using Rank = Card::Rank;
 using Suit = Card::Suit;
 
 namespace Factory {
-    static std::map<std::string, Card> CARD_PROTOTYPES = {
+    static const std::map<std::string, Card> CARD_PROTOTYPES = {
         // Hearts
         {"2H", Card(Rank::TWO, Suit::HEART)},
         {"3H", Card(Rank::THREE, Suit::HEART)},
@@ -76,6 +76,6 @@ namespace Factory {
                     explicit invalid_card(const std::string& arg) : runtime_error(arg){};
             };
 
-            static Card create(const std::string& cardName);
+            static auto create(const std::string& cardName) -> Card;
     };
 }  // namespace Factory

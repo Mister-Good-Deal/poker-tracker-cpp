@@ -57,7 +57,7 @@ services:
 
   dev:
     image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-clang-dev:latest
-    container_name: "Linux_GCC_dev_env"
+    container_name: "Linux_GCC_and_Clang_dev_env"
     ports:
       - "3022:22"
     tty: true
