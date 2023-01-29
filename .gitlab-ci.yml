@@ -106,6 +106,18 @@ clang_tidy:
   needs:
     - clang_check
 
+code_quality:
+  image: codechecker/codechecker-web:latest
+  stage: test
+  script:
+    - CodeChecker analyze --ctu -o $PROJECT_PATH/code_checker_reports $BUILD_PATH/compile_commands.json
+    - CodeChecker parse -e codeclimate $PROJECT_PATH/code_checker_reports > gl-code-quality-report.json
+  artifacts:
+    reports:
+      codequality: code_checker_reports/gl-code-quality-report.json
+  needs:
+    - clang_check
+
 # This job is responsible for building and running all tests. It uses the CTest framework to run the
 # tests and generates a JUnit-style report for GitLab to display the test results. It also captures any output from
 # failing tests and makes it available in the artifacts for debugging.
