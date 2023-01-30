@@ -28,9 +28,9 @@ RUN apt-get install -y python3-dev python3-venv python3-setuptools && \
     -q -O /opt/codechecker-${CODE_CHECKER_VERSION}.tar.gz && \
     cd /opt && tar -xvzf codechecker-${CODE_CHECKER_VERSION}.tar.gz && cd codechecker-${CODE_CHECKER_VERSION} && \
     BUILD_LOGGER_64_BIT_ONLY=YES BUILD_UI_DIST=NO make standalone_package && \
-    rm -rf /opt/codechecker-${CODE_CHECKER_VERSION}.tar.gz && mv /opt/codechecker-${CODE_CHECKER_VERSION} /opt/codechecker
+    rm -rf /opt/codechecker-${CODE_CHECKER_VERSION}.tar.gz
 
-ENV PATH="${PATH}:/opt/codechecker/build/CodeChecker/bin"
+ENV PATH="${PATH}:/opt/codechecker-${CODE_CHECKER_VERSION}/build/CodeChecker/bin"
 
 WORKDIR /app
 
