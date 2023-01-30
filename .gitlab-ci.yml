@@ -73,7 +73,8 @@ build_linux:
 build_linux_debug:
   stage: build
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1 --log-context && cmake --build $BUILD_PATH
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1
+      -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --log-context && cmake --build $BUILD_PATH
   artifacts:
     paths:
       - $BUILD_PATH
@@ -121,7 +122,7 @@ code_quality:
     reports:
       codequality: gl-code-quality-report.json
   needs:
-    - clang_check
+    - build_linux_debug
 
 # This job is responsible for building and running all tests. It uses the CTest framework to run the
 # tests and generates a JUnit-style report for GitLab to display the test results. It also captures any output from
