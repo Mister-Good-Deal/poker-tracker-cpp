@@ -23,16 +23,21 @@ default:
       - $BUILD_PATH
 
 include:
-  - template: Code-Quality.gitlab-ci.yml
   - template: Jobs/Container-Scanning.gitlab-ci.yml
 
 # Scan docker images for vulnebarilities if Dockerfiles changed or on demand with commit message containing "/docker-scan"
+# @todo only scan one image, maybe useless ?
 container_scanning:
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /\/docker\-scan/
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes:
         - docker/Dockerfile*
+  variables:
+    CS_IMAGE: "registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-gcc"
+    CS_DISABLE_DEPENDENCY_LIST: "true"
+    CS_DISABLE_LANGUAGE_VULNERABILITY_SCAN: "false"
+    CS_DOCKERFILE_PATH: "docker/Dockerfile-builder-linux-gcc"
 
 # This job runs the clang-check tool to analyze the source code and generates a report in clang-check-report.plist
 clang_check:
@@ -121,10 +126,8 @@ clang_format:
 code_quality:
   stage: test
   script:
-    # @fixme the job shell interpreter is /bin/sh and does not found codechecker in PATH while runner shell is bash
-    - export CodeChecker=/opt/codechecker/build/CodeChecker/bin/CodeChecker
-    - $CodeChecker analyze --ctu -o $PROJECT_PATH/code_checker_reports $BUILD_PATH/compile_commands.json
-    - $CodeChecker parse -e codeclimate $PROJECT_PATH/code_checker_reports > gl-code-quality-report.json
+    - CodeChecker analyze --ctu -o $PROJECT_PATH/code_checker_reports $BUILD_PATH/compile_commands.json
+    - CodeChecker parse -e codeclimate $PROJECT_PATH/code_checker_reports > gl-code-quality-report.json
   artifacts:
     reports:
       codequality: code_checker_reports/gl-code-quality-report.json
