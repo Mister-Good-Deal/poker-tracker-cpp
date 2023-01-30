@@ -15,5 +15,9 @@ docker run --rm -it \
     --docker-privileged=true \
     --access-level "not_protected" \
     --locked=false \
+    --builds-dir "/tmp/builds" \
+    --docker-volumes "/cache" \
+    --docker-volumes "/tmp/builds:/tmp/builds" \
+    --docker-volumes "/var/run/docker.sock:/var/run/docker.sock" \
     --registration-token "bqbyyxhqo_WkNWxPHU-N" \
     --non-interactive
