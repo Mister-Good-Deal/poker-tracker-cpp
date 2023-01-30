@@ -2,11 +2,9 @@
 
 # Register the runner
 docker run --rm -it \
-  -v config:/etc/gitlab-runner \
+  -v /home/rom1/Projects/poker-bot/docker/gitlab-runner/config/host:/etc/gitlab-runner \
   gitlab/gitlab-runner:latest register \
-    --non-interactive \
     --url "https://gitlab.laneuville.me/" \
-    --registration-token "bqbyyxhqo_WkNWxPHU-N" \
     --executor "docker" \
     --shell "bash" \
     --docker-image alpine:latest \
@@ -15,5 +13,7 @@ docker run --rm -it \
     --tag-list "runner,host" \
     --clone-url "https://gitlab.laneuville.me/" \
     --docker-privileged=true \
+    --access-level "not_protected" \
     --locked=false \
-    --access-level "not_protected"
+    --registration-token "bqbyyxhqo_WkNWxPHU-N" \
+    --non-interactive

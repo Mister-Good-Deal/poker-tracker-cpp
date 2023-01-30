@@ -79,3 +79,11 @@ services:
     volumes:
       - .:/app
     entrypoint: docker/docker-entrypoint-dev.sh
+
+  ci:
+    image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-clang-ci:latest
+    container_name: "Linux_GCC_and_Clang_ci_env"
+    tty: true
+    stdin_open: true
+    volumes:
+      - .:/app
