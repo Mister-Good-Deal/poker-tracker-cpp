@@ -8,6 +8,7 @@ docker run --rm -it \
     --url "https://gitlab.laneuville.me/" \
     --registration-token "bqbyyxhqo_WkNWxPHU-N" \
     --executor "docker" \
+    --shell "bash" \
     --docker-image alpine:latest \
     --description "Host docker-runner" \
     --maintenance-note "Host docker-runner launched from docker host machine" \
