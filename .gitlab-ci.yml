@@ -126,11 +126,11 @@ clang_format:
 code_quality:
   stage: test
   script:
-    - CodeChecker analyze --ctu -o $PROJECT_PATH/code_checker_reports $BUILD_PATH/compile_commands.json
-    - CodeChecker parse -e codeclimate $PROJECT_PATH/code_checker_reports > gl-code-quality-report.json
+    - CodeChecker analyze --ctu -o $BUILD_PATH/code_checker_reports $BUILD_PATH/compile_commands.json
+    - CodeChecker parse -e codeclimate $BUILD_PATH/code_checker_reports > $PROJECT_PATH/gl-code-quality-report.json
   artifacts:
     reports:
-      codequality: code_checker_reports/gl-code-quality-report.json
+      codequality: gl-code-quality-report.json
   needs:
     - clang_check
 
