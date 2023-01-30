@@ -121,8 +121,10 @@ clang_format:
 code_quality:
   stage: test
   script:
-    - CodeChecker analyze --ctu -o $PROJECT_PATH/code_checker_reports $BUILD_PATH/compile_commands.json
-    - CodeChecker parse -e codeclimate $PROJECT_PATH/code_checker_reports > gl-code-quality-report.json
+    # @fixme the job shell interpreter is /bin/sh and does not found codechecker in PATH while runner shell is bash
+    - export CodeChecker=/opt/codechecker/build/CodeChecker/bin/CodeChecker
+    - $CodeChecker analyze --ctu -o $PROJECT_PATH/code_checker_reports $BUILD_PATH/compile_commands.json
+    - $CodeChecker parse -e codeclimate $PROJECT_PATH/code_checker_reports > gl-code-quality-report.json
   artifacts:
     reports:
       codequality: code_checker_reports/gl-code-quality-report.json
