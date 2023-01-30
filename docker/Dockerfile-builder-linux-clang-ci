@@ -1,0 +1,27 @@
+ARG CI_REGISTRY
+ARG CI_REGISTRY_BUILDER_ROOT_IMAGE
+
+FROM ${CI_REGISTRY}/${CI_REGISTRY_BUILDER_ROOT_IMAGE}:latest
+
+ARG GOOGLETEST_VERSION
+ARG CODE_CHECKER_VERSION
+ARG MAX_CPU_CORES
+
+# Install googleTest with the given GOOGLETEST_VERSION version from https://github.com/google/googletest
+RUN wget https://github.com/google/googletest/archive/refs/tags/v${GOOGLETEST_VERSION}.tar.gz \
+    -q -O /tmp/googletest-${GOOGLETEST_VERSION}.tar.gz && \
+    cd /tmp && tar -xvzf googletest-${GOOGLETEST_VERSION}.tar.gz && cd googletest-${GOOGLETEST_VERSION} && \
+    cmake . && make -j ${MAX_CPU_CORES} && make install && \
+    rm -rf /tmp/googletest-${GOOGLETEST_VERSION}.tar.gz /tmp/googletest-${GOOGLETEST_VERSION}
+
+#https://github.com/Ericsson/codechecker/archive/refs/tags/v6.21.0.tar.gz
+RUN apt-get install -y python3-dev python3-venv python3-setuptools && \
+    wget https://github.com/Ericsson/codechecker/archive/refs/tags/v${CODE_CHECKER_VERSION}.tar.gz \
+    -q -O /opt/codechecker-${CODE_CHECKER_VERSION}.tar.gz && \
+    cd /opt && tar -xvzf codechecker-${CODE_CHECKER_VERSION}.tar.gz && cd codechecker-${CODE_CHECKER_VERSION} && \
+    BUILD_LOGGER_64_BIT_ONLY=YES BUILD_UI_DIST=NO make standalone_package && \
+    rm -rf /opt/codechecker-${CODE_CHECKER_VERSION}.tar.gz
+
+WORKDIR /app
+
+CMD ["/bin/bash"]

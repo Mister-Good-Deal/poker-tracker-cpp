@@ -12,7 +12,7 @@ variables:
   MAX_CODE_QUALITY_ISSUE_PER_FILE: 20
 
 default:
-  image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-clang:latest
+  image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-clang-ci:latest
   tags:
     - host
     - runner
@@ -21,6 +21,9 @@ default:
     key: $CI_COMMIT_REF_SLUG
     paths:
       - $BUILD_PATH
+
+include:
+  - template: Code-Quality.gitlab-ci.yml
 
 # This job runs the clang-check tool to analyze the source code and generates a report in clang-check-report.plist
 clang_check:
