@@ -5,6 +5,7 @@ FROM ${CI_REGISTRY}/${CI_REGISTRY_BUILDER_ROOT_IMAGE}:latest
 
 ARG GOOGLETEST_VERSION
 ARG CODE_CHECKER_VERSION
+ARG CPP_CHECK_VERSION
 ARG MAX_CPU_CORES
 
 # Install googleTest with the given GOOGLETEST_VERSION version from https://github.com/google/googletest
@@ -14,13 +15,22 @@ RUN wget https://github.com/google/googletest/archive/refs/tags/v${GOOGLETEST_VE
     cmake . && make -j ${MAX_CPU_CORES} && make install && \
     rm -rf /tmp/googletest-${GOOGLETEST_VERSION}.tar.gz /tmp/googletest-${GOOGLETEST_VERSION}
 
-#https://github.com/Ericsson/codechecker/archive/refs/tags/v6.21.0.tar.gz
+# Install cpp-check with the given CPP_CHECK_VERSION version from https://github.com/danmar/cppcheck
+RUN wget https://github.com/danmar/cppcheck/archive/refs/tags/${CPP_CHECK_VERSION}.tar.gz \
+    -q -O /tmp/cppcheck-${CPP_CHECK_VERSION}.tar.gz && \
+    cd /tmp && tar -xvzf cppcheck-${CPP_CHECK_VERSION}.tar.gz && cd cppcheck-${CPP_CHECK_VERSION} && \
+    mkdir build && cd build && cmake .. && make -j ${MAX_CPU_CORES} && make install && \
+    rm -rf /tmp/cppcheck-${CPP_CHECK_VERSION}.tar.gz /tmp/cppcheck-${CPP_CHECK_VERSION}
+
+# Install codeChecker with the given CODE_CHECKER_VERSION version from https://github.com/Ericsson/codechecker
 RUN apt-get install -y python3-dev python3-venv python3-setuptools && \
     wget https://github.com/Ericsson/codechecker/archive/refs/tags/v${CODE_CHECKER_VERSION}.tar.gz \
     -q -O /opt/codechecker-${CODE_CHECKER_VERSION}.tar.gz && \
     cd /opt && tar -xvzf codechecker-${CODE_CHECKER_VERSION}.tar.gz && cd codechecker-${CODE_CHECKER_VERSION} && \
     BUILD_LOGGER_64_BIT_ONLY=YES BUILD_UI_DIST=NO make standalone_package && \
     rm -rf /opt/codechecker-${CODE_CHECKER_VERSION}.tar.gz
+
+ENV PATH="${PATH}:/opt/codechecker-${CODE_CHECKER_VERSION}/build/CodeChecker/bin"
 
 WORKDIR /app
 
