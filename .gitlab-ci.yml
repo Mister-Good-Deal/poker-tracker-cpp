@@ -22,6 +22,17 @@ default:
     paths:
       - $BUILD_PATH
 
+include:
+  - template: Jobs/Container-Scanning.gitlab-ci.yml
+
+# Scan docker images for vulnebarilities if Dockerfiles changed or on demand with commit message containing "/docker-scan"
+container_scanning:
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /\/docker\-scan/
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        - docker/Dockerfile*
+
 # This job runs the clang-check tool to analyze the source code and generates a report in clang-check-report.plist
 clang_check:
   stage: check
