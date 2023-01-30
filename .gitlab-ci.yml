@@ -110,21 +110,10 @@ clang_format:
   needs:
     - clang_check
 
-# This job is responsible for running clang-tidy on the project source files and checking for potential issues and bugs.
-# It uses the 'builder-linux-clang' image
-.clang_tidy:
-  stage: lint
-  script:
-    - clang-tidy -warnings-as-errors='*,-*,<file-number>>$MAX_CODE_QUALITY_ISSUE_PER_FILE' -p $BUILD_PATH
-      -export-fixes=clang-tidy-report.yaml $CPP_SRC_FILES --
-  artifacts:
-    reports:
-      codequality: clang-tidy-report.yaml
-  needs:
-    - clang_check
-
 code_quality:
   stage: test
+  tags:
+    - code-quality
   script:
     - CodeChecker analyze --ctu -o $BUILD_PATH/code_checker_reports $BUILD_PATH/compile_commands.json
     - CodeChecker parse -e codeclimate $BUILD_PATH/code_checker_reports > $PROJECT_PATH/gl-code-quality-report.json
