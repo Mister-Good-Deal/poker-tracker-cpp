@@ -171,5 +171,4 @@ deploy:
     - if: $CI_COMMIT_BRANCH == "main"
   needs:
     - clang_format
-    - code_quality
     - test
