@@ -2,23 +2,26 @@
 
 #include <array>
 #include <string>
+#include <utility>
 
 #include "Hand.hpp"
 
 class Player {
     public:
-        explicit Player(std::string name);
+        explicit Player(std::string name) : name(std::move(name)){};
 
         [[nodiscard]] auto getName() const -> std::string { return name; }
         [[nodiscard]] auto getHand() const -> Hand { return hand; }
         [[nodiscard]] auto getStack() const -> int32_t { return stack; }
+        [[nodiscard]] auto isEliminated() const -> bool { return eliminated; }
 
-        void setName(std::string newName) { name = newName; }
-        void setHand(const Card& firstCard, const Card& secondCard) { hand = Hand(firstCard, secondCard); }
-        void setStack(int32_t newStack) { stack = newStack; }
+        auto setHand(const Card& firstCard, const Card& secondCard) -> void { hand = Hand(firstCard, secondCard); }
+        auto setStack(int32_t newStack) -> void { stack = newStack; }
+        auto bust() -> void { eliminated = true; }
 
     private:
         std::string name;
         Hand        hand;
-        int32_t     stack = 0;
+        int32_t     stack      = 0;
+        bool        eliminated = false;
 };
