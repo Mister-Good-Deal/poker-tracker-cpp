@@ -16,7 +16,8 @@ namespace GameHandler {
 
             virtual ~Hand() = default;
 
-            auto operator=(Hand other) -> Hand&;
+            auto operator=(const Hand& other) -> Hand&;
+            auto operator=(Hand&& other) noexcept -> Hand&;
 
             auto operator==(const Hand& rhs) const -> bool;
             auto operator!=(const Hand& rhs) const -> bool;

@@ -63,17 +63,15 @@ namespace GameHandler {
             Card() : rank(Rank::UNKNOWN), suit(Suit::UNKNOWN){};
             Card(const Card& other) = default;
             Card(Card&& other) noexcept : rank(other.rank), suit(other.suit){};
-            Card(Rank rank, Suit suit) noexcept : rank(rank), suit(suit){};
+            Card(Rank rank, Suit suit) : rank(rank), suit(suit){};
 
             virtual ~Card() = default;
 
-            auto operator=(Card other) -> Card&;
+            auto operator=(const Card& other) -> Card&;
             auto operator=(Card&& other) noexcept -> Card&;
 
             auto operator==(const Card& other) const -> bool { return std::tie(rank, suit) == std::tie(other.rank, other.suit); }
             auto operator!=(const Card& other) const -> bool { return !(other == *this); }
-
-            auto swap(Card& other) -> void;
 
             [[nodiscard]] auto getRank() const -> Rank { return rank; }
             [[nodiscard]] auto getSuit() const -> Suit { return suit; }

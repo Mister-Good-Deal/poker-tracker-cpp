@@ -18,7 +18,7 @@ namespace GameHandler {
         private:
             ActionType action;
             Player     player;
-            int32_t    amount = 0;
             seconds    time;
+            int32_t    amount = 0;
     };
 }  // namespace GameHandler

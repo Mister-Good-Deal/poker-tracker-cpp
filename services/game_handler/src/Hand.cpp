@@ -3,19 +3,13 @@
 #include <algorithm>
 
 namespace GameHandler {
-    using std::abs;
-    using std::move;
-    using std::swap;
-    using std::tie;
-    using std::ranges::find;
-
-    namespace std {
-        void swap(Card& lhs, Card& rhs) { lhs.swap(rhs); }
-    }  // namespace std
+    using ::std::abs;
+    using ::std::tie;
+    using ::std::ranges::find;
 
     Hand::Hand(Hand&& other) noexcept :
-        firstCard(move(other.firstCard)), secondCard(move(other.secondCard)), suited(other.suited), broadway(other.broadway),
-        plur(other.plur), connected(other.connected) {
+        firstCard(::std::move(other.firstCard)), secondCard(::std::move(other.secondCard)), suited(other.suited),
+        broadway(other.broadway), plur(other.plur), connected(other.connected) {
         auto emptyFirstCard  = Card();
         auto emptySecondCard = Card();
 
@@ -35,22 +29,35 @@ namespace GameHandler {
         processHand();
     }
 
-    auto Hand::operator==(const Hand& rhs) const -> bool { return tie(firstCard, secondCard) == tie(rhs.firstCard, rhs.secondCard); }
-
-    auto Hand::operator!=(const Hand& rhs) const -> bool { return !(rhs == *this); }
-
-    auto Hand::operator=(Hand other) -> Hand& {
+    auto Hand::operator=(const Hand& other) -> Hand& {
         if (this != &other) {
-            std::swap(firstCard, other.firstCard);
-            std::swap(secondCard, other.secondCard);
-            swap(suited, other.suited);
-            swap(broadway, other.broadway);
-            swap(plur, other.plur);
-            swap(connected, other.connected);
+            firstCard  = other.firstCard;
+            secondCard = other.secondCard;
+            suited     = other.suited;
+            broadway   = other.broadway;
+            plur       = other.plur;
+            connected  = other.connected;
         }
 
         return *this;
     }
+
+    auto Hand::operator=(Hand&& other) noexcept -> Hand& {
+        if (this != &other) {
+            firstCard  = std::move(other.firstCard);
+            secondCard = std::move(other.secondCard);
+            suited     = std::move(other.suited);
+            broadway   = std::move(other.broadway);
+            plur       = std::move(other.plur);
+            connected  = std::move(other.connected);
+        }
+
+        return *this;
+    }
+
+    auto Hand::operator==(const Hand& rhs) const -> bool { return tie(firstCard, secondCard) == tie(rhs.firstCard, rhs.secondCard); }
+
+    auto Hand::operator!=(const Hand& rhs) const -> bool { return !(rhs == *this); }
 
     auto Hand::isSuited() -> bool { return firstCard.getSuit() == secondCard.getSuit(); }
 
