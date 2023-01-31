@@ -5,10 +5,10 @@
 
 #include "Card.hpp"
 
-using Rank = Card::Rank;
-using Suit = Card::Suit;
+namespace GameHandler::Factory {
+    using Rank = Card::Rank;
+    using Suit = Card::Suit;
 
-namespace Factory {
     static const std::map<std::string, Card> CARD_PROTOTYPES = {
         // Hearts
         {"2H", Card(Rank::TWO, Suit::HEART)},
@@ -78,4 +78,4 @@ namespace Factory {
 
             static auto create(const std::string& cardName) -> Card;
     };
-}  // namespace Factory
+}  // namespace GameHandler::Factory

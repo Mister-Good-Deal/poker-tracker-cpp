@@ -1,7 +1,11 @@
 #include "CardFactory.hpp"
 #include "gtest/gtest.h"
 
-using Factory::CardFactory;
+using GameHandler::Card;
+using GameHandler::Factory::CardFactory;
+
+using Rank = GameHandler::Card::Rank;
+using Suit = GameHandler::Card::Suit;
 
 class CardFactoryTest : public ::testing::Test {};
 

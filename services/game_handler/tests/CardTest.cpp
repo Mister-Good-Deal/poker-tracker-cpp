@@ -1,10 +1,10 @@
 #include "Card.hpp"
 #include "gtest/gtest.h"
 
-#define EXPECT_STD_STREQ(str1, str2) EXPECT_STREQ(str1.c_str(), str2.c_str())
+using GameHandler::Card;
 
-using Rank = Card::Rank;
-using Suit = Card::Suit;
+using Rank = GameHandler::Card::Rank;
+using Suit = GameHandler::Card::Suit;
 
 class CardTest : public ::testing::Test {};
 

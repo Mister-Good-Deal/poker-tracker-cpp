@@ -13,9 +13,11 @@ add_library(
     poker_game
     src/Card.cpp
     src/CardFactory.cpp
+    src/Game.cpp
     src/Hand.cpp
     src/Player.cpp
     src/Round.cpp
+    src/RoundAction.cpp
 )
 
 target_include_directories(poker_game PUBLIC include src)

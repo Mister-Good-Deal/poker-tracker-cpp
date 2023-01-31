@@ -12,10 +12,9 @@
             exception_type);                                              \
     } while (0)
 
-using Factory::CardFactory;
-
-using Rank = Card::Rank;
-using Suit = Card::Suit;
+using GameHandler::Card;
+using GameHandler::Hand;
+using GameHandler::Factory::CardFactory;
 
 const std::function<Card(const std::string&)> card = CardFactory::create;
 

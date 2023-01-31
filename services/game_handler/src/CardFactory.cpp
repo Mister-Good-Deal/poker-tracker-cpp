@@ -2,10 +2,7 @@
 
 #include <stdexcept>
 
-using Rank = Card::Rank;
-using Suit = Card::Suit;
-
-namespace Factory {
+namespace GameHandler::Factory {
     auto CardFactory::create(const std::string& shortCardName) -> Card {
         if (!CARD_PROTOTYPES.contains(shortCardName)) {
             throw invalid_card("Invalid short card name (" + shortCardName + ")");
@@ -13,4 +10,4 @@ namespace Factory {
 
         return CARD_PROTOTYPES.at(shortCardName);
     }
-}  // namespace Factory
+}  // namespace GameHandler::Factory
