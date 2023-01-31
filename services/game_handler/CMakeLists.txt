@@ -10,7 +10,7 @@ find_package(OpenCV REQUIRED)
 find_package(SDL2 REQUIRED)
 
 add_library(
-    poker_game
+    poker_hander
     src/Card.cpp
     src/CardFactory.cpp
     src/Game.cpp
@@ -20,10 +20,10 @@ add_library(
     src/RoundAction.cpp
 )
 
-target_include_directories(poker_game PUBLIC include src)
+target_include_directories(poker_hander PUBLIC include src)
 
 target_link_libraries(
-    poker_game
+    poker_hander
     ${OpenCV_LIBS}
     ${SDL2_LIBRARIES}
 )

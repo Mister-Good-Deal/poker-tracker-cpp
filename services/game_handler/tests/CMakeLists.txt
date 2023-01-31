@@ -6,7 +6,7 @@ function(add_class_test class_name)
 
     add_executable(${target_name} ${test_src_file})
 
-    target_link_libraries(${target_name} poker_game GTest::Main GTest::gtest GTest::gmock)
+    target_link_libraries(${target_name} poker_hander GTest::Main GTest::gtest GTest::gmock)
     target_include_directories(${target_name} PRIVATE ../include)
     gtest_add_tests(TARGET ${target_name} SOURCES ${test_src_file} TEST_LIST testsList)
     #  WORKING_DIRECTORY ${CTEST_BINARY_DIRECTORY}
