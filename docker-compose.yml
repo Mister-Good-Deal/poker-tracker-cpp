@@ -33,7 +33,21 @@ services:
         - CI_REGISTRY_BUILDER_ROOT_IMAGE=${REGISTRY_REPO_PATH}/builder-linux-clang
         - GDB_VERSION=${GDB_VERSION}
         - GOOGLETEST_VERSION=${GOOGLETEST_VERSION}
+        - MAX_CPU_CORES=${MAX_CPU_CORES}
     image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-clang-dev:latest
+
+  builder-linux-clang-ci:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile-builder-linux-clang-ci
+      args:
+        - CI_REGISTRY=${REGISTRY_HOST}
+        - CI_REGISTRY_BUILDER_ROOT_IMAGE=${REGISTRY_REPO_PATH}/builder-linux-clang
+        - GOOGLETEST_VERSION=${GOOGLETEST_VERSION}
+        - CPP_CHECK_VERSION=${CPP_CHECK_VERSION}
+        - CODE_CHECKER_VERSION=${CODE_CHECKER_VERSION}
+        - MAX_CPU_CORES=${MAX_CPU_CORES}
+    image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-clang-ci:latest
 
   builder-windows-mingw:
     build:
@@ -65,3 +79,11 @@ services:
     volumes:
       - .:/app
     entrypoint: docker/docker-entrypoint-dev.sh
+
+  ci:
+    image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-clang-ci:latest
+    container_name: "Linux_GCC_and_Clang_ci_env"
+    tty: true
+    stdin_open: true
+    volumes:
+      - .:/app

@@ -12,7 +12,7 @@ variables:
   MAX_CODE_QUALITY_ISSUE_PER_FILE: 20
 
 default:
-  image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-clang:latest
+  image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-clang-ci:latest
   tags:
     - host
     - runner
@@ -21,6 +21,22 @@ default:
     key: $CI_COMMIT_REF_SLUG
     paths:
       - $BUILD_PATH
+
+include:
+  - template: Jobs/Container-Scanning.gitlab-ci.yml
+
+# Scan docker images for vulnebarilities if Dockerfiles changed or on demand with commit message containing "/docker-scan"
+# @todo only scan one image, maybe useless ?
+container_scanning:
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /\/docker\-scan/
+      changes:
+        - docker/Dockerfile*
+  variables:
+    CS_IMAGE: "registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-gcc"
+    CS_DISABLE_DEPENDENCY_LIST: "true"
+    CS_DISABLE_LANGUAGE_VULNERABILITY_SCAN: "false"
+    CS_DOCKERFILE_PATH: "docker/Dockerfile-builder-linux-gcc"
 
 # This job runs the clang-check tool to analyze the source code and generates a report in clang-check-report.plist
 clang_check:
@@ -56,7 +72,8 @@ build_linux:
 build_linux_debug:
   stage: build
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1 --log-context && cmake --build $BUILD_PATH
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1
+      -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --log-context && cmake --build $BUILD_PATH
   artifacts:
     paths:
       - $BUILD_PATH
@@ -93,18 +110,24 @@ clang_format:
   needs:
     - clang_check
 
-# This job is responsible for running clang-tidy on the project source files and checking for potential issues and bugs.
-# It uses the 'builder-linux-clang' image
-clang_tidy:
-  stage: lint
+code_quality:
+  stage: test
+  tags:
+    - code-quality
   script:
-    - clang-tidy -warnings-as-errors='*,-*,<file-number>>$MAX_CODE_QUALITY_ISSUE_PER_FILE' -p $BUILD_PATH
-      -export-fixes=clang-tidy-report.yaml $CPP_SRC_FILES --
+    - CodeChecker analyze $BUILD_PATH/compile_commands.json -o $BUILD_PATH/code_checker_report -j 8 --ctu --tidy-config $PROJECT_PATH/.clang-tidy
+    - set +e
+    - CodeChecker parse $BUILD_PATH/code_checker_report -e html -o $BUILD_PATH/code_checker_html_report --trim-path-prefix $PROJECT_PATH
+    - CodeChecker parse $BUILD_PATH/code_checker_report -e codeclimate -o $BUILD_PATH/gl-code-quality-report.json --trim-path-prefix $PROJECT_PATH
+    - exit 0
   artifacts:
     reports:
-      codequality: clang-tidy-report.yaml
+      codequality: $BUILD_PATH/gl-code-quality-report.json
+    expose_as: 'code quality HTML report'
+    paths:
+      - $BUILD_PATH/code_checker_html_report
   needs:
-    - clang_check
+    - build_linux_debug
 
 # This job is responsible for building and running all tests. It uses the CTest framework to run the
 # tests and generates a JUnit-style report for GitLab to display the test results. It also captures any output from
@@ -140,5 +163,4 @@ deploy:
     - if: $CI_COMMIT_BRANCH == "main"
   needs:
     - clang_format
-    - clang_tidy
     - test
