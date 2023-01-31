@@ -3,11 +3,6 @@
 using Rank = Card::Rank;
 using Suit = Card::Suit;
 
-Card::Card(Card&& other) : rank(std::move(other.rank)), suit(std::move(other.suit)) {
-    other.rank = Rank::UNKNOWN;
-    other.suit = Suit::UNKNOWN;
-}
-
 auto Card::operator=(Card other) -> Card& {
     std::swap(rank, other.rank);
     std::swap(suit, other.suit);
@@ -15,9 +10,9 @@ auto Card::operator=(Card other) -> Card& {
     return *this;
 }
 
-auto Card::operator=(Card&& other) -> Card& {
-    rank = std::move(other.rank);
-    suit = std::move(other.suit);
+auto Card::operator=(Card&& other) noexcept -> Card& {
+    rank = other.rank;
+    suit = other.suit;
 
     return *this;
 }

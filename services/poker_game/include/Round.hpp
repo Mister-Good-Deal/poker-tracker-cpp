@@ -8,6 +8,7 @@
 class Player;
 
 class Round {
+    public:
         enum class Street : int8_t {
             PREFLOP = 0,
             FLOP,
@@ -17,9 +18,9 @@ class Round {
         };
 
     public:
-        Round();
+        Round() = default;
 
-        [[nodiscard]] auto getPot() const -> int32_t { return Pot; }
+        [[nodiscard]] auto getPot() const -> int32_t { return pot; }
 
         void call(Player& player);
         void bet(Player& player, int32_t amount);
@@ -29,7 +30,7 @@ class Round {
     private:
         std::array<std::vector<std::string>, 5> playersActions;
         std::map<Player*, int32_t>              playersBets;
-        int32_t                                 Pot;
-        Street                                  currentStreet;
-        int32_t                                 callAmount;
+        int32_t                                 pot{0};
+        Street                                  currentStreet{Street::PREFLOP};
+        int32_t                                 callAmount{0};
 };

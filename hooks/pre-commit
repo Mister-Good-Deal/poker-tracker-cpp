@@ -51,8 +51,6 @@ CPP_FILE_EXTENSIONS="cpp hpp"
 # dump staged filenames into FILES array
 FILES=$(git diff --cached "${against}" --name-only --diff-filter=ACM)
 
-#echo "FILES = $FILES"
-
 for FILE in $FILES; do
   FILE_NAME="$(basename -- "${FILE}")"
   FILE_EXTENSION="${FILE#*.}"
