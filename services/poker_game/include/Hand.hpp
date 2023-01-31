@@ -9,13 +9,16 @@ using Rank = Card::Rank;
 class Hand {
     public:
         Hand() : firstCard(Card()), secondCard(Card()){};
+        Hand(const Hand& other) = default;
+        Hand(Hand&& other) noexcept;
         Hand(const Card& firstCard, const Card& secondCard);
+
+        virtual ~Hand() = default;
+
+        auto operator=(Hand other) -> Hand&;
 
         auto operator==(const Hand& rhs) const -> bool;
         auto operator!=(const Hand& rhs) const -> bool;
-        auto operator=(Hand other) -> Hand&;
-
-        const std::vector<Rank> BROADWAY = {Rank::TEN, Rank::JACK, Rank::QUEEN, Rank::KING, Rank::ACE};
 
         class invalid_hand : public std::runtime_error {
             public:
@@ -25,10 +28,10 @@ class Hand {
         auto cards() -> std::tuple<Card, Card> { return {firstCard, secondCard}; }
 
     protected:
-        virtual auto isSuited() -> bool;
-        virtual auto isBroadway() -> bool;
-        virtual auto isPlur() -> bool;
-        virtual auto isConnected() -> bool;
+        auto isSuited() -> bool;
+        auto isBroadway() -> bool;
+        auto isPlur() -> bool;
+        auto isConnected() -> bool;
 
     private:
         Card firstCard;
@@ -37,4 +40,8 @@ class Hand {
         bool broadway  = false;
         bool plur      = false;
         bool connected = false;
+
+        auto processHand() -> void;
+
+        const std::vector<Rank> BROADWAY = {Rank::TEN, Rank::JACK, Rank::QUEEN, Rank::KING, Rank::ACE};
 };
