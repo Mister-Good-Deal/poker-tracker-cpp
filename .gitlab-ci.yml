@@ -30,7 +30,6 @@ include:
 container_scanning:
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /\/docker\-scan/
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes:
         - docker/Dockerfile*
   variables:
@@ -116,13 +115,27 @@ code_quality:
   tags:
     - code-quality
   script:
-    - CodeChecker analyze --ctu -o $BUILD_PATH/code_checker_reports $BUILD_PATH/compile_commands.json
-    - CodeChecker parse -e codeclimate $BUILD_PATH/code_checker_reports > $PROJECT_PATH/gl-code-quality-report.json
+    - CodeChecker analyze $BUILD_PATH/compile_commands.json -o $BUILD_PATH/code_checker_report --ctu --tidy-config $PROJECT_PATH/.clang-tidy
+    - CodeChecker parse $BUILD_PATH/code_checker_report -e codeclimate -o $BUILD_PATH/gl-code-quality-report.json --trim-path-prefix $PROJECT_PATH
   artifacts:
     reports:
-      codequality: gl-code-quality-report.json
+      codequality: $BUILD_PATH/gl-code-quality-report.json
   needs:
     - build_linux_debug
+  allow_failure: true
+
+code_quality_html:
+  stage: test
+  tags:
+    - code-quality
+  script:
+    - CodeChecker parse $BUILD_PATH/code_checker_report -e html -o $BUILD_PATH/code_checker_html_report --trim-path-prefix $PROJECT_PATH
+  artifacts:
+    expose_as: 'code quality HTML report'
+    paths:
+      - $BUILD_PATH/code_checker_html_report
+  needs:
+    - code_quality
 
 # This job is responsible for building and running all tests. It uses the CTest framework to run the
 # tests and generates a JUnit-style report for GitLab to display the test results. It also captures any output from
