@@ -110,32 +110,24 @@ clang_format:
   needs:
     - clang_check
 
-code_quality_html:
+code_quality:
   stage: test
   tags:
     - code-quality
   script:
-    - CodeChecker analyze $BUILD_PATH/compile_commands.json -o $BUILD_PATH/code_checker_report --ctu --tidy-config $PROJECT_PATH/.clang-tidy
+    - CodeChecker analyze $BUILD_PATH/compile_commands.json -o $BUILD_PATH/code_checker_report -j 8 --ctu --tidy-config $PROJECT_PATH/.clang-tidy
+    - set +e
     - CodeChecker parse $BUILD_PATH/code_checker_report -e html -o $BUILD_PATH/code_checker_html_report --trim-path-prefix $PROJECT_PATH
+    - CodeChecker parse $BUILD_PATH/code_checker_report -e codeclimate -o $BUILD_PATH/gl-code-quality-report.json --trim-path-prefix $PROJECT_PATH
+    - exit 0
   artifacts:
+    reports:
+      codequality: $BUILD_PATH/gl-code-quality-report.json
     expose_as: 'code quality HTML report'
     paths:
       - $BUILD_PATH/code_checker_html_report
   needs:
     - build_linux_debug
-
-code_quality_codeclimate:
-  stage: test
-  tags:
-    - code-quality
-  script:
-    - CodeChecker parse $BUILD_PATH/code_checker_report -e codeclimate -o $BUILD_PATH/gl-code-quality-report.json --trim-path-prefix $PROJECT_PATH
-  artifacts:
-    reports:
-      codequality: $BUILD_PATH/gl-code-quality-report.json
-  needs:
-    - code_quality_html
-  allow_failure: true
 
 # This job is responsible for building and running all tests. It uses the CTest framework to run the
 # tests and generates a JUnit-style report for GitLab to display the test results. It also captures any output from
