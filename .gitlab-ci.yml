@@ -138,11 +138,11 @@ test:
   script:
     - cmake -S $PROJECT_PATH -B $BUILD_PATH -DBUILD_TESTS=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH
     # @fixme Need to required tests for all subproject with --test-dir
-    - ctest --test-dir $BUILD_PATH/services/poker_game --output-on-failure --extra-verbose -j $(nproc) --output-junit poker_game_ctest.xml --no-compress-output
+    - ctest --test-dir $BUILD_PATH/services/poker_hander --output-on-failure --extra-verbose -j $(nproc) --output-junit poker_hander_ctest.xml --no-compress-output
     - if [ -e Testing/Temporary/LastTest.log ]; then cat Testing/Temporary/LastTest.log; fi
   artifacts:
     reports:
-      junit: $BUILD_PATH/services/poker_game/poker_game_ctest.xml
+      junit: $BUILD_PATH/services/poker_hander/poker_handler_ctest.xml
   needs:
     - clang_check
 
