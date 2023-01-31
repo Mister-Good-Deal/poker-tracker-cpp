@@ -28,10 +28,10 @@ class Hand {
         auto cards() -> std::tuple<Card, Card> { return {firstCard, secondCard}; }
 
     protected:
-        virtual auto isSuited() -> bool;
-        virtual auto isBroadway() -> bool;
-        virtual auto isPlur() -> bool;
-        virtual auto isConnected() -> bool;
+        auto isSuited() -> bool;
+        auto isBroadway() -> bool;
+        auto isPlur() -> bool;
+        auto isConnected() -> bool;
 
     private:
         Card firstCard;
