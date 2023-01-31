@@ -24,16 +24,12 @@ Hand::Hand(Hand&& other) noexcept
     other.connected  = false;
 }
 
-Hand::Hand(const Card& firstCard, const Card& secondCard)
-    : firstCard(firstCard)
-    , secondCard(secondCard)
-    , suited(isSuited())
-    , broadway(isBroadway())
-    , plur(isPlur())
-    , connected(isConnected()) {
+Hand::Hand(const Card& firstCard, const Card& secondCard) : firstCard(firstCard), secondCard(secondCard) {
     if (firstCard == secondCard) {
         throw invalid_hand("The two given cards are the same (" + firstCard.getShortName() + ")");
     }
+
+    processHand();
 }
 
 auto Hand::operator==(const Hand& rhs) const -> bool {
@@ -69,6 +65,13 @@ auto Hand::isPlur() -> bool {
 
 auto Hand::isConnected() -> bool {
     return std::abs(static_cast<int16_t>(firstCard.getRank()) - static_cast<int16_t>(secondCard.getRank())) <= 1
-        || firstCard.getRank() == Rank::ACE && secondCard.getRank() == Rank::TWO
-        || secondCard.getRank() == Rank::ACE && firstCard.getRank() == Rank::TWO;
+        || (firstCard.getRank() == Rank::ACE && secondCard.getRank() == Rank::TWO)
+        || (secondCard.getRank() == Rank::ACE && firstCard.getRank() == Rank::TWO);
+}
+
+auto Hand::processHand() -> void {
+    suited    = isSuited();
+    broadway  = isBroadway();
+    plur      = isPlur();
+    connected = isConnected();
 }

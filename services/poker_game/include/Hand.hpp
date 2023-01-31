@@ -41,5 +41,7 @@ class Hand {
         bool plur      = false;
         bool connected = false;
 
+        auto processHand() -> void;
+
         const std::vector<Rank> BROADWAY = {Rank::TEN, Rank::JACK, Rank::QUEEN, Rank::KING, Rank::ACE};
 };
