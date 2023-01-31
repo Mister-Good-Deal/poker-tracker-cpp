@@ -3,7 +3,7 @@
 using Rank = Card::Rank;
 using Suit = Card::Suit;
 
-Card::Card(Card&& other) : rank(std::move(other.rank)), suit(std::move(other.suit)) {
+Card::Card(Card&& other) noexcept : rank(std::move(other.rank)), suit(std::move(other.suit)) {
     other.rank = Rank::UNKNOWN;
     other.suit = Suit::UNKNOWN;
 }

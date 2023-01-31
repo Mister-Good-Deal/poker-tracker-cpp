@@ -6,6 +6,24 @@ namespace std {
     void swap(Card& lhs, Card& rhs) { lhs.swap(rhs); }
 }  // namespace std
 
+Hand::Hand(Hand&& other) noexcept
+    : firstCard(std::move(other.firstCard))
+    , secondCard(std::move(other.secondCard))
+    , suited(other.suited)
+    , broadway(other.broadway)
+    , plur(other.plur)
+    , connected(other.connected) {
+    auto emptyFirstCard  = Card();
+    auto emptySecondCard = Card();
+
+    other.firstCard  = emptyFirstCard;
+    other.secondCard = emptySecondCard;
+    other.suited     = false;
+    other.broadway   = false;
+    other.plur       = false;
+    other.connected  = false;
+}
+
 Hand::Hand(const Card& firstCard, const Card& secondCard)
     : firstCard(firstCard)
     , secondCard(secondCard)

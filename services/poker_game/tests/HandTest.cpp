@@ -17,11 +17,12 @@ using Factory::CardFactory;
 using Rank = Card::Rank;
 using Suit = Card::Suit;
 
-std::function<Card(const std::string&)> card = CardFactory::create;
+const std::function<Card(const std::string&)> card = CardFactory::create;
 
 class MockHand : public Hand {
     public:
         MockHand(const Card& firstCard, const Card& secondCard) : Hand(firstCard, secondCard) {}
+        virtual ~MockHand() = default;
         // Proxy
         auto isSuited() -> bool override { return (*this).Hand::isSuited(); }
         auto isBroadway() -> bool override { return (*this).Hand::isBroadway(); }

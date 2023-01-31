@@ -1,5 +1,5 @@
-Checks: '-*,clang-analyzer-*,cppcoreguidelines-*,google-*,modernize-*'
-WarningsAsErrors: ''
+Checks: '-*,clang-analyzer-*,cppcoreguidelines-*,google-*,modernize-*,-cppcoreguidelines-macro-usage'
+WarningsAsErrors: '-*'
 HeaderFilterRegex: '.*'
 AnalyzeTemporaryDtors: false
 FormatStyle: 'file'

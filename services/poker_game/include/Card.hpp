@@ -82,8 +82,8 @@ class Card {
     public:
         Card() : rank(Rank::UNKNOWN), suit(Suit::UNKNOWN){};
         Card(const Card& other) = default;
-        Card(Card&& other);
-        Card(Rank rank, Suit suit) : rank(rank), suit(suit){};
+        Card(Card&& other) noexcept;
+        Card(Rank rank, Suit suit) noexcept : rank(rank), suit(suit){};
 
         virtual ~Card() = default;
 
