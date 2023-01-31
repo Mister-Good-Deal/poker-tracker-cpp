@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(poker_game)
+project(game_hander)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -10,7 +10,7 @@ find_package(OpenCV REQUIRED)
 find_package(SDL2 REQUIRED)
 
 add_library(
-    poker_hander
+    game_hander
     src/Card.cpp
     src/CardFactory.cpp
     src/Game.cpp
@@ -20,10 +20,10 @@ add_library(
     src/RoundAction.cpp
 )
 
-target_include_directories(poker_hander PUBLIC include src)
+target_include_directories(game_hander PUBLIC include src)
 
 target_link_libraries(
-    poker_hander
+    game_hander
     ${OpenCV_LIBS}
     ${SDL2_LIBRARIES}
 )
