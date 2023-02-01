@@ -9,9 +9,9 @@ namespace GameHandler {
 
     class Hand {
         public:
-            Hand() : firstCard(Card()), secondCard(Card()){};
+            Hand()                  = default;
             Hand(const Hand& other) = default;
-            Hand(Hand&& other) noexcept;
+            Hand(Hand&& other) noexcept { *this = std::move(other); };
             Hand(const Card& firstCard, const Card& secondCard);
 
             virtual ~Hand() = default;

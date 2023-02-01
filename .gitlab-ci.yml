@@ -125,6 +125,7 @@ code_quality:
     reports:
       codequality: $BUILD_PATH/gl-code-quality-report.json
     expose_as: 'code quality HTML report'
+    name: code_quality_html_${CI_COMMIT_SHA}
     paths:
       - $BUILD_PATH/code_checker_html_report
   needs:

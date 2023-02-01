@@ -1,12 +1,32 @@
 #include "Round.hpp"
 
-#include "Player.hpp"
-
 namespace GameHandler {
     using std::chrono::duration_cast;
     using std::chrono::seconds;
 
     using Action = RoundAction::ActionType;
+
+    auto Round::operator=(const Round& other) -> Round& {
+        if (this != &other) {
+            actions        = other.actions;
+            pot            = other.pot;
+            currentStreet  = other.currentStreet;
+            lastActionTime = other.lastActionTime;
+        }
+
+        return *this;
+    }
+
+    auto Round::operator=(Round&& other) noexcept -> Round& {
+        if (this != &other) {
+            actions        = std::move(other.actions);
+            pot            = other.pot;
+            currentStreet  = other.currentStreet;
+            lastActionTime = other.lastActionTime;
+        }
+
+        return *this;
+    }
 
     auto Round::endStreet() -> void {
         switch (currentStreet) {
@@ -55,5 +75,4 @@ namespace GameHandler {
 
         lastActionTime = now;
     }
-
 }  // namespace GameHandler

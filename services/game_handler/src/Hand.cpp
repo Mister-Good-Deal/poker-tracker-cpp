@@ -3,23 +3,8 @@
 #include <algorithm>
 
 namespace GameHandler {
-    using ::std::abs;
     using ::std::tie;
     using ::std::ranges::find;
-
-    Hand::Hand(Hand&& other) noexcept :
-        firstCard(::std::move(other.firstCard)), secondCard(::std::move(other.secondCard)), suited(other.suited),
-        broadway(other.broadway), plur(other.plur), connected(other.connected) {
-        auto emptyFirstCard  = Card();
-        auto emptySecondCard = Card();
-
-        other.firstCard  = emptyFirstCard;
-        other.secondCard = emptySecondCard;
-        other.suited     = false;
-        other.broadway   = false;
-        other.plur       = false;
-        other.connected  = false;
-    }
 
     Hand::Hand(const Card& firstCard, const Card& secondCard) : firstCard(firstCard), secondCard(secondCard) {
         if (firstCard == secondCard) {
@@ -46,10 +31,10 @@ namespace GameHandler {
         if (this != &other) {
             firstCard  = std::move(other.firstCard);
             secondCard = std::move(other.secondCard);
-            suited     = std::move(other.suited);
-            broadway   = std::move(other.broadway);
-            plur       = std::move(other.plur);
-            connected  = std::move(other.connected);
+            suited     = other.suited;
+            broadway   = other.broadway;
+            plur       = other.plur;
+            connected  = other.connected;
         }
 
         return *this;
@@ -70,7 +55,7 @@ namespace GameHandler {
     }
 
     auto Hand::isConnected() -> bool {
-        return abs(static_cast<int16_t>(firstCard.getRank()) - static_cast<int16_t>(secondCard.getRank())) <= 1
+        return std::abs(static_cast<int16_t>(firstCard.getRank()) - static_cast<int16_t>(secondCard.getRank())) <= 1
             || (firstCard.getRank() == Rank::ACE && secondCard.getRank() == Rank::TWO)
             || (secondCard.getRank() == Rank::ACE && firstCard.getRank() == Rank::TWO);
     }
