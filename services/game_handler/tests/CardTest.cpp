@@ -132,3 +132,9 @@ TEST(CardTest, CardsShortNameShouldBeCorrect) {
     EXPECT_STREQ(Card(Rank::KING, Suit::SPADE).getShortName().c_str(), "KS");
     EXPECT_STREQ(Card(Rank::ACE, Suit::SPADE).getShortName().c_str(), "AS");
 }
+
+TEST(CardTest, CardJsonRepresentationShouldBeCorrent) {
+    auto TS = Card(Rank::TEN, Suit::SPADE);
+
+    EXPECT_STREQ(Card(Rank::TEN, Suit::SPADE).toJsonString().c_str(), R"({"TS"})");
+}

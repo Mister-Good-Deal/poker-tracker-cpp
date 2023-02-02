@@ -122,12 +122,12 @@ code_quality:
     - CodeChecker parse $BUILD_PATH/code_checker_report -e codeclimate -o $BUILD_PATH/gl-code-quality-report.json --trim-path-prefix $PROJECT_PATH
     - exit 0
   artifacts:
+    name: code_quality_html_${CI_COMMIT_TIMESTAMP}
+    paths:
+      - $BUILD_PATH/code_checker_html_report/
+    expose_as: 'Code quality HTML report'
     reports:
       codequality: $BUILD_PATH/gl-code-quality-report.json
-    expose_as: 'code quality HTML report'
-    name: code_quality_html_${CI_COMMIT_SHA}
-    paths:
-      - $BUILD_PATH/code_checker_html_report
   needs:
     - clang_check
 

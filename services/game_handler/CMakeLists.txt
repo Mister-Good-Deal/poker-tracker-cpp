@@ -8,6 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Required libs
 find_package(OpenCV REQUIRED)
 find_package(SDL2 REQUIRED)
+find_package(nlohmann_json REQUIRED)
 
 add_library(
     game_handler
@@ -20,10 +21,11 @@ add_library(
     src/RoundAction.cpp
 )
 
-target_include_directories(game_handler PUBLIC include src)
+target_include_directories(game_handler PUBLIC include)
 
 target_link_libraries(
     game_handler
+    PRIVATE nlohmann_json::nlohmann_json
     ${OpenCV_LIBS}
     ${SDL2_LIBRARIES}
 )

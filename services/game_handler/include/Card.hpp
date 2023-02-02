@@ -4,7 +4,11 @@
 #include <string>
 #include <tuple>
 
+#include <nlohmann/json.hpp>
+
 namespace GameHandler {
+    using json = nlohmann::json;
+
     class Card {
         public:
             enum class Rank : int8_t { TWO = 0, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING, ACE, UNKNOWN };
@@ -62,7 +66,7 @@ namespace GameHandler {
         public:
             Card() : rank(Rank::UNKNOWN), suit(Suit::UNKNOWN){};
             Card(const Card& other) = default;
-            Card(Card&& other) noexcept { *this = std::move(other); };
+            Card(Card&& other) noexcept : rank(other.rank), suit(other.suit){};
             Card(Rank rank, Suit suit) : rank(rank), suit(suit){};
 
             virtual ~Card() = default;
@@ -78,6 +82,9 @@ namespace GameHandler {
 
             [[nodiscard]] auto getFullName() const -> std::string;
             [[nodiscard]] auto getShortName() const -> std::string;
+
+            auto toJsonObject() -> json;
+            auto toJsonString() -> std::string;
 
         private:
             Rank rank;
