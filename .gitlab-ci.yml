@@ -143,7 +143,7 @@ test:
     - if [ -e Testing/Temporary/LastTest.log ]; then cat Testing/Temporary/LastTest.log; fi
   artifacts:
     reports:
-      junit: $BUILD_PATH/services/poker_hander/game_handler_ctest.xml
+      junit: $BUILD_PATH/services/game_handler/game_handler_ctest.xml
   needs:
     - clang_check
 
