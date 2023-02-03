@@ -134,7 +134,15 @@ TEST(CardTest, CardsShortNameShouldBeCorrect) {
 }
 
 TEST(CardTest, CardJsonRepresentationShouldBeCorrent) {
-    auto TS = Card(Rank::TEN, Suit::SPADE);
+    // language=json
+    auto expectedJson = R"(
+        {
+            "shortName": "TS",
+            "fullName": "Ten of Spade",
+            "rank": "Ten",
+            "suit": "Spade"
+        }
+    )"_json;
 
-    EXPECT_STREQ(Card(Rank::TEN, Suit::SPADE).toJsonString().c_str(), R"({"TS"})");
+    EXPECT_EQ(Card(Rank::TEN, Suit::SPADE).toJson(), expectedJson);
 }

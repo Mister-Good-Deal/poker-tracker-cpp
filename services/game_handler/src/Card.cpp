@@ -1,8 +1,11 @@
 #include "Card.hpp"
 
+#include <nlohmann/json.hpp>
+
 namespace GameHandler {
     using Rank = Card::Rank;
     using Suit = Card::Suit;
+    using json = nlohmann::json;
 
     auto Card::operator=(Card&& other) noexcept -> Card& {
         rank = other.rank;
@@ -12,5 +15,11 @@ namespace GameHandler {
     }
 
     auto Card::getFullName() const -> std::string { return rankToString(rank) + " of " + suitToString(suit); }
+
     auto Card::getShortName() const -> std::string { return rankToShortString(rank) + suitToString(suit)[0]; }
+
+    auto Card::toJson() -> json {
+        return {
+            {"shortName", getShortName()}, {"fullName", getFullName()}, {"rank", rankToString(rank)}, {"suit", suitToString(suit)}};
+    }
 }  // namespace GameHandler
