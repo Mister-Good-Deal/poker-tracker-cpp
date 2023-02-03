@@ -14,35 +14,38 @@
 
 using GameHandler::Card;
 using GameHandler::Hand;
+using GameHandler::invalid_hand;
 using GameHandler::Factory::CardFactory;
+using GameHandler::Factory::invalid_card;
 
 const std::function<Card(const std::string&)> card = CardFactory::create;
 
 class MockHand : public Hand {
     public:
         MockHand(const Card& firstCard, const Card& secondCard) : Hand(firstCard, secondCard) {}
-        ~MockHand() override = default;
         // Proxy
         auto isSuitedProxy() -> bool { return isSuited(); }
+        auto isAceSuitedProxy() -> bool { return isAceSuited(); }
         auto isBroadwayProxy() -> bool { return isBroadway(); }
         auto isPlurProxy() -> bool { return isPlur(); }
         auto isConnectedProxy() -> bool { return isConnected(); }
+        auto isPremiumProxy() -> bool { return isPremium(); }
 };
 
 class HandTest : public ::testing::Test {};
 
 TEST(HandTest, shouldThrowInvalidHandExceptionWhenTheTwoCardsAreTheSame) {
-    EXPECT_THROW_WITH_MESSAGE(Hand(card("JS"), card("JS")), Hand::invalid_hand, "The two given cards are the same (JS)");
-    EXPECT_THROW_WITH_MESSAGE(Hand(card("AD"), card("AD")), Hand::invalid_hand, "The two given cards are the same (AD)");
-    EXPECT_THROW_WITH_MESSAGE(Hand(card("7H"), card("7H")), Hand::invalid_hand, "The two given cards are the same (7H)");
+    EXPECT_THROW_WITH_MESSAGE(Hand(card("JS"), card("JS")), invalid_hand, "The two given cards are the same (JS)");
+    EXPECT_THROW_WITH_MESSAGE(Hand(card("AD"), card("AD")), invalid_hand, "The two given cards are the same (AD)");
+    EXPECT_THROW_WITH_MESSAGE(Hand(card("7H"), card("7H")), invalid_hand, "The two given cards are the same (7H)");
 }
 
 TEST(HandTest, shouldThrowInvalidCardExceptionWhenOneCardDoesNotExist) {
-    EXPECT_THROW_WITH_MESSAGE(Hand(card("JS"), card("SS")), CardFactory::invalid_card, "Invalid short card name (SS)");
-    EXPECT_THROW_WITH_MESSAGE(Hand(card("BD"), card("AD")), CardFactory::invalid_card, "Invalid short card name (BD)");
-    EXPECT_THROW_WITH_MESSAGE(Hand(card("7H"), card("10D")), CardFactory::invalid_card, "Invalid short card name (10D)");
-    EXPECT_THROW_WITH_MESSAGE(Hand(card("3H"), card("4G")), CardFactory::invalid_card, "Invalid short card name (4G)");
-    EXPECT_THROW_WITH_MESSAGE(Hand(card("2T"), card("4S")), CardFactory::invalid_card, "Invalid short card name (2T)");
+    EXPECT_THROW_WITH_MESSAGE(Hand(card("JS"), card("SS")), invalid_card, "Invalid short card name (SS)");
+    EXPECT_THROW_WITH_MESSAGE(Hand(card("BD"), card("AD")), invalid_card, "Invalid short card name (BD)");
+    EXPECT_THROW_WITH_MESSAGE(Hand(card("7H"), card("10D")), invalid_card, "Invalid short card name (10D)");
+    EXPECT_THROW_WITH_MESSAGE(Hand(card("3H"), card("4G")), invalid_card, "Invalid short card name (4G)");
+    EXPECT_THROW_WITH_MESSAGE(Hand(card("2T"), card("4S")), invalid_card, "Invalid short card name (2T)");
 }
 
 TEST(HandTest, isSuitedProxyShouldbeCorrect) {
@@ -55,6 +58,18 @@ TEST(HandTest, isSuitedProxyShouldbeCorrect) {
     EXPECT_FALSE(MockHand(card("KD"), card("KS")).isSuitedProxy());
     EXPECT_FALSE(MockHand(card("2H"), card("3C")).isSuitedProxy());
     EXPECT_FALSE(MockHand(card("7C"), card("7H")).isSuitedProxy());
+}
+
+TEST(HandTest, isAceSuitedProxyShouldbeCorrect) {
+    EXPECT_TRUE(MockHand(card("AS"), card("TS")).isAceSuitedProxy());
+    EXPECT_TRUE(MockHand(card("8D"), card("AD")).isAceSuitedProxy());
+    EXPECT_TRUE(MockHand(card("2H"), card("AH")).isAceSuitedProxy());
+    EXPECT_TRUE(MockHand(card("AC"), card("4C")).isAceSuitedProxy());
+
+    EXPECT_FALSE(MockHand(card("AS"), card("AD")).isAceSuitedProxy());
+    EXPECT_FALSE(MockHand(card("AD"), card("KS")).isAceSuitedProxy());
+    EXPECT_FALSE(MockHand(card("AH"), card("3C")).isAceSuitedProxy());
+    EXPECT_FALSE(MockHand(card("7C"), card("AH")).isAceSuitedProxy());
 }
 
 TEST(HandTest, isBroadwayShouldbeCorrect) {
@@ -92,4 +107,29 @@ TEST(HandTest, isConnectedShouldbeCorrect) {
     EXPECT_FALSE(MockHand(card("7D"), card("9S")).isConnectedProxy());
     EXPECT_FALSE(MockHand(card("AH"), card("3C")).isConnectedProxy());
     EXPECT_FALSE(MockHand(card("3S"), card("AH")).isConnectedProxy());
+}
+
+TEST(HandTest, isPremiumShouldbeCorrect) {
+    EXPECT_TRUE(MockHand(card("AS"), card("KS")).isPremiumProxy());
+    EXPECT_TRUE(MockHand(card("QD"), card("QS")).isPremiumProxy());
+    EXPECT_TRUE(MockHand(card("KH"), card("AS")).isPremiumProxy());
+    EXPECT_TRUE(MockHand(card("KC"), card("KH")).isPremiumProxy());
+
+    EXPECT_FALSE(MockHand(card("JS"), card("9D")).isPremiumProxy());
+    EXPECT_FALSE(MockHand(card("AD"), card("JS")).isPremiumProxy());
+    EXPECT_FALSE(MockHand(card("QC"), card("KC")).isPremiumProxy());
+    EXPECT_FALSE(MockHand(card("3S"), card("AH")).isPremiumProxy());
+}
+
+TEST(HandTest, jsonRepresentationShouldBeCorrect) {
+    // @todo
+    // language=json
+    auto expectedJson = R"(
+        {
+            "shortName": "TS",
+            "fullName": "Ten of Spade",
+            "rank": "Ten",
+            "suit": "Spade"
+        }
+    )"_json;
 }

@@ -8,14 +8,14 @@ using Suit = GameHandler::Card::Suit;
 
 class CardTest : public ::testing::Test {};
 
-TEST(CardTest, Constructor) {
+TEST(CardTest, ConstructorShouldSetRankAndSuitCorrectly) {
     Card card(Card::Rank::ACE, Card::Suit::SPADE);
 
     EXPECT_EQ(Card::Suit::SPADE, card.getSuit());
     EXPECT_EQ(Card::Rank::ACE, card.getRank());
 }
 
-TEST(CardTest, CardsFullNameShouldBeCorrect) {
+TEST(CardTest, FullNamesShouldBeCorrect) {
     // Hearts
     EXPECT_STREQ(Card(Rank::TWO, Suit::HEART).getFullName().c_str(), "Two of Heart");
     EXPECT_STREQ(Card(Rank::THREE, Suit::HEART).getFullName().c_str(), "Three of Heart");
@@ -74,7 +74,7 @@ TEST(CardTest, CardsFullNameShouldBeCorrect) {
     EXPECT_STREQ(Card(Rank::ACE, Suit::SPADE).getFullName().c_str(), "Ace of Spade");
 }
 
-TEST(CardTest, CardsShortNameShouldBeCorrect) {
+TEST(CardTest, ShortNamesShouldBeCorrect) {
     // Hearts
     EXPECT_STREQ(Card(Rank::TWO, Suit::HEART).getShortName().c_str(), "2H");
     EXPECT_STREQ(Card(Rank::THREE, Suit::HEART).getShortName().c_str(), "3H");
@@ -133,7 +133,7 @@ TEST(CardTest, CardsShortNameShouldBeCorrect) {
     EXPECT_STREQ(Card(Rank::ACE, Suit::SPADE).getShortName().c_str(), "AS");
 }
 
-TEST(CardTest, CardJsonRepresentationShouldBeCorrent) {
+TEST(CardTest, JsonRepresentationShouldBeCorrent) {
     // language=json
     auto expectedJson = R"(
         {

@@ -1,7 +1,5 @@
 #include "CardFactory.hpp"
 
-#include <stdexcept>
-
 namespace GameHandler::Factory {
     auto CardFactory::create(const std::string& shortCardName) -> Card {
         if (!CARD_PROTOTYPES.contains(shortCardName)) {

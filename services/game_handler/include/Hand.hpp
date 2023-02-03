@@ -1,11 +1,24 @@
 #pragma once
 
-#include <vector>
-
 #include "Card.hpp"
 
 namespace GameHandler {
+    using std::ranges::find;
+
     using Rank = Card::Rank;
+
+    static constexpr std::array<Rank, 5> BROADWAY = {Rank::TEN, Rank::JACK, Rank::QUEEN, Rank::KING, Rank::ACE};
+
+    static constexpr std::array<std::array<Rank, 2>, 5> PREMIUM = {{{{Rank::QUEEN, Rank::QUEEN}},
+                                                                    {{Rank::KING, Rank::ACE}},
+                                                                    {{Rank::ACE, Rank::KING}},
+                                                                    {{Rank::KING, Rank::KING}},
+                                                                    {{Rank::ACE, Rank::ACE}}}};
+
+    class invalid_hand : public std::runtime_error {
+        public:
+            explicit invalid_hand(const std::string& arg) : runtime_error(arg){};
+    };
 
     class Hand {
         public:
@@ -22,29 +35,28 @@ namespace GameHandler {
             auto operator==(const Hand& rhs) const -> bool;
             auto operator!=(const Hand& rhs) const -> bool;
 
-            class invalid_hand : public std::runtime_error {
-                public:
-                    explicit invalid_hand(const std::string& arg) : runtime_error(arg){};
-            };
-
-            auto cards() -> std::tuple<Card, Card> { return {firstCard, secondCard}; }
+            auto toJson() -> json;
 
         protected:
             auto isSuited() -> bool;
+            auto isAceSuited() -> bool;
             auto isBroadway() -> bool;
             auto isPlur() -> bool;
             auto isConnected() -> bool;
+            auto isPremium() -> bool;
 
         private:
-            Card firstCard;
-            Card secondCard;
-            bool suited    = false;
-            bool broadway  = false;
-            bool plur      = false;
-            bool connected = false;
+            Card                       firstCard;
+            Card                       secondCard;
+            std::array<const Card*, 2> cards;  // Shortcut to use std algorithms in class, ref on the 2 cards
+            bool                       suited    = false;
+            bool                       aceSuited = false;
+            bool                       broadway  = false;
+            bool                       plur      = false;
+            bool                       connected = false;
+            bool                       premium   = false;
 
             auto processHand() -> void;
-
-            const std::vector<Rank> BROADWAY = {Rank::TEN, Rank::JACK, Rank::QUEEN, Rank::KING, Rank::ACE};
+            auto isBroadway(const Card* card) -> bool { return find(BROADWAY, card->getRank()) != BROADWAY.end(); }
     };
 }  // namespace GameHandler

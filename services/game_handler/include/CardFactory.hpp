@@ -1,13 +1,17 @@
 #pragma once
 
 #include <map>
-#include <string>
 
 #include "Card.hpp"
 
 namespace GameHandler::Factory {
     using Rank = Card::Rank;
     using Suit = Card::Suit;
+
+    class invalid_card : public std::runtime_error {
+        public:
+            explicit invalid_card(const std::string& arg) : runtime_error(arg){};
+    };
 
     static const std::map<std::string, Card> CARD_PROTOTYPES = {
         // Hearts
@@ -70,11 +74,6 @@ namespace GameHandler::Factory {
     class CardFactory {
         public:
             CardFactory() = delete;
-
-            class invalid_card : public std::runtime_error {
-                public:
-                    explicit invalid_card(const std::string& arg) : runtime_error(arg){};
-            };
 
             static auto create(const std::string& cardName) -> Card;
     };

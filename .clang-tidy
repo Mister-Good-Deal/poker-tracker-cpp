@@ -24,3 +24,5 @@ CheckOptions:
     value: '1'
   - key: google-readability-namespace-comments.ShortNamespaceLines
     value: '10'
+  - key: cppcoreguidelines-avoid-do-while.IgnoreMacros
+    value: 'true'
