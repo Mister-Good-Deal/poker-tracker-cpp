@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "Board.hpp"
 #include "RoundAction.hpp"
 
 namespace GameHandler {
@@ -34,6 +35,7 @@ namespace GameHandler {
             auto operator=(const Round& other) -> Round&;
             auto operator=(Round&& other) noexcept -> Round&;
 
+            [[nodiscard]] auto getBoard() const -> const Board& { return board; }
             [[nodiscard]] auto getPot() const -> int32_t { return pot; }
 
             auto start() -> void;
@@ -47,6 +49,7 @@ namespace GameHandler {
 
         private:
             round_actions_t          actions;
+            Board                    board;
             int32_t                  pot            = 0;
             Street                   currentStreet  = Street::PREFLOP;
             time_point<system_clock> lastActionTime = system_clock::now();

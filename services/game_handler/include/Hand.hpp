@@ -57,7 +57,8 @@ namespace GameHandler {
             bool         broadway  = false;
             bool         plur      = false;
             bool         connected = false;
-            bool         premium   = false;
+            // @todo sibblingsConnected
+            bool premium = false;
 
             auto processHand() -> void;
             auto isBroadway(const Card* card) -> bool { return find(BROADWAY, card->getRank()) != BROADWAY.end(); }
