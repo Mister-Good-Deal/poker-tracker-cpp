@@ -11,7 +11,7 @@ namespace GameHandler {
 
     class Card {
         public:
-            enum class Rank : int8_t { TWO = 0, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING, ACE, UNKNOWN };
+            enum class Rank : int8_t { TWO = 0, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING, ACE, UNDEFINED };
 
             enum class Suit : int8_t { HEART = 0, DIAMOND, CLUB, SPADE, UNKNOWN };
 
@@ -64,7 +64,7 @@ namespace GameHandler {
             }
 
         public:
-            Card() : rank(Rank::UNKNOWN), suit(Suit::UNKNOWN){};
+            Card() : rank(Rank::UNDEFINED), suit(Suit::UNKNOWN){};
             Card(const Card& other) = default;
             Card(Card&& other) noexcept : rank(other.rank), suit(other.suit){};
             Card(Rank rank, Suit suit) : rank(rank), suit(suit){};

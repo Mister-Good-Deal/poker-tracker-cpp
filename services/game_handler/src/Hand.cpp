@@ -7,6 +7,8 @@ namespace GameHandler {
     using ::std::ranges::all_of;
     using ::std::ranges::any_of;
 
+    using enum Card::Rank;
+
     Hand::Hand(const Card& firstCard, const Card& secondCard) :
         firstCard(firstCard), secondCard(secondCard), cards({&firstCard, &secondCard}) {
         if (firstCard == secondCard) {
@@ -20,7 +22,7 @@ namespace GameHandler {
         if (this != &other) {
             firstCard  = other.firstCard;
             secondCard = other.secondCard;
-            cards      = other.cards;
+            cards      = {&firstCard, &secondCard};
             suited     = other.suited;
             broadway   = other.broadway;
             plur       = other.plur;
@@ -35,7 +37,7 @@ namespace GameHandler {
         if (this != &other) {
             firstCard  = std::move(other.firstCard);
             secondCard = std::move(other.secondCard);
-            cards      = std::move(other.cards);
+            cards      = {&firstCard, &secondCard};
             suited     = other.suited;
             broadway   = other.broadway;
             plur       = other.plur;
@@ -52,7 +54,7 @@ namespace GameHandler {
     auto Hand::isSuited() -> bool { return firstCard.getSuit() == secondCard.getSuit(); }
 
     auto Hand::isAceSuited() -> bool {
-        return isSuited() && any_of(cards, [](const auto& card) { return card->getRank() == Rank::ACE; });
+        return isSuited() && any_of(cards, [](const auto& card) { return card->getRank() == ACE; });
     }
 
     auto Hand::isBroadway() -> bool {
@@ -65,12 +67,12 @@ namespace GameHandler {
 
     auto Hand::isConnected() -> bool {
         return std::abs(static_cast<int16_t>(firstCard.getRank()) - static_cast<int16_t>(secondCard.getRank())) <= 1
-            || (firstCard.getRank() == Rank::ACE && secondCard.getRank() == Rank::TWO)
-            || (secondCard.getRank() == Rank::ACE && firstCard.getRank() == Rank::TWO);
+            || (firstCard.getRank() == ACE && secondCard.getRank() == TWO)
+            || (secondCard.getRank() == ACE && firstCard.getRank() == TWO);
     }
 
     auto Hand::isPremium() -> bool {
-        return find(PREMIUM, std::array<Rank, 2>{firstCard.getRank(), secondCard.getRank()}) != PREMIUM.end();
+        return find(PREMIUM, std::array<Card::Rank, 2>{firstCard.getRank(), secondCard.getRank()}) != PREMIUM.end();
     }
 
     auto Hand::processHand() -> void {

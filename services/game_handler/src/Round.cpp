@@ -4,7 +4,8 @@ namespace GameHandler {
     using std::chrono::duration_cast;
     using std::chrono::seconds;
 
-    using Action = RoundAction::ActionType;
+    using enum RoundAction::ActionType;
+    using enum Round::Street;
 
     auto Round::operator=(const Round& other) -> Round& {
         if (this != &other) {
@@ -30,11 +31,11 @@ namespace GameHandler {
 
     auto Round::endStreet() -> void {
         switch (currentStreet) {
-            case Street::PREFLOP: currentStreet = Street::FLOP; break;
-            case Street::FLOP: currentStreet = Street::TURN; break;
-            case Street::TURN: currentStreet = Street::RIVER; break;
-            case Street::RIVER: currentStreet = Street::SHOWDOWN; break;
-            case Street::SHOWDOWN: break;
+            case PREFLOP: currentStreet = FLOP; break;
+            case FLOP: currentStreet = TURN; break;
+            case TURN: currentStreet = RIVER; break;
+            case RIVER: currentStreet = SHOWDOWN; break;
+            case SHOWDOWN: break;
         }
     }
 
@@ -44,7 +45,7 @@ namespace GameHandler {
         auto now   = system_clock::now();
         auto index = static_cast<int>(currentStreet);
 
-        actions.at(index).emplace_back(Action::CALL, player, duration_cast<seconds>(now - lastActionTime), amount);
+        actions.at(index).emplace_back(CALL, player, duration_cast<seconds>(now - lastActionTime), amount);
 
         lastActionTime = now;
     }
@@ -53,7 +54,7 @@ namespace GameHandler {
         auto now   = system_clock::now();
         auto index = static_cast<int>(currentStreet);
 
-        actions.at(index).emplace_back(Action::BET, player, duration_cast<seconds>(now - lastActionTime), amount);
+        actions.at(index).emplace_back(BET, player, duration_cast<seconds>(now - lastActionTime), amount);
 
         lastActionTime = now;
     }
@@ -62,7 +63,7 @@ namespace GameHandler {
         auto now   = system_clock::now();
         auto index = static_cast<int>(currentStreet);
 
-        actions.at(index).emplace_back(Action::CHECK, player, duration_cast<seconds>(now - lastActionTime));
+        actions.at(index).emplace_back(CHECK, player, duration_cast<seconds>(now - lastActionTime));
 
         lastActionTime = now;
     }
@@ -71,7 +72,7 @@ namespace GameHandler {
         auto now   = system_clock::now();
         auto index = static_cast<int>(currentStreet);
 
-        actions.at(index).emplace_back(Action::FOLD, player, duration_cast<seconds>(now - lastActionTime));
+        actions.at(index).emplace_back(FOLD, player, duration_cast<seconds>(now - lastActionTime));
 
         lastActionTime = now;
     }

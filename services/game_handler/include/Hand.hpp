@@ -5,15 +5,16 @@
 namespace GameHandler {
     using std::ranges::find;
 
-    using Rank = Card::Rank;
+    using enum Card::Rank;
 
-    static constexpr std::array<Rank, 5> BROADWAY = {Rank::TEN, Rank::JACK, Rank::QUEEN, Rank::KING, Rank::ACE};
+    constexpr int8_t BROADWAY_NUMBER   = 5;
+    constexpr int8_t PREMIUM_NUMBER    = 5;
+    constexpr int8_t HAND_CARDS_NUMBER = 2;
 
-    static constexpr std::array<std::array<Rank, 2>, 5> PREMIUM = {{{{Rank::QUEEN, Rank::QUEEN}},
-                                                                    {{Rank::KING, Rank::ACE}},
-                                                                    {{Rank::ACE, Rank::KING}},
-                                                                    {{Rank::KING, Rank::KING}},
-                                                                    {{Rank::ACE, Rank::ACE}}}};
+    static constexpr std::array<Card::Rank, BROADWAY_NUMBER> BROADWAY = {TEN, JACK, QUEEN, KING, ACE};
+
+    static constexpr std::array<std::array<Card::Rank, HAND_CARDS_NUMBER>, PREMIUM_NUMBER> PREMIUM = {
+        {{{QUEEN, QUEEN}}, {{KING, ACE}}, {{ACE, KING}}, {{KING, KING}}, {{ACE, ACE}}}};
 
     class invalid_hand : public std::runtime_error {
         public:
@@ -22,6 +23,8 @@ namespace GameHandler {
 
     class Hand {
         public:
+            typedef std::array<const Card*, HAND_CARDS_NUMBER> hand_cards_t;
+
             Hand()                  = default;
             Hand(const Hand& other) = default;
             Hand(Hand&& other) noexcept { *this = std::move(other); };
@@ -46,15 +49,15 @@ namespace GameHandler {
             auto isPremium() -> bool;
 
         private:
-            Card                       firstCard;
-            Card                       secondCard;
-            std::array<const Card*, 2> cards;  // Shortcut to use std algorithms in class, ref on the 2 cards
-            bool                       suited    = false;
-            bool                       aceSuited = false;
-            bool                       broadway  = false;
-            bool                       plur      = false;
-            bool                       connected = false;
-            bool                       premium   = false;
+            Card         firstCard;
+            Card         secondCard;
+            hand_cards_t cards     = {&firstCard, &secondCard};  // Shortcut to use std algorithms in class
+            bool         suited    = false;
+            bool         aceSuited = false;
+            bool         broadway  = false;
+            bool         plur      = false;
+            bool         connected = false;
+            bool         premium   = false;
 
             auto processHand() -> void;
             auto isBroadway(const Card* card) -> bool { return find(BROADWAY, card->getRank()) != BROADWAY.end(); }

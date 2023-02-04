@@ -3,8 +3,6 @@
 #include <nlohmann/json.hpp>
 
 namespace GameHandler {
-    using Rank = Card::Rank;
-    using Suit = Card::Suit;
     using json = nlohmann::json;
 
     auto Card::operator=(Card&& other) noexcept -> Card& {

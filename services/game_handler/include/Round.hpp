@@ -12,6 +12,8 @@ namespace GameHandler {
     using std::chrono::system_clock;
     using std::chrono::time_point;
 
+    constexpr int8_t STREET_NUMBER = 5;
+
     class UnknownPlayerException : public std::runtime_error {
         public:
             explicit UnknownPlayerException(const std::string& arg) : runtime_error(arg) {}
@@ -19,6 +21,8 @@ namespace GameHandler {
 
     class Round {
         public:
+            typedef std::array<std::vector<RoundAction>, STREET_NUMBER> round_actions_t;
+
             enum class Street : int8_t { PREFLOP = 0, FLOP, TURN, RIVER, SHOWDOWN };
 
             Round()                   = default;
@@ -42,9 +46,9 @@ namespace GameHandler {
             auto fold(const Player& player) -> void;
 
         private:
-            std::array<std::vector<RoundAction>, 5> actions;
-            int32_t                                 pot            = 0;
-            Street                                  currentStreet  = Street::PREFLOP;
-            time_point<system_clock>                lastActionTime = system_clock::now();
+            round_actions_t          actions;
+            int32_t                  pot            = 0;
+            Street                   currentStreet  = Street::PREFLOP;
+            time_point<system_clock> lastActionTime = system_clock::now();
     };
 }  // namespace GameHandler
