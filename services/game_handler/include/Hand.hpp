@@ -23,7 +23,7 @@ namespace GameHandler {
 
     class Hand {
         public:
-            typedef std::array<const Card*, HAND_CARDS_NUMBER> hand_cards_t;
+            using hand_cards_t = std::array<const Card*, HAND_CARDS_NUMBER>;
 
             Hand()                  = default;
             Hand(const Hand& other) = default;

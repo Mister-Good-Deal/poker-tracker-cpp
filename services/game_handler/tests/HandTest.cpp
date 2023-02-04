@@ -1,6 +1,7 @@
+#include <gtest/gtest.h>
+
 #include "CardFactory.hpp"
 #include "Hand.hpp"
-#include "gtest/gtest.h"
 
 #define EXPECT_THROW_WITH_MESSAGE(code, exception_type, expected_message) \
     do {                                                                  \
@@ -15,10 +16,8 @@
 using GameHandler::Card;
 using GameHandler::Hand;
 using GameHandler::invalid_hand;
-using GameHandler::Factory::CardFactory;
+using GameHandler::Factory::card;
 using GameHandler::Factory::invalid_card;
-
-const std::function<Card(const std::string&)> card = CardFactory::create;
 
 class MockHand : public Hand {
     public:

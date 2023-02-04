@@ -1,5 +1,6 @@
+#include <gtest/gtest.h>
+
 #include "Card.hpp"
-#include "gtest/gtest.h"
 
 using GameHandler::Card;
 

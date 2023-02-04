@@ -77,4 +77,7 @@ namespace GameHandler::Factory {
 
             static auto create(const std::string& cardName) -> Card;
     };
+
+    // Shortcut to call the factory
+    const std::function<Card(const std::string&)> card = CardFactory::create;
 }  // namespace GameHandler::Factory

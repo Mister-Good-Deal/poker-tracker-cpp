@@ -22,7 +22,7 @@ namespace GameHandler {
 
     class Round {
         public:
-            typedef std::array<std::vector<RoundAction>, STREET_NUMBER> round_actions_t;
+            using round_actions_t = std::array<std::vector<RoundAction>, STREET_NUMBER>;
 
             enum class Street : int8_t { PREFLOP = 0, FLOP, TURN, RIVER, SHOWDOWN };
 
