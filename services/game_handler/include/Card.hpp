@@ -9,9 +9,11 @@
 namespace GameHandler {
     using json = nlohmann::json;
 
+    constexpr int8_t RANK_CARDS_NUMBER = 13;
+
     class Card {
         public:
-            enum class Rank : int8_t { TWO = 0, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING, ACE, UNDEFINED };
+            enum class Rank : int8_t { TWO = 1, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING, ACE, UNDEFINED };
 
             enum class Suit : int8_t { HEART = 0, DIAMOND, CLUB, SPADE, UNKNOWN };
 

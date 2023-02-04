@@ -13,6 +13,7 @@ endfunction()
 
 message(NOTICE "The unit tests for game_handler are stored in ${CMAKE_BINARY_DIR}")
 
+add_class_test(Board)
 add_class_test(Card)
 add_class_test(CardFactory)
 add_class_test(Hand)
