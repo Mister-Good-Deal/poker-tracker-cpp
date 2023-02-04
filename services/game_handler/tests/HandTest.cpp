@@ -122,14 +122,33 @@ TEST(HandTest, isPremiumShouldbeCorrect) {
 }
 
 TEST(HandTest, jsonRepresentationShouldBeCorrect) {
-    // @todo
     // language=json
     auto expectedJson = R"(
         {
-            "shortName": "TS",
-            "fullName": "Ten of Spade",
-            "rank": "Ten",
-            "suit": "Spade"
+            "cards": [
+                {
+                    "shortName": "TS",
+                    "fullName": "Ten of Spade",
+                    "rank": "Ten",
+                    "suit": "Spade"
+                },
+                {
+                    "shortName": "KS",
+                    "fullName": "King of Spade",
+                    "rank": "King",
+                    "suit": "Spade"
+                }
+            ],
+            "properties": {
+                "suited": true,
+                "aceSuited": false,
+                "broadway": true,
+                "plur": true,
+                "connected": false,
+                "premium": false
+            }
         }
     )"_json;
+
+    EXPECT_EQ(MockHand(card("TS"), card("KS")).toJson(), expectedJson);
 }

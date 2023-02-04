@@ -6,6 +6,7 @@ namespace GameHandler {
     using ::std::tie;
     using ::std::ranges::all_of;
     using ::std::ranges::any_of;
+    using ::std::ranges::find;
 
     using enum Card::Rank;
 
@@ -91,7 +92,7 @@ namespace GameHandler {
         cardsArray.emplace_back(secondCard.toJson());
 
         return {{"cards", cardsArray},
-                {"qualifiers",
+                {"properties",
                  {{"suited", suited},
                   {"aceSuited", aceSuited},
                   {"broadway", broadway},
