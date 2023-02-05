@@ -10,6 +10,7 @@ namespace GameHandler {
     using json = nlohmann::json;
 
     constexpr int8_t RANK_CARDS_NUMBER = 13;
+    constexpr int8_t SUIT_CARDS_NUMBER = 4;
 
     class Card {
         public:
