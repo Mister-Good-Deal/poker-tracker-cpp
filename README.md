@@ -1,6 +1,6 @@
 # Poker bot
 
-Poker bot programm written in C++ to play in online poker rooms like Winamax or Unibet on no-limit Texas Holdem 3
+Poker bot program written in C++ to play in online poker rooms like Winamax or Unibet on no-limit Texas Holdem 3
 players short stack style (Expresso).
 
 ## Compilation

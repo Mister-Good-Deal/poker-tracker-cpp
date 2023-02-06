@@ -1,6 +1,6 @@
 # Templates
 
-Severals template for classes, tests, etc for CLion
+Several template for classes, tests, etc. for CLion
 
 ## Class template
 

@@ -25,7 +25,7 @@ default:
 include:
   - template: Jobs/Container-Scanning.gitlab-ci.yml
 
-# Scan docker images for vulnebarilities if Dockerfiles changed or on demand with commit message containing "/docker-scan"
+# Scan docker images for vulnerabilities if Dockerfiles changed or on demand with commit message containing "/docker-scan"
 # @todo only scan one image, maybe useless ?
 container_scanning:
   rules:
