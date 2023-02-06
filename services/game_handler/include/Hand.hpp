@@ -23,7 +23,8 @@ namespace GameHandler {
 
     class Hand {
         public:
-            using hand_cards_t = std::array<const Card*, HAND_CARDS_NUMBER>;
+            using hand_cards_ref_t = std::array<const Card*, HAND_CARDS_NUMBER>;
+            using hand_cards_t     = std::array<Card, HAND_CARDS_NUMBER>;
 
             Hand()                  = default;
             Hand(const Hand& other) = default;
@@ -38,6 +39,8 @@ namespace GameHandler {
             auto operator==(const Hand& rhs) const -> bool;
             auto operator!=(const Hand& rhs) const -> bool;
 
+            [[nodiscard]] auto getCards() const -> const hand_cards_t& { return cardsConst; };
+
             [[nodiscard]] auto toJson() const -> json;
 
         protected:
@@ -49,14 +52,15 @@ namespace GameHandler {
             auto isPremium() -> bool;
 
         private:
-            Card         firstCard;
-            Card         secondCard;
-            hand_cards_t cards     = {&firstCard, &secondCard};  // Shortcut to use std algorithms in class
-            bool         suited    = false;
-            bool         aceSuited = false;
-            bool         broadway  = false;
-            bool         plur      = false;
-            bool         connected = false;
+            Card             firstCard;
+            Card             secondCard;
+            hand_cards_ref_t cards      = {&firstCard, &secondCard};  // Shortcut to use std algorithms in class
+            hand_cards_t     cardsConst = {firstCard, secondCard};    // Const value reference to avoid array duplication
+            bool             suited     = false;
+            bool             aceSuited  = false;
+            bool             broadway   = false;
+            bool             plur       = false;
+            bool             connected  = false;
             // @todo sibblingsConnected
             bool premium = false;
 

@@ -6,7 +6,11 @@
 using GameHandler::Board;
 using GameHandler::Factory::card;
 
+using enum GameHandler::HandRank;
+
 class BoardTest : public ::testing::Test {};
+
+// --------------------- Board check ---------------------//
 
 TEST(BoardTest, hasPossibleStraightShouldBeCorrect) {
     EXPECT_FALSE(Board({card("2S"), card("3H"), card("7D")}).hasPossibleStraight());
@@ -29,18 +33,18 @@ TEST(BoardTest, hasPossibleFlushShouldBeCorrect) {
     EXPECT_TRUE(Board({card("2S"), card("2H"), card("9S"), card("7D"), card("AS")}).hasPossibleFlush());
 }
 
-TEST(BoardTest, hasPaireShouldBeCorrect) {
-    EXPECT_FALSE(Board({card("2S"), card("3H"), card("7D")}).hasPaire());
-    EXPECT_FALSE(Board({card("2S"), card("AH"), card("7D"), card("8D"), card("9D")}).hasPaire());
-    EXPECT_TRUE(Board({card("2S"), card("2H"), card("7D"), card("7D"), card("8D")}).hasPaire());
-    EXPECT_TRUE(Board({card("2S"), card("AH"), card("9S"), card("7D"), card("AS")}).hasPaire());
+TEST(BoardTest, hasPairShouldBeCorrect) {
+    EXPECT_FALSE(Board({card("2S"), card("3H"), card("7D")}).hasPair());
+    EXPECT_FALSE(Board({card("2S"), card("AH"), card("7D"), card("8D"), card("9D")}).hasPair());
+    EXPECT_TRUE(Board({card("2S"), card("2H"), card("7D"), card("7D"), card("8D")}).hasPair());
+    EXPECT_TRUE(Board({card("2S"), card("AH"), card("9S"), card("7D"), card("AS")}).hasPair());
 }
 
-TEST(BoardTest, hasDoublePaireShouldBeCorrect) {
-    EXPECT_FALSE(Board({card("2S"), card("3H"), card("7D")}).hasDoublePaire());
-    EXPECT_FALSE(Board({card("2S"), card("AH"), card("7D"), card("7D"), card("9D")}).hasDoublePaire());
-    EXPECT_TRUE(Board({card("2S"), card("2H"), card("7D"), card("7D"), card("8D")}).hasDoublePaire());
-    EXPECT_TRUE(Board({card("AS"), card("7H"), card("7S"), card("8D"), card("AH")}).hasDoublePaire());
+TEST(BoardTest, hasTwoPairShouldBeCorrect) {
+    EXPECT_FALSE(Board({card("2S"), card("3H"), card("7D")}).hasTwoPair());
+    EXPECT_FALSE(Board({card("2S"), card("AH"), card("7D"), card("7D"), card("9D")}).hasTwoPair());
+    EXPECT_TRUE(Board({card("2S"), card("2H"), card("7D"), card("7D"), card("8D")}).hasTwoPair());
+    EXPECT_TRUE(Board({card("AS"), card("7H"), card("7S"), card("8D"), card("AH")}).hasTwoPair());
 }
 
 TEST(BoardTest, hasTripsShouldBeCorrect) {
@@ -83,6 +87,15 @@ TEST(BoardTest, hasStraightFlushShouldBeCorrect) {
     EXPECT_FALSE(Board({card("7S"), card("8S"), card("9S"), card("6S")}).hasStraightFlush());
     EXPECT_TRUE(Board({card("AS"), card("2S"), card("3S"), card("4S"), card("5S")}).hasStraightFlush());
     EXPECT_TRUE(Board({card("AH"), card("QH"), card("JH"), card("TH"), card("KH")}).hasStraightFlush());
+}
+
+// --------------------- Hand check ---------------------//
+
+TEST(BoardTest, handRankPairShouldBeCorrect) {
+    EXPECT_EQ(Board({card("2S"), card("3H"), card("7D")}).getHandRank({card("9D"), card("3D")}), PAIR);
+    EXPECT_EQ(Board({card("2S"), card("3H"), card("7D"), card("8D")}).getHandRank({card("9D"), card("8D")}), PAIR);
+    EXPECT_EQ(Board({card("2S"), card("3H"), card("7D"), card("7H")}).getHandRank({card("9D"), card("TD")}), PAIR);
+    EXPECT_EQ(Board({card("2S"), card("3H"), card("7D"), card("3S"), card("8D")}).getHandRank({card("KD"), card("JD")}), PAIR);
 }
 
 TEST(BoardTest, jsonRepresentationShouldBeCorrect) {

@@ -1,12 +1,15 @@
 #pragma once
 
 #include "Card.hpp"
+#include "Hand.hpp"
 
 namespace GameHandler {
     constexpr int8_t BOARD_CARDS_NUMBER = 5;
     constexpr int8_t FLOP_CARDS_NUMBER  = 3;
     constexpr int8_t STRAIGHT_SIZE      = 5;
     constexpr int8_t FLUSH_SIZE         = 5;
+
+    enum class HandRank : int8_t { HIGH_CARD = 0, PAIR, TWO_PAIR, TRIPS, STRAIGHT, FLUSH, FULL, QUADS, STRAIGHT_FLUSH };
 
     class Board {
         public:
@@ -17,54 +20,54 @@ namespace GameHandler {
             Board()                   = default;
             Board(const Board& other) = default;
             Board(Board&& other) noexcept { *this = std::move(other); };
-            explicit Board(const board_t& allCards) { setCards(allCards); }
+            explicit Board(const board_t& cards) { setCards(cards); }
 
             virtual ~Board() = default;
 
             auto operator=(const Board& other) -> Board& = default;
             auto operator=(Board&& other) noexcept -> Board&;
 
-            [[nodiscard]] auto hasPossibleStraight() const -> bool { return possibleStraight; }
-            [[nodiscard]] auto hasPossibleFlush() const -> bool { return possibleFlush; }
-            [[nodiscard]] auto hasPossibleFlushDraw() const -> bool { return possibleFlushDraw; }
-            [[nodiscard]] auto hasPaire() const -> bool { return paire; }
-            [[nodiscard]] auto hasDoublePaire() const -> bool { return doublePaire; }
-            [[nodiscard]] auto hasTrips() const -> bool { return trips; }
-            [[nodiscard]] auto hasStraight() const -> bool { return straight; }
-            [[nodiscard]] auto hasFlush() const -> bool { return flush; }
-            [[nodiscard]] auto hasFull() const -> bool { return full; }
-            [[nodiscard]] auto hasQuads() const -> bool { return quads; }
-            [[nodiscard]] auto hasStraightFlush() const -> bool { return straightFlush; }
+            [[nodiscard]] auto hasPossibleStraight() const -> bool { return _possibleStraight; }
+            [[nodiscard]] auto hasPossibleFlush() const -> bool { return _possibleFlush; }
+            [[nodiscard]] auto hasPossibleFlushDraw() const -> bool { return _possibleFlushDraw; }
+            [[nodiscard]] auto hasPair() const -> bool { return _pair; }
+            [[nodiscard]] auto hasTwoPair() const -> bool { return _twoPair; }
+            [[nodiscard]] auto hasTrips() const -> bool { return _trips; }
+            [[nodiscard]] auto hasStraight() const -> bool { return _straight; }
+            [[nodiscard]] auto hasFlush() const -> bool { return _flush; }
+            [[nodiscard]] auto hasFull() const -> bool { return _full; }
+            [[nodiscard]] auto hasQuads() const -> bool { return _quads; }
+            [[nodiscard]] auto hasStraightFlush() const -> bool { return _straightFlush; }
 
-            auto setCards(const board_t& allCards) -> void;
-            auto setFlop(const std::array<Card, FLOP_CARDS_NUMBER>& flopCards) -> void;
+            auto setCards(const board_t& cards) -> void;
+            auto setFlop(const std::array<Card, FLOP_CARDS_NUMBER>& cards) -> void;
             auto setTurn(const Card& card) -> void;
             auto setRiver(const Card& card) -> void;
 
             auto getHighCardRank() -> Card::Rank;
+            auto getHandRank(const Hand& hand) -> HandRank;
 
             [[nodiscard]] auto toJson() const -> json;
 
-        protected:
-            auto countPossibleStraights(int8_t additionalCards) -> int8_t;
-            auto computeRankFrequencies() -> rank_frequencies_t;
-            auto computeSuitFrequencies() -> suit_frequencies_t;
-
         private:
-            board_t            cards;
-            rank_frequencies_t rankFrequencies{};
-            suit_frequencies_t suitFrequencies{};
-            bool               possibleStraight  = false;
-            bool               possibleFlush     = false;
-            bool               possibleFlushDraw = false;
-            bool               paire             = false;
-            bool               doublePaire       = false;
-            bool               trips             = false;
-            bool               straight          = false;
-            bool               flush             = false;
-            bool               full              = false;
-            bool               quads             = false;
-            bool               straightFlush     = false;
+            board_t            _cards;
+            rank_frequencies_t _rankFrequencies{};
+            suit_frequencies_t _suitFrequencies{};
+            bool               _possibleStraight  = false;
+            bool               _possibleFlush     = false;
+            bool               _possibleFlushDraw = false;
+            bool               _pair              = false;
+            bool               _twoPair           = false;
+            bool               _trips             = false;
+            bool               _straight          = false;
+            bool               _flush             = false;
+            bool               _full              = false;
+            bool               _quads             = false;
+            bool               _straightFlush     = false;
+
+            auto _countPossibleStraights(int8_t otherCards, std::optional<rank_frequencies_t> frequencies = std::nullopt) -> int8_t;
+            auto _computeRankFrequencies(std::optional<Hand> hand = std::nullopt) -> rank_frequencies_t;
+            auto _computeSuitFrequencies(std::optional<Hand> hand = std::nullopt) -> suit_frequencies_t;
 
             auto _hasPossibleFlush() -> bool;
             auto _hasPossibleFlushDraw() -> bool;
