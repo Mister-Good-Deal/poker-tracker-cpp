@@ -24,10 +24,9 @@ namespace GameHandler {
             auto operator=(const Board& other) -> Board& = default;
             auto operator=(Board&& other) noexcept -> Board&;
 
-            [[nodiscard]] auto getGutShots() const -> int8_t { return gutShots; }
-            [[nodiscard]] auto hasFlushDraw() const -> bool { return flushDraw; }
             [[nodiscard]] auto hasPossibleStraight() const -> bool { return possibleStraight; }
             [[nodiscard]] auto hasPossibleFlush() const -> bool { return possibleFlush; }
+            [[nodiscard]] auto hasPossibleFlushDraw() const -> bool { return possibleFlushDraw; }
             [[nodiscard]] auto hasPaire() const -> bool { return paire; }
             [[nodiscard]] auto hasDoublePaire() const -> bool { return doublePaire; }
             [[nodiscard]] auto hasTrips() const -> bool { return trips; }
@@ -55,31 +54,29 @@ namespace GameHandler {
             board_t            cards;
             rank_frequencies_t rankFrequencies{};
             suit_frequencies_t suitFrequencies{};
-            int8_t             gutShots         = 0;
-            bool               flushDraw        = false;
-            bool               possibleStraight = false;
-            bool               possibleFlush    = false;
-            bool               paire            = false;
-            bool               doublePaire      = false;
-            bool               trips            = false;
-            bool               straight         = false;
-            bool               flush            = false;
-            bool               full             = false;
-            bool               quads            = false;
-            bool               straightFlush    = false;
+            bool               possibleStraight  = false;
+            bool               possibleFlush     = false;
+            bool               possibleFlushDraw = false;
+            bool               paire             = false;
+            bool               doublePaire       = false;
+            bool               trips             = false;
+            bool               straight          = false;
+            bool               flush             = false;
+            bool               full              = false;
+            bool               quads             = false;
+            bool               straightFlush     = false;
 
-            auto countGutShots() -> int8_t;
-            auto isFlushDraw() -> bool;
-            auto isFlushPossible() -> bool;
-            auto isStraightPossible() -> bool;
-            auto isPaire() -> bool;
-            auto isDoublePaire() -> bool;
-            auto isTrips() -> bool;
-            auto isStraight() -> bool;
-            auto isFlush() -> bool;
-            auto isFull() -> bool;
-            auto isQuads() -> bool;
+            auto _hasPossibleFlush() -> bool;
+            auto _hasPossibleFlushDraw() -> bool;
+            auto _hasPossibleStraight() -> bool;
+            auto _hasPaire() -> bool;
+            auto _hasDoublePaire() -> bool;
+            auto _hasTrips() -> bool;
+            auto _hasStraight() -> bool;
+            auto _hasFlush() -> bool;
+            auto _hasFull() -> bool;
+            auto _hasQuads() -> bool;
 
-            auto updateStats() -> void;
+            auto _updateStats() -> void;
     };
 }  // namespace GameHandler

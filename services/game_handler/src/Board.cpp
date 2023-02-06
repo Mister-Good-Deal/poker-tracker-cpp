@@ -13,21 +13,20 @@ namespace GameHandler {
 
     auto Board::operator=(Board&& other) noexcept -> Board& {
         if (this != &other) {
-            cards            = std::move(other.cards);
-            rankFrequencies  = std::move(other.rankFrequencies);
-            suitFrequencies  = std::move(other.suitFrequencies);
-            gutShots         = other.gutShots;
-            flushDraw        = other.flushDraw;
-            possibleStraight = other.possibleStraight;
-            possibleFlush    = other.possibleFlush;
-            paire            = other.paire;
-            doublePaire      = other.doublePaire;
-            trips            = other.trips;
-            straight         = other.straight;
-            flush            = other.flush;
-            full             = other.full;
-            quads            = other.quads;
-            straightFlush    = other.straightFlush;
+            cards             = std::move(other.cards);
+            rankFrequencies   = std::move(other.rankFrequencies);
+            suitFrequencies   = std::move(other.suitFrequencies);
+            possibleStraight  = other.possibleStraight;
+            possibleFlushDraw = other.possibleFlushDraw;
+            possibleFlush     = other.possibleFlush;
+            paire             = other.paire;
+            doublePaire       = other.doublePaire;
+            trips             = other.trips;
+            straight          = other.straight;
+            flush             = other.flush;
+            full              = other.full;
+            quads             = other.quads;
+            straightFlush     = other.straightFlush;
         }
 
         return *this;
@@ -36,13 +35,13 @@ namespace GameHandler {
     auto Board::setCards(const Board::board_t& allCards) -> void {
         cards = allCards;
 
-        updateStats();
+        _updateStats();
     }
 
     auto Board::setFlop(const std::array<Card, FLOP_CARDS_NUMBER>& flopCards) -> void {
         copy(flopCards.begin(), flopCards.end(), cards.begin());
 
-        updateStats();
+        _updateStats();
     }
 
     auto Board::setTurn(const Card& card) -> void {
@@ -50,14 +49,14 @@ namespace GameHandler {
 
         cards[TURN_CARD_INDEX] = card;
 
-        updateStats();
+        _updateStats();
     }
     auto Board::setRiver(const Card& card) -> void {
         constexpr int8_t RIVER_CARD_INDEX = 4;
 
         cards[RIVER_CARD_INDEX] = card;
 
-        updateStats();
+        _updateStats();
     }
 
     auto Board::toJson() const -> json {
@@ -67,10 +66,9 @@ namespace GameHandler {
 
         return {{"cards", cardsArray},
                 {"properties",
-                 {{"gutShots", gutShots},
-                  {"flushDraw", flushDraw},
-                  {"possibleStraight", possibleStraight},
+                 {{"possibleStraight", possibleStraight},
                   {"possibleFlush", possibleFlush},
+                  {"possibleFlushDraw", possibleFlushDraw},
                   {"paire", paire},
                   {"doublePaire", doublePaire},
                   {"trips", trips},
@@ -132,33 +130,31 @@ namespace GameHandler {
         return max_element(cards, [](const Card& A, const Card& B) { return A.getRank() < B.getRank(); })->getRank();
     }
 
-    auto Board::isPaire() -> bool { return count(rankFrequencies, 2) >= 1; }
-    auto Board::isDoublePaire() -> bool { return count(rankFrequencies, 2) >= 2; }
-    auto Board::isTrips() -> bool { return count(rankFrequencies, 3) == 1; }
-    auto Board::isStraight() -> bool { return countPossibleStraights(0) == 1; }
-    auto Board::countGutShots() -> int8_t { return straight ? 0 : countPossibleStraights(1); }
-    auto Board::isStraightPossible() -> bool { return straight || countPossibleStraights(2) > 0; }
-    auto Board::isFlush() -> bool { return count(suitFrequencies, FLUSH_SIZE) == 1; }
-    auto Board::isFlushDraw() -> bool { return !flush && count(suitFrequencies, 2) >= 1; }
-    auto Board::isFlushPossible() -> bool { return flush || count(suitFrequencies, 3) == 1; }
-    auto Board::isFull() -> bool { return count(rankFrequencies, 2) >= 1 && count(rankFrequencies, 3) >= 1; }
-    auto Board::isQuads() -> bool { return count(rankFrequencies, 4) == 1; }
+    auto Board::_hasPaire() -> bool { return count(rankFrequencies, 2) >= 1; }
+    auto Board::_hasDoublePaire() -> bool { return count(rankFrequencies, 2) >= 2; }
+    auto Board::_hasTrips() -> bool { return count(rankFrequencies, 3) == 1; }
+    auto Board::_hasStraight() -> bool { return countPossibleStraights(0) == 1; }
+    auto Board::_hasPossibleStraight() -> bool { return straight || countPossibleStraights(2) > 0; }
+    auto Board::_hasFlush() -> bool { return count(suitFrequencies, FLUSH_SIZE) == 1; }
+    auto Board::_hasPossibleFlushDraw() -> bool { return flush || count(suitFrequencies, 2) >= 1; }
+    auto Board::_hasPossibleFlush() -> bool { return flush || count(suitFrequencies, 3) == 1; }
+    auto Board::_hasFull() -> bool { return count(rankFrequencies, 2) >= 1 && count(rankFrequencies, 3) >= 1; }
+    auto Board::_hasQuads() -> bool { return count(rankFrequencies, 4) == 1; }
 
-    auto Board::updateStats() -> void {
+    auto Board::_updateStats() -> void {
         rankFrequencies = computeRankFrequencies();
         suitFrequencies = computeSuitFrequencies();
         // The order is important, possible flush or possible straight use flush and straight values for optimisation
-        paire            = isPaire();
-        doublePaire      = isDoublePaire();
-        trips            = isTrips();
-        straight         = isStraight();
-        possibleStraight = isStraightPossible();
-        gutShots         = countGutShots();
-        flush            = isFlush();
-        possibleFlush    = isFlushPossible();
-        flushDraw        = isFlushDraw();
-        full             = isFull();
-        quads            = isQuads();
-        straightFlush    = straight && flush;
+        paire             = _hasPaire();
+        doublePaire       = _hasDoublePaire();
+        trips             = _hasTrips();
+        straight          = _hasStraight();
+        possibleStraight  = _hasPossibleStraight();
+        flush             = _hasFlush();
+        possibleFlush     = _hasPossibleFlush();
+        possibleFlushDraw = _hasPossibleFlushDraw();
+        full              = _hasFull();
+        quads             = _hasQuads();
+        straightFlush     = straight && flush;
     }
 }  // namespace GameHandler

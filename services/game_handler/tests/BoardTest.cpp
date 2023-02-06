@@ -8,24 +8,18 @@ using GameHandler::Factory::card;
 
 class BoardTest : public ::testing::Test {};
 
-TEST(BoardTest, gutShotsShouldBeCorrect) {
-    EXPECT_EQ(Board({card("2S"), card("3S"), card("7S"), card("8S"), card("QS")}).getGutShots(), 0);
-    EXPECT_EQ(Board({card("2S"), card("3S"), card("4S"), card("5S"), card("KS")}).getGutShots(), 2);
-    EXPECT_EQ(Board({card("2S"), card("3S"), card("5S"), card("6S"), card("KS")}).getGutShots(), 1);
-}
-
-TEST(BoardTest, hasFlushDrawShouldBeCorrect) {
-    EXPECT_FALSE(Board({card("2S"), card("3H"), card("7D")}).hasFlushDraw());
-    EXPECT_FALSE(Board({card("2S"), card("3H"), card("3D")}).hasFlushDraw());
-    EXPECT_TRUE(Board({card("AS"), card("AH"), card("KS")}).hasFlushDraw());
-    EXPECT_TRUE(Board({card("2S"), card("3S"), card("3H"), card("6H"), card("KD")}).hasFlushDraw());
-}
-
 TEST(BoardTest, hasPossibleStraightShouldBeCorrect) {
     EXPECT_FALSE(Board({card("2S"), card("3H"), card("7D")}).hasPossibleStraight());
     EXPECT_FALSE(Board({card("7S"), card("8H"), card("QD"), card("KD"), card("KS")}).hasPossibleStraight());
     EXPECT_TRUE(Board({card("7S"), card("8H"), card("QD"), card("KD"), card("AS")}).hasPossibleStraight());
     EXPECT_TRUE(Board({card("2S"), card("3H"), card("QD"), card("KD"), card("AS")}).hasPossibleStraight());
+}
+
+TEST(BoardTest, hasPossibleFlushDrawShouldBeCorrect) {
+    EXPECT_FALSE(Board({card("2S"), card("3H"), card("7D")}).hasPossibleFlushDraw());
+    EXPECT_FALSE(Board({card("2S"), card("3H"), card("3D")}).hasPossibleFlushDraw());
+    EXPECT_TRUE(Board({card("AS"), card("AH"), card("KS")}).hasPossibleFlushDraw());
+    EXPECT_TRUE(Board({card("2S"), card("3S"), card("3H"), card("6H")}).hasPossibleFlushDraw());
 }
 
 TEST(BoardTest, hasPossibleFlushShouldBeCorrect) {
@@ -133,10 +127,9 @@ TEST(BoardTest, jsonRepresentationShouldBeCorrect) {
                 "trips": false,
                 "straight": true,
                 "possibleStraight": true,
-                "gutShots": 0,
                 "flush": true,
                 "possibleFlush": true,
-                "flushDraw": false,
+                "possibleFlushDraw": true,
                 "full": false,
                 "quads": false,
                 "straightFlush": true
