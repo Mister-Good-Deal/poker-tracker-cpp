@@ -85,7 +85,7 @@ namespace GameHandler {
             [[nodiscard]] auto getFullName() const -> std::string;
             [[nodiscard]] auto getShortName() const -> std::string;
 
-            auto toJson() -> json;
+            [[nodiscard]] auto toJson() const -> json;
 
         private:
             Rank rank;

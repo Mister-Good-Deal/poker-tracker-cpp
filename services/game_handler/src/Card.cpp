@@ -16,7 +16,7 @@ namespace GameHandler {
 
     auto Card::getShortName() const -> std::string { return rankToShortString(rank) + suitToString(suit)[0]; }
 
-    auto Card::toJson() -> json {
+    auto Card::toJson() const -> json {
         return {
             {"shortName", getShortName()}, {"fullName", getFullName()}, {"rank", rankToString(rank)}, {"suit", suitToString(suit)}};
     }

@@ -17,6 +17,7 @@ namespace GameHandler {
             Board()                   = default;
             Board(const Board& other) = default;
             Board(Board&& other) noexcept { *this = std::move(other); };
+            explicit Board(const board_t& allCards) { setCards(allCards); }
 
             virtual ~Board() = default;
 
@@ -42,6 +43,8 @@ namespace GameHandler {
             auto setRiver(const Card& card) -> void;
 
             auto getHighCardRank() -> Card::Rank;
+
+            [[nodiscard]] auto toJson() const -> json;
 
         protected:
             auto countPossibleStraights(int8_t additionalCards) -> int8_t;

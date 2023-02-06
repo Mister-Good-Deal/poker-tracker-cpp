@@ -85,7 +85,7 @@ namespace GameHandler {
         premium   = isPremium();
     }
 
-    auto Hand::toJson() -> json {
+    auto Hand::toJson() const -> json {
         auto cardsArray = json::array();
 
         cardsArray.emplace_back(firstCard.toJson());

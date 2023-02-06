@@ -38,7 +38,7 @@ namespace GameHandler {
             auto operator==(const Hand& rhs) const -> bool;
             auto operator!=(const Hand& rhs) const -> bool;
 
-            auto toJson() -> json;
+            [[nodiscard]] auto toJson() const -> json;
 
         protected:
             auto isSuited() -> bool;
