@@ -4,7 +4,8 @@
 #include "Hand.hpp"
 
 #define EXPECT_THROW_WITH_MESSAGE(code, exception_type, expected_message) \
-    do {                                                                  \
+    do                                                                    \
+    {                                                                     \
         EXPECT_THROW(                                                     \
             try { code; } catch (const exception_type& e) {               \
                 EXPECT_STREQ(e.what(), expected_message);                 \

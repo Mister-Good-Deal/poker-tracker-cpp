@@ -3,6 +3,7 @@
 namespace GameHandler {
     using std::ranges::copy;
     using std::ranges::count;
+    using std::ranges::count_if;
     using std::ranges::for_each;
     using std::ranges::max_element;
     using std::views::counted;
@@ -11,7 +12,8 @@ namespace GameHandler {
     using enum HandRank;
 
     auto Board::operator=(Board&& other) noexcept -> Board& {
-        if (this != &other) {
+        if (this != &other)
+        {
             _cards             = std::move(other._cards);
             _rankFrequencies   = std::move(other._rankFrequencies);
             _suitFrequencies   = std::move(other._suitFrequencies);
@@ -66,22 +68,16 @@ namespace GameHandler {
         HandRank rank            = HIGH_CARD;
         auto     rankFrequencies = _computeRankFrequencies(hand);
         auto     suitFrequencies = _computeSuitFrequencies(hand);
+        bool     straight        = _straight || _countPossibleStraights(0, rankFrequencies) >= 1;
 
-        if (_straight || _countPossibleStraights(0, rankFrequencies) >= 1) {
-            rank = STRAIGHT;
-        }
-
-        if (_flush || count(suitFrequencies, FLUSH_SIZE) >= 1) {
-            rank = rank == STRAIGHT ? STRAIGHT_FLUSH : FLUSH;
-        } else if (count(rankFrequencies, 4) == 1) {
-            rank = QUADS;
-        } else if (count(rankFrequencies, 3) == 1) {
-            rank = count(rankFrequencies, 2) == 1 ? FULL : TRIPS;
-        } else if (count(rankFrequencies, 2) == 2) {
-            rank = TWO_PAIR;
-        } else if (count(rankFrequencies, 2) == 1) {
-            rank = PAIR;
-        }
+        if (_pair || count(rankFrequencies, 2) == 1) { rank = PAIR; }
+        if (_twoPair || count(rankFrequencies, 2) == 2) { rank = TWO_PAIR; }
+        if (_trips || count(rankFrequencies, 3) == 1) { rank = TRIPS; }
+        if (straight) { rank = STRAIGHT; }
+        if (_flush || count(suitFrequencies, FLUSH_SIZE) >= 1) { rank = FLUSH; }
+        if (_full || rank == TRIPS && count(rankFrequencies, 2) == 1) { rank = FULL; }
+        if (_quads || count(rankFrequencies, 4) == 1) { rank = QUADS; }
+        if (_straightFlush || (rank == FLUSH && straight)) { rank = STRAIGHT_FLUSH; }
 
         return rank;
     }
@@ -113,7 +109,8 @@ namespace GameHandler {
 
         copy(_cards.begin(), _cards.end(), cards.begin());
 
-        if (hand != std::nullopt) {
+        if (hand != std::nullopt)
+        {
             const auto& handCards = hand.value().getCards();
 
             copy(handCards.begin(), handCards.end(), cards.begin() + BOARD_CARDS_NUMBER);
@@ -121,9 +118,7 @@ namespace GameHandler {
 
         // Construct cards rank frequences sequence
         for_each(cards, [&frequences](const Card& card) {
-            if (card.getRank() != UNDEFINED) {
-                frequences.at(static_cast<int8_t>(card.getRank()))++;
-            }
+            if (card.getRank() != UNDEFINED) { frequences.at(static_cast<int8_t>(card.getRank()))++; }
         });
 
         return frequences;
@@ -136,7 +131,8 @@ namespace GameHandler {
 
         copy(_cards.begin(), _cards.end(), cards.begin());
 
-        if (hand != std::nullopt) {
+        if (hand != std::nullopt)
+        {
             const auto& handCards = hand.value().getCards();
 
             copy(handCards.begin(), handCards.end(), cards.begin() + BOARD_CARDS_NUMBER);
@@ -144,9 +140,7 @@ namespace GameHandler {
 
         // Construct cards suit frequences sequence
         for_each(cards, [&frequences](const Card& card) {
-            if (card.getSuit() != Card::Suit::UNKNOWN) {
-                frequences.at(static_cast<int8_t>(card.getSuit()))++;
-            }
+            if (card.getSuit() != Card::Suit::UNKNOWN) { frequences.at(static_cast<int8_t>(card.getSuit()))++; }
         });
 
         return frequences;
@@ -154,23 +148,24 @@ namespace GameHandler {
 
     // @todo check std::views::adjacent_transform compilers implementation status
     auto Board::_countPossibleStraights(int8_t additionalCards, std::optional<rank_frequencies_t> rankFrequenciesOpt) -> int8_t {
-        int8_t             possibleStraights = 0;
-        rank_frequencies_t rankFrequencies   = rankFrequenciesOpt == std::nullopt ? _rankFrequencies : rankFrequenciesOpt.value();
+        int8_t              possibleStraights = 0;
+        rank_frequencies_t& rankFrequencies   = rankFrequenciesOpt == std::nullopt ? _rankFrequencies : rankFrequenciesOpt.value();
 
         // Special Ace case
         rankFrequencies[0] = rankFrequencies[static_cast<int8_t>(ACE)];
 
         const int8_t WINDOW_SIZE = 5;
 
-        for (int8_t i = 0; i < rankFrequencies.size() - WINDOW_SIZE + 1; ++i) {
+        for (int8_t i = 0; i < rankFrequencies.size() - WINDOW_SIZE + 1; ++i)
+        {
             auto window = counted(rankFrequencies.begin() + i, WINDOW_SIZE);
 
-            if (count(window, 1) >= STRAIGHT_SIZE - additionalCards) {
-                possibleStraights++;
-            }
+            if (count_if(window.begin(), window.end(), [](const auto& value) { return value >= 1; })
+                >= STRAIGHT_SIZE - additionalCards)
+            { possibleStraights++; }
         }
 
-        // @todo check Reset special Ace case
+        // Reset special Ace case
         rankFrequencies[0] = 0;
 
         return possibleStraights;

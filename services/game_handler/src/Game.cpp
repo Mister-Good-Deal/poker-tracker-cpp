@@ -2,7 +2,8 @@
 
 namespace GameHandler {
     auto Game::operator=(Game&& other) noexcept -> Game& {
-        if (this != &other) {
+        if (this != &other)
+        {
             rounds       = std::move(other.rounds);
             players      = std::move(other.players);
             currentRound = rounds.back();
@@ -12,7 +13,8 @@ namespace GameHandler {
     }
 
     auto Game::operator=(const Game& other) -> Game& {
-        if (this != &other) {
+        if (this != &other)
+        {
             rounds       = other.rounds;
             players      = other.players;
             currentRound = rounds.back();
@@ -34,9 +36,8 @@ namespace GameHandler {
     }
 
     auto Game::getPlayer(const std::string& playerName) -> Player {
-        if (players.find(playerName) == players.end()) {
-            throw UnknownPlayerException("The player " + playerName + " is unknown in this game");
-        }
+        if (players.find(playerName) == players.end())
+        { throw UnknownPlayerException("The player " + playerName + " is unknown in this game"); }
 
         return players.at(playerName);
     }

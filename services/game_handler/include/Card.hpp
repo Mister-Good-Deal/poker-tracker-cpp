@@ -19,7 +19,8 @@ namespace GameHandler {
             enum class Suit : int8_t { HEART = 0, DIAMOND, CLUB, SPADE, UNKNOWN };
 
             static constexpr auto rankToString(Rank rank) -> std::string {
-                switch (rank) {
+                switch (rank)
+                {
                     case Rank::TWO: return "Two";
                     case Rank::THREE: return "Three";
                     case Rank::FOUR: return "Four";
@@ -38,7 +39,8 @@ namespace GameHandler {
             }
 
             static constexpr auto rankToShortString(Rank rank) -> std::string {
-                switch (rank) {
+                switch (rank)
+                {
                     case Rank::TWO: return "2";
                     case Rank::THREE: return "3";
                     case Rank::FOUR: return "4";
@@ -57,7 +59,8 @@ namespace GameHandler {
             }
 
             static constexpr auto suitToString(Suit suit) -> std::string {
-                switch (suit) {
+                switch (suit)
+                {
                     case Suit::HEART: return "Heart";
                     case Suit::DIAMOND: return "Diamond";
                     case Suit::CLUB: return "Club";

@@ -12,15 +12,14 @@ namespace GameHandler {
 
     Hand::Hand(const Card& firstCard, const Card& secondCard) :
         firstCard(firstCard), secondCard(secondCard), cards({&firstCard, &secondCard}) {
-        if (firstCard == secondCard) {
-            throw invalid_hand("The two given cards are the same (" + firstCard.getShortName() + ")");
-        }
+        if (firstCard == secondCard) { throw invalid_hand("The two given cards are the same (" + firstCard.getShortName() + ")"); }
 
         processHand();
     }
 
     auto Hand::operator=(const Hand& other) -> Hand& {
-        if (this != &other) {
+        if (this != &other)
+        {
             firstCard  = other.firstCard;
             secondCard = other.secondCard;
             cards      = {&firstCard, &secondCard};
@@ -35,7 +34,8 @@ namespace GameHandler {
     }
 
     auto Hand::operator=(Hand&& other) noexcept -> Hand& {
-        if (this != &other) {
+        if (this != &other)
+        {
             firstCard  = std::move(other.firstCard);
             secondCard = std::move(other.secondCard);
             cards      = {&firstCard, &secondCard};

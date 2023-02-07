@@ -8,7 +8,8 @@ namespace GameHandler {
     using enum Round::Street;
 
     auto Round::operator=(const Round& other) -> Round& {
-        if (this != &other) {
+        if (this != &other)
+        {
             actions        = other.actions;
             pot            = other.pot;
             currentStreet  = other.currentStreet;
@@ -19,7 +20,8 @@ namespace GameHandler {
     }
 
     auto Round::operator=(Round&& other) noexcept -> Round& {
-        if (this != &other) {
+        if (this != &other)
+        {
             actions        = std::move(other.actions);
             pot            = other.pot;
             currentStreet  = other.currentStreet;
@@ -30,7 +32,8 @@ namespace GameHandler {
     }
 
     auto Round::endStreet() -> void {
-        switch (currentStreet) {
+        switch (currentStreet)
+        {
             case PREFLOP: currentStreet = FLOP; break;
             case FLOP: currentStreet = TURN; break;
             case TURN: currentStreet = RIVER; break;

@@ -42,3 +42,25 @@ This service reads inputs from a poker room screenshot to extract all needed inf
 - OpenCV
 
 ### todo
+
+## Coding
+
+### Git hook
+
+A client side [git hook](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks) can be setup to automatically check that your code
+is correctly formatted before committing.
+
+The actual setup hook is a `pre-commit` hook located in `hooks/pre-commit` that verify that C++ files are
+correctly formatted and correct the files if possible.
+
+To enable this hook run `init.sh` at the root project directory.
+
+To bypass this hook you can commit with the following option `git commit --no-verify`.
+
+### Apply on all the project source files
+
+To apply the code formatting on all project source files at start, use the following command :
+
+```bash
+find services -regex '.*\.\(cpp\|hpp\)' -exec clang-format -style=file -i {} \;
+```

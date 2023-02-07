@@ -91,11 +91,68 @@ TEST(BoardTest, hasStraightFlushShouldBeCorrect) {
 
 // --------------------- Hand check ---------------------//
 
+TEST(BoardTest, handRankHighCardShouldBeCorrect) {
+    EXPECT_EQ(Board({card("2S"), card("3H"), card("7D")}).getHandRank({card("9D"), card("4D")}), HIGH_CARD);
+    EXPECT_EQ(Board({card("2S"), card("3H"), card("7D"), card("8D")}).getHandRank({card("9D"), card("TD")}), HIGH_CARD);
+    EXPECT_EQ(Board({card("2S"), card("3H"), card("6D"), card("7H")}).getHandRank({card("9D"), card("TD")}), HIGH_CARD);
+    EXPECT_EQ(Board({card("2S"), card("4H"), card("7D"), card("3S"), card("8D")}).getHandRank({card("KD"), card("JD")}), HIGH_CARD);
+}
+
 TEST(BoardTest, handRankPairShouldBeCorrect) {
     EXPECT_EQ(Board({card("2S"), card("3H"), card("7D")}).getHandRank({card("9D"), card("3D")}), PAIR);
     EXPECT_EQ(Board({card("2S"), card("3H"), card("7D"), card("8D")}).getHandRank({card("9D"), card("8D")}), PAIR);
     EXPECT_EQ(Board({card("2S"), card("3H"), card("7D"), card("7H")}).getHandRank({card("9D"), card("TD")}), PAIR);
     EXPECT_EQ(Board({card("2S"), card("3H"), card("7D"), card("3S"), card("8D")}).getHandRank({card("KD"), card("JD")}), PAIR);
+}
+
+TEST(BoardTest, handRankTwoPairShouldBeCorrect) {
+    EXPECT_EQ(Board({card("2S"), card("3H"), card("7D")}).getHandRank({card("2D"), card("7C")}), TWO_PAIR);
+    EXPECT_EQ(Board({card("2S"), card("3H"), card("7D"), card("8D")}).getHandRank({card("2D"), card("8D")}), TWO_PAIR);
+    EXPECT_EQ(Board({card("2S"), card("3H"), card("7D"), card("7H")}).getHandRank({card("9D"), card("9S")}), TWO_PAIR);
+    EXPECT_EQ(Board({card("2S"), card("3H"), card("7D"), card("3S"), card("8D")}).getHandRank({card("KD"), card("2D")}), TWO_PAIR);
+}
+
+TEST(BoardTest, handRankTripsShouldBeCorrect) {
+    EXPECT_EQ(Board({card("2S"), card("3H"), card("7D")}).getHandRank({card("7H"), card("7C")}), TRIPS);
+    EXPECT_EQ(Board({card("2S"), card("8H"), card("7D"), card("8D")}).getHandRank({card("AD"), card("8C")}), TRIPS);
+    EXPECT_EQ(Board({card("2S"), card("9H"), card("7D"), card("6H")}).getHandRank({card("9D"), card("9S")}), TRIPS);
+    EXPECT_EQ(Board({card("AS"), card("AH"), card("7D"), card("3S"), card("8D")}).getHandRank({card("AD"), card("2D")}), TRIPS);
+}
+
+TEST(BoardTest, handRankStraightShouldBeCorrect) {
+    EXPECT_EQ(Board({card("2S"), card("3H"), card("4D")}).getHandRank({card("5H"), card("6C")}), STRAIGHT);
+    EXPECT_EQ(Board({card("8S"), card("8H"), card("7D"), card("6D")}).getHandRank({card("5D"), card("9C")}), STRAIGHT);
+    EXPECT_EQ(Board({card("2S"), card("8H"), card("7D"), card("6H")}).getHandRank({card("9D"), card("TS")}), STRAIGHT);
+    EXPECT_EQ(Board({card("AS"), card("AH"), card("KD"), card("QS"), card("AC")}).getHandRank({card("TD"), card("JD")}), STRAIGHT);
+}
+
+TEST(BoardTest, handRankFlushShouldBeCorrect) {
+    EXPECT_EQ(Board({card("2S"), card("3S"), card("4S")}).getHandRank({card("5S"), card("7S")}), FLUSH);
+    EXPECT_EQ(Board({card("8S"), card("8D"), card("7D"), card("6D")}).getHandRank({card("5D"), card("TD")}), FLUSH);
+    EXPECT_EQ(Board({card("2S"), card("8S"), card("7S"), card("6S")}).getHandRank({card("KD"), card("TS")}), FLUSH);
+    EXPECT_EQ(Board({card("AS"), card("AD"), card("KD"), card("QS"), card("QD")}).getHandRank({card("9D"), card("JD")}), FLUSH);
+}
+
+TEST(BoardTest, handRankFullShouldBeCorrect) {
+    EXPECT_EQ(Board({card("2S"), card("2H"), card("7D")}).getHandRank({card("7H"), card("7C")}), FULL);
+    EXPECT_EQ(Board({card("2S"), card("8H"), card("7D"), card("8D")}).getHandRank({card("2D"), card("8C")}), FULL);
+    EXPECT_EQ(Board({card("2S"), card("9H"), card("7D"), card("7H")}).getHandRank({card("9D"), card("9S")}), FULL);
+    EXPECT_EQ(Board({card("AS"), card("AH"), card("7D"), card("2S"), card("8D")}).getHandRank({card("AD"), card("2D")}), FULL);
+}
+
+TEST(BoardTest, handRankQuadsShouldBeCorrect) {
+    EXPECT_EQ(Board({card("7S"), card("3H"), card("7D")}).getHandRank({card("7H"), card("7C")}), QUADS);
+    EXPECT_EQ(Board({card("2S"), card("8H"), card("8D"), card("8S")}).getHandRank({card("AD"), card("8C")}), QUADS);
+    EXPECT_EQ(Board({card("2S"), card("9H"), card("9C"), card("6H")}).getHandRank({card("9D"), card("9S")}), QUADS);
+    EXPECT_EQ(Board({card("AS"), card("AH"), card("7D"), card("3S"), card("8D")}).getHandRank({card("AD"), card("AC")}), QUADS);
+}
+
+TEST(BoardTest, handRankStraightFlushShouldBeCorrect) {
+    EXPECT_EQ(Board({card("2S"), card("3S"), card("4S")}).getHandRank({card("5S"), card("6S")}), STRAIGHT_FLUSH);
+    EXPECT_EQ(Board({card("8S"), card("8D"), card("7D"), card("6D")}).getHandRank({card("5D"), card("9D")}), STRAIGHT_FLUSH);
+    EXPECT_EQ(Board({card("2S"), card("8S"), card("7S"), card("6S")}).getHandRank({card("9D"), card("TS")}), STRAIGHT_FLUSH);
+    EXPECT_EQ(Board({card("AS"), card("AD"), card("KD"), card("QS"), card("QD")}).getHandRank({card("TD"), card("JD")}),
+              STRAIGHT_FLUSH);
 }
 
 TEST(BoardTest, jsonRepresentationShouldBeCorrect) {
