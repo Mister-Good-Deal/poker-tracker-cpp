@@ -11,9 +11,7 @@ using GameHandler::Factory::card;
 
 class RoundTest : public ::testing::Test {};
 
-#pragma clang diagnostic push
-#pragma ide diagnostic   ignored "cppcoreguidelines-avoid-magic-numbers"
-// 15 sec scenario
+// NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
 TEST(RoundTest, jsonRepresentationShouldBeCorrect) {
     Round  round;
     Player player1("player_1", true);
@@ -81,4 +79,4 @@ TEST(RoundTest, jsonRepresentationShouldBeCorrect) {
 
     EXPECT_EQ(round.toJson(), expectedJson);
 }
-#pragma clang diagnostic pop
+// NOLINTEND(cppcoreguidelines-avoid-magic-numbers)

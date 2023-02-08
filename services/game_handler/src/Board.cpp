@@ -75,7 +75,7 @@ namespace GameHandler {
         if (_trips || count(rankFrequencies, 3) == 1) { rank = TRIPS; }
         if (straight) { rank = STRAIGHT; }
         if (_flush || count(suitFrequencies, FLUSH_SIZE) >= 1) { rank = FLUSH; }
-        if (_full || rank == TRIPS && (count(rankFrequencies, 2) == 1)) { rank = FULL; }
+        if (_full || (rank == TRIPS && count(rankFrequencies, 2) == 1)) { rank = FULL; }
         if (_quads || count(rankFrequencies, 4) == 1) { rank = QUADS; }
         if (_straightFlush || (rank == FLUSH && straight)) { rank = STRAIGHT_FLUSH; }
 
@@ -168,7 +168,7 @@ namespace GameHandler {
 
         const int8_t WINDOW_SIZE = 5;
 
-        for (int8_t i = 0; i < static_cast<int8_t>(rankFrequencies.size()) - WINDOW_SIZE + 1; ++i)
+        for (int8_t i = 0; i < static_cast<int8_t>(rankFrequencies.size() - WINDOW_SIZE + 1); ++i)
         {
             auto window = counted(rankFrequencies.begin() + i, WINDOW_SIZE);
 
