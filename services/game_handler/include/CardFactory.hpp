@@ -69,8 +69,9 @@ namespace GameHandler::Factory {
         {"JS", Card(JACK, SPADE)},
         {"QS", Card(QUEEN, SPADE)},
         {"KS", Card(KING, SPADE)},
-        {"AS", Card(ACE, SPADE)}};
-
+        {"AS", Card(ACE, SPADE)},
+        // Undefined
+        {"NA", Card(UNDEFINED, UNKNOWN)}};
     class CardFactory {
         public:
             CardFactory() = delete;

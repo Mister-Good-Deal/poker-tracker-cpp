@@ -85,7 +85,19 @@ namespace GameHandler {
     auto Board::toJson() const -> json {
         auto cardsArray = json::array();
 
-        for_each(_cards, [&cardsArray](const Card& card) { cardsArray.emplace_back(card.toJson()); });
+        for_each(_cards, [&cardsArray](const Card& card) {
+            if (!card.isUnknown()) { cardsArray.emplace_back(card.toJson()); }
+        });
+
+        return cardsArray;
+    }
+
+    auto Board::toDetailedJson() const -> json {
+        auto cardsArray = json::array();
+
+        for_each(_cards, [&cardsArray](const Card& card) {
+            if (!card.isUnknown()) { cardsArray.emplace_back(card.toJson()); }
+        });
 
         return {{"cards", cardsArray},
                 {"properties",

@@ -27,6 +27,7 @@ namespace GameHandler {
             auto operator=(const Board& other) -> Board& = default;
             auto operator=(Board&& other) noexcept -> Board&;
 
+            [[nodiscard]] auto getCards() const -> board_t { return _cards; }
             [[nodiscard]] auto hasPossibleStraight() const -> bool { return _possibleStraight; }
             [[nodiscard]] auto hasPossibleFlush() const -> bool { return _possibleFlush; }
             [[nodiscard]] auto hasPossibleFlushDraw() const -> bool { return _possibleFlushDraw; }
@@ -48,6 +49,7 @@ namespace GameHandler {
             auto getHandRank(const Hand& hand) -> HandRank;
 
             [[nodiscard]] auto toJson() const -> json;
+            [[nodiscard]] auto toDetailedJson() const -> json;
 
         private:
             board_t            _cards;

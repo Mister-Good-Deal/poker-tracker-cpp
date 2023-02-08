@@ -20,18 +20,6 @@ using GameHandler::invalid_hand;
 using GameHandler::Factory::card;
 using GameHandler::Factory::invalid_card;
 
-class MockHand : public Hand {
-    public:
-        MockHand(const Card& firstCard, const Card& secondCard) : Hand(firstCard, secondCard) {}
-        // Proxy
-        auto isSuitedProxy() -> bool { return isSuited(); }
-        auto isAceSuitedProxy() -> bool { return isAceSuited(); }
-        auto isBroadwayProxy() -> bool { return isBroadway(); }
-        auto isPlurProxy() -> bool { return isPlur(); }
-        auto isConnectedProxy() -> bool { return isConnected(); }
-        auto isPremiumProxy() -> bool { return isPremium(); }
-};
-
 class HandTest : public ::testing::Test {};
 
 TEST(HandTest, shouldThrowInvalidHandExceptionWhenTheTwoCardsAreTheSame) {
@@ -48,96 +36,99 @@ TEST(HandTest, shouldThrowInvalidCardExceptionWhenOneCardDoesNotExist) {
     EXPECT_THROW_WITH_MESSAGE(Hand(card("2T"), card("4S")), invalid_card, "Invalid short card name (2T)");
 }
 
-TEST(HandTest, isSuitedProxyShouldbeCorrect) {
-    EXPECT_TRUE(MockHand(card("AS"), card("TS")).isSuitedProxy());
-    EXPECT_TRUE(MockHand(card("8D"), card("KD")).isSuitedProxy());
-    EXPECT_TRUE(MockHand(card("2H"), card("3H")).isSuitedProxy());
-    EXPECT_TRUE(MockHand(card("7C"), card("4C")).isSuitedProxy());
+TEST(HandTest, isSuitedShouldbeCorrect) {
+    EXPECT_TRUE(Hand(card("AS"), card("TS")).isSuited());
+    EXPECT_TRUE(Hand(card("8D"), card("KD")).isSuited());
+    EXPECT_TRUE(Hand(card("2H"), card("3H")).isSuited());
+    EXPECT_TRUE(Hand(card("7C"), card("4C")).isSuited());
 
-    EXPECT_FALSE(MockHand(card("AS"), card("TD")).isSuitedProxy());
-    EXPECT_FALSE(MockHand(card("KD"), card("KS")).isSuitedProxy());
-    EXPECT_FALSE(MockHand(card("2H"), card("3C")).isSuitedProxy());
-    EXPECT_FALSE(MockHand(card("7C"), card("7H")).isSuitedProxy());
+    EXPECT_FALSE(Hand(card("AS"), card("TD")).isSuited());
+    EXPECT_FALSE(Hand(card("KD"), card("KS")).isSuited());
+    EXPECT_FALSE(Hand(card("2H"), card("3C")).isSuited());
+    EXPECT_FALSE(Hand(card("7C"), card("7H")).isSuited());
 }
 
-TEST(HandTest, isAceSuitedProxyShouldbeCorrect) {
-    EXPECT_TRUE(MockHand(card("AS"), card("TS")).isAceSuitedProxy());
-    EXPECT_TRUE(MockHand(card("8D"), card("AD")).isAceSuitedProxy());
-    EXPECT_TRUE(MockHand(card("2H"), card("AH")).isAceSuitedProxy());
-    EXPECT_TRUE(MockHand(card("AC"), card("4C")).isAceSuitedProxy());
+TEST(HandTest, isAceSuitedShouldbeCorrect) {
+    EXPECT_TRUE(Hand(card("AS"), card("TS")).isAceSuited());
+    EXPECT_TRUE(Hand(card("8D"), card("AD")).isAceSuited());
+    EXPECT_TRUE(Hand(card("2H"), card("AH")).isAceSuited());
+    EXPECT_TRUE(Hand(card("AC"), card("4C")).isAceSuited());
 
-    EXPECT_FALSE(MockHand(card("AS"), card("AD")).isAceSuitedProxy());
-    EXPECT_FALSE(MockHand(card("AD"), card("KS")).isAceSuitedProxy());
-    EXPECT_FALSE(MockHand(card("AH"), card("3C")).isAceSuitedProxy());
-    EXPECT_FALSE(MockHand(card("7C"), card("AH")).isAceSuitedProxy());
+    EXPECT_FALSE(Hand(card("AS"), card("AD")).isAceSuited());
+    EXPECT_FALSE(Hand(card("AD"), card("KS")).isAceSuited());
+    EXPECT_FALSE(Hand(card("AH"), card("3C")).isAceSuited());
+    EXPECT_FALSE(Hand(card("7C"), card("AH")).isAceSuited());
 }
 
 TEST(HandTest, isBroadwayShouldbeCorrect) {
-    EXPECT_TRUE(MockHand(card("AS"), card("7S")).isBroadwayProxy());
-    EXPECT_TRUE(MockHand(card("8D"), card("TD")).isBroadwayProxy());
-    EXPECT_TRUE(MockHand(card("2H"), card("KS")).isBroadwayProxy());
-    EXPECT_TRUE(MockHand(card("QC"), card("2H")).isBroadwayProxy());
+    EXPECT_TRUE(Hand(card("AS"), card("7S")).isBroadway());
+    EXPECT_TRUE(Hand(card("8D"), card("TD")).isBroadway());
+    EXPECT_TRUE(Hand(card("2H"), card("KS")).isBroadway());
+    EXPECT_TRUE(Hand(card("QC"), card("2H")).isBroadway());
 
-    EXPECT_FALSE(MockHand(card("2S"), card("9D")).isBroadwayProxy());
-    EXPECT_FALSE(MockHand(card("7D"), card("8S")).isBroadwayProxy());
-    EXPECT_FALSE(MockHand(card("2H"), card("3C")).isBroadwayProxy());
-    EXPECT_FALSE(MockHand(card("7C"), card("7H")).isBroadwayProxy());
+    EXPECT_FALSE(Hand(card("2S"), card("9D")).isBroadway());
+    EXPECT_FALSE(Hand(card("7D"), card("8S")).isBroadway());
+    EXPECT_FALSE(Hand(card("2H"), card("3C")).isBroadway());
+    EXPECT_FALSE(Hand(card("7C"), card("7H")).isBroadway());
 }
 
 TEST(HandTest, isPlurShouldbeCorrect) {
-    EXPECT_TRUE(MockHand(card("AS"), card("TS")).isPlurProxy());
-    EXPECT_TRUE(MockHand(card("QD"), card("TD")).isPlurProxy());
-    EXPECT_TRUE(MockHand(card("KH"), card("KS")).isPlurProxy());
-    EXPECT_TRUE(MockHand(card("QC"), card("JH")).isPlurProxy());
+    EXPECT_TRUE(Hand(card("AS"), card("TS")).isPlur());
+    EXPECT_TRUE(Hand(card("QD"), card("TD")).isPlur());
+    EXPECT_TRUE(Hand(card("KH"), card("KS")).isPlur());
+    EXPECT_TRUE(Hand(card("QC"), card("JH")).isPlur());
 
-    EXPECT_FALSE(MockHand(card("JS"), card("9D")).isPlurProxy());
-    EXPECT_FALSE(MockHand(card("7D"), card("8S")).isPlurProxy());
-    EXPECT_FALSE(MockHand(card("AH"), card("9C")).isPlurProxy());
-    EXPECT_FALSE(MockHand(card("7C"), card("7H")).isPlurProxy());
+    EXPECT_FALSE(Hand(card("JS"), card("9D")).isPlur());
+    EXPECT_FALSE(Hand(card("7D"), card("8S")).isPlur());
+    EXPECT_FALSE(Hand(card("AH"), card("9C")).isPlur());
+    EXPECT_FALSE(Hand(card("7C"), card("7H")).isPlur());
 }
 
 TEST(HandTest, isConnectedShouldbeCorrect) {
-    EXPECT_TRUE(MockHand(card("AS"), card("KS")).isConnectedProxy());
-    EXPECT_TRUE(MockHand(card("7D"), card("8D")).isConnectedProxy());
-    EXPECT_TRUE(MockHand(card("9H"), card("TS")).isConnectedProxy());
-    EXPECT_TRUE(MockHand(card("AC"), card("2H")).isConnectedProxy());
-    EXPECT_TRUE(MockHand(card("2C"), card("AC")).isConnectedProxy());
+    EXPECT_TRUE(Hand(card("AS"), card("KS")).isConnected());
+    EXPECT_TRUE(Hand(card("7D"), card("8D")).isConnected());
+    EXPECT_TRUE(Hand(card("9H"), card("TS")).isConnected());
+    EXPECT_TRUE(Hand(card("AC"), card("2H")).isConnected());
+    EXPECT_TRUE(Hand(card("2C"), card("AC")).isConnected());
 
-    EXPECT_FALSE(MockHand(card("JS"), card("9D")).isConnectedProxy());
-    EXPECT_FALSE(MockHand(card("7D"), card("9S")).isConnectedProxy());
-    EXPECT_FALSE(MockHand(card("AH"), card("3C")).isConnectedProxy());
-    EXPECT_FALSE(MockHand(card("3S"), card("AH")).isConnectedProxy());
+    EXPECT_FALSE(Hand(card("JS"), card("9D")).isConnected());
+    EXPECT_FALSE(Hand(card("7D"), card("9S")).isConnected());
+    EXPECT_FALSE(Hand(card("AH"), card("3C")).isConnected());
+    EXPECT_FALSE(Hand(card("3S"), card("AH")).isConnected());
 }
 
 TEST(HandTest, isPremiumShouldbeCorrect) {
-    EXPECT_TRUE(MockHand(card("AS"), card("KS")).isPremiumProxy());
-    EXPECT_TRUE(MockHand(card("QD"), card("QS")).isPremiumProxy());
-    EXPECT_TRUE(MockHand(card("KH"), card("AS")).isPremiumProxy());
-    EXPECT_TRUE(MockHand(card("KC"), card("KH")).isPremiumProxy());
+    EXPECT_TRUE(Hand(card("AS"), card("KS")).isPremium());
+    EXPECT_TRUE(Hand(card("QD"), card("QS")).isPremium());
+    EXPECT_TRUE(Hand(card("KH"), card("AS")).isPremium());
+    EXPECT_TRUE(Hand(card("KC"), card("KH")).isPremium());
 
-    EXPECT_FALSE(MockHand(card("JS"), card("9D")).isPremiumProxy());
-    EXPECT_FALSE(MockHand(card("AD"), card("JS")).isPremiumProxy());
-    EXPECT_FALSE(MockHand(card("QC"), card("KC")).isPremiumProxy());
-    EXPECT_FALSE(MockHand(card("3S"), card("AH")).isPremiumProxy());
+    EXPECT_FALSE(Hand(card("JS"), card("9D")).isPremium());
+    EXPECT_FALSE(Hand(card("AD"), card("JS")).isPremium());
+    EXPECT_FALSE(Hand(card("QC"), card("KC")).isPremium());
+    EXPECT_FALSE(Hand(card("3S"), card("AH")).isPremium());
 }
 
 TEST(HandTest, jsonRepresentationShouldBeCorrect) {
     // language=json
     auto expectedJson = R"(
+        [
+            { "shortName": "AS", "rank": "Ace", "suit": "Spade" },
+            { "shortName": "KS", "rank": "King", "suit": "Spade" }
+        ]
+    )"_json;
+
+    EXPECT_EQ(Hand(card("AS"), card("KS")).toJson(), expectedJson);
+    EXPECT_EQ(Hand().toJson(), "[]"_json);
+}
+
+TEST(HandTest, jsonDetailedRepresentationShouldBeCorrect) {
+    // language=json
+    auto expectedJson = R"(
         {
             "cards": [
-                {
-                    "shortName": "TS",
-                    "fullName": "Ten of Spade",
-                    "rank": "Ten",
-                    "suit": "Spade"
-                },
-                {
-                    "shortName": "KS",
-                    "fullName": "King of Spade",
-                    "rank": "King",
-                    "suit": "Spade"
-                }
+                { "shortName": "TS", "rank": "Ten", "suit": "Spade" },
+                { "shortName": "KS", "rank": "King", "suit": "Spade" }
             ],
             "properties": {
                 "suited": true,
@@ -150,5 +141,5 @@ TEST(HandTest, jsonRepresentationShouldBeCorrect) {
         }
     )"_json;
 
-    EXPECT_EQ(MockHand(card("TS"), card("KS")).toJson(), expectedJson);
+    EXPECT_EQ(Hand(card("TS"), card("KS")).toDetailedJson(), expectedJson);
 }

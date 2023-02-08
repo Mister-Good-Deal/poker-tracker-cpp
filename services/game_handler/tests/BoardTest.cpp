@@ -158,38 +158,28 @@ TEST(BoardTest, handRankStraightFlushShouldBeCorrect) {
 TEST(BoardTest, jsonRepresentationShouldBeCorrect) {
     // language=json
     auto expectedJson = R"(
+        [
+            { "shortName": "AH", "rank": "Ace", "suit": "Heart" },
+            { "shortName": "QH", "rank": "Queen", "suit": "Heart" },
+            { "shortName": "JH", "rank": "Jack", "suit": "Heart" },
+            { "shortName": "TH", "rank": "Ten", "suit": "Heart" },
+            { "shortName": "KH", "rank": "King", "suit": "Heart" }
+        ]
+    )"_json;
+
+    EXPECT_EQ(Board({card("AH"), card("QH"), card("JH"), card("TH"), card("KH")}).toJson(), expectedJson);
+}
+
+TEST(BoardTest, jsonDetailedRepresentationShouldBeCorrect) {
+    // language=json
+    auto expectedJson = R"(
         {
             "cards": [
-                {
-                    "shortName": "AH",
-                    "fullName": "Ace of Heart",
-                    "rank": "Ace",
-                    "suit": "Heart"
-                },
-                {
-                    "shortName": "QH",
-                    "fullName": "Queen of Heart",
-                    "rank": "Queen",
-                    "suit": "Heart"
-                },
-                {
-                    "shortName": "JH",
-                    "fullName": "Jack of Heart",
-                    "rank": "Jack",
-                    "suit": "Heart"
-                },
-                {
-                    "shortName": "TH",
-                    "fullName": "Ten of Heart",
-                    "rank": "Ten",
-                    "suit": "Heart"
-                },
-                {
-                    "shortName": "KH",
-                    "fullName": "King of Heart",
-                    "rank": "King",
-                    "suit": "Heart"
-                }
+                { "shortName": "AH", "rank": "Ace", "suit": "Heart" },
+                { "shortName": "QH", "rank": "Queen", "suit": "Heart" },
+                { "shortName": "JH", "rank": "Jack", "suit": "Heart" },
+                { "shortName": "TH", "rank": "Ten", "suit": "Heart" },
+                { "shortName": "KH", "rank": "King", "suit": "Heart" }
             ],
             "properties": {
                 "paire": false,
@@ -207,5 +197,5 @@ TEST(BoardTest, jsonRepresentationShouldBeCorrect) {
         }
     )"_json;
 
-    EXPECT_EQ(Board({card("AH"), card("QH"), card("JH"), card("TH"), card("KH")}).toJson(), expectedJson);
+    EXPECT_EQ(Board({card("AH"), card("QH"), card("JH"), card("TH"), card("KH")}).toDetailedJson(), expectedJson);
 }

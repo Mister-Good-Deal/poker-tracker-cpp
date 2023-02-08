@@ -51,13 +51,11 @@ GoogleTest template for testing a class.
 **Implementation**
 
 ```c++
-#parse("C File Header.h")
-#[[#include]]# "${HEADER_FILENAME}"
-#include "gtest/gtest.h"
+#[[#include]]# <gtest/gtest.h>
 
-class ${SuiteName} : public ::testing::Test {};
+class ${FILE_NAME} : public ::testing::Test {};
 
-TEST(${SuiteName}, ${TestName}) {
-    ${END}
+TEST(${FILE_NAME}, todo) {
+    // todo
 }
 ```

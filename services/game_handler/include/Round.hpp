@@ -35,23 +35,30 @@ namespace GameHandler {
             auto operator=(const Round& other) -> Round&;
             auto operator=(Round&& other) noexcept -> Round&;
 
-            [[nodiscard]] auto getBoard() const -> const Board& { return board; }
-            [[nodiscard]] auto getPot() const -> int32_t { return pot; }
+            [[nodiscard]] auto getBoard() -> Board& { return _board; }
+            [[nodiscard]] auto getPot() const -> int32_t { return _pot; }
+
+            auto setHand(const Hand& hand) -> void { _hand = hand; }
 
             auto start() -> void;
             auto endStreet() -> void;
-            auto end() -> void;
+            auto end(bool isWon) -> void;
 
             auto call(const Player& player, int32_t amount) -> void;
             auto bet(const Player& player, int32_t amount) -> void;
             auto check(const Player& player) -> void;
             auto fold(const Player& player) -> void;
 
+            [[nodiscard]] auto toJson() const -> json;
+
         private:
-            round_actions_t          actions;
-            Board                    board;
-            int32_t                  pot            = 0;
-            Street                   currentStreet  = Street::PREFLOP;
-            time_point<system_clock> lastActionTime = system_clock::now();
+            round_actions_t          _actions;
+            Board                    _board;
+            Hand                     _hand;
+            int32_t                  _pot            = 0;
+            int32_t                  _bet            = 0;
+            Street                   _currentStreet  = Street::PREFLOP;
+            time_point<system_clock> _lastActionTime = system_clock::now();
+            bool                     _won            = false;
     };
 }  // namespace GameHandler

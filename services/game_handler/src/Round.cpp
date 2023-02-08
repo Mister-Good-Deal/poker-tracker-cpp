@@ -3,6 +3,7 @@
 namespace GameHandler {
     using std::chrono::duration_cast;
     using std::chrono::seconds;
+    using std::ranges::for_each;
 
     using enum RoundAction::ActionType;
     using enum Round::Street;
@@ -10,10 +11,14 @@ namespace GameHandler {
     auto Round::operator=(const Round& other) -> Round& {
         if (this != &other)
         {
-            actions        = other.actions;
-            pot            = other.pot;
-            currentStreet  = other.currentStreet;
-            lastActionTime = other.lastActionTime;
+            _actions        = other._actions;
+            _board          = other._board;
+            _hand           = other._hand;
+            _pot            = other._pot;
+            _bet            = other._bet;
+            _currentStreet  = other._currentStreet;
+            _lastActionTime = other._lastActionTime;
+            _won            = other._won;
         }
 
         return *this;
@@ -22,61 +27,91 @@ namespace GameHandler {
     auto Round::operator=(Round&& other) noexcept -> Round& {
         if (this != &other)
         {
-            actions        = std::move(other.actions);
-            pot            = other.pot;
-            currentStreet  = other.currentStreet;
-            lastActionTime = other.lastActionTime;
+            _actions        = std::move(other._actions);
+            _board          = std::move(other._board);
+            _hand           = std::move(other._hand);
+            _pot            = other._pot;
+            _bet            = other._bet;
+            _currentStreet  = other._currentStreet;
+            _lastActionTime = other._lastActionTime;
+            _won            = other._won;
         }
 
         return *this;
     }
 
     auto Round::endStreet() -> void {
-        switch (currentStreet)
+        switch (_currentStreet)
         {
-            case PREFLOP: currentStreet = FLOP; break;
-            case FLOP: currentStreet = TURN; break;
-            case TURN: currentStreet = RIVER; break;
-            case RIVER: currentStreet = SHOWDOWN; break;
+            case PREFLOP: _currentStreet = FLOP; break;
+            case FLOP: _currentStreet = TURN; break;
+            case TURN: _currentStreet = RIVER; break;
+            case RIVER: _currentStreet = SHOWDOWN; break;
             case SHOWDOWN: break;
         }
     }
 
-    auto Round::start() -> void { lastActionTime = system_clock::now(); }
+    auto Round::start() -> void { _lastActionTime = system_clock::now(); }
+    auto Round::end(bool isWon) -> void { _won = isWon; }
 
-    void Round::call(const Player& player, int32_t amount) {
+    auto Round::call(const Player& player, int32_t amount) -> void {
         auto now   = system_clock::now();
-        auto index = static_cast<int>(currentStreet);
+        auto index = static_cast<int>(_currentStreet);
 
-        actions.at(index).emplace_back(CALL, player, duration_cast<seconds>(now - lastActionTime), amount);
+        _actions.at(index).emplace_back(CALL, player, duration_cast<seconds>(now - _lastActionTime), amount);
 
-        lastActionTime = now;
+        if (player.self()) { _bet += amount; }
+
+        _pot += amount;
+        _lastActionTime = now;
     }
 
-    void Round::bet(const Player& player, int32_t amount) {
+    auto Round::bet(const Player& player, int32_t amount) -> void {
         auto now   = system_clock::now();
-        auto index = static_cast<int>(currentStreet);
+        auto index = static_cast<int>(_currentStreet);
 
-        actions.at(index).emplace_back(BET, player, duration_cast<seconds>(now - lastActionTime), amount);
+        _actions.at(index).emplace_back(BET, player, duration_cast<seconds>(now - _lastActionTime), amount);
 
-        lastActionTime = now;
+        if (player.self()) { _bet += amount; }
+
+        _pot += amount;
+        _lastActionTime = now;
     }
 
-    void Round::check(const Player& player) {
+    auto Round::check(const Player& player) -> void {
         auto now   = system_clock::now();
-        auto index = static_cast<int>(currentStreet);
+        auto index = static_cast<int>(_currentStreet);
 
-        actions.at(index).emplace_back(CHECK, player, duration_cast<seconds>(now - lastActionTime));
+        _actions.at(index).emplace_back(CHECK, player, duration_cast<seconds>(now - _lastActionTime));
 
-        lastActionTime = now;
+        _lastActionTime = now;
     }
 
-    void Round::fold(const Player& player) {
+    auto Round::fold(const Player& player) -> void {
         auto now   = system_clock::now();
-        auto index = static_cast<int>(currentStreet);
+        auto index = static_cast<int>(_currentStreet);
 
-        actions.at(index).emplace_back(FOLD, player, duration_cast<seconds>(now - lastActionTime));
+        _actions.at(index).emplace_back(FOLD, player, duration_cast<seconds>(now - _lastActionTime));
 
-        lastActionTime = now;
+        _lastActionTime = now;
+    }
+
+    auto Round::toJson() const -> json {
+        auto preFlopActions = json::array();
+        auto flopActions    = json::array();
+        auto turnActions    = json::array();
+        auto riverActions   = json::array();
+
+        for_each(_actions[static_cast<int8_t>(PREFLOP)], [&](const auto& action) { preFlopActions.emplace_back(action.toJson()); });
+        for_each(_actions[static_cast<int8_t>(FLOP)], [&](const RoundAction& action) { flopActions.emplace_back(action.toJson()); });
+        for_each(_actions[static_cast<int8_t>(TURN)], [&](const RoundAction& action) { turnActions.emplace_back(action.toJson()); });
+        for_each(_actions[static_cast<int8_t>(RIVER)], [&](const RoundAction& action) { riverActions.emplace_back(action.toJson()); });
+
+        return {{"actions", {{"pre_flop", preFlopActions}, {"flop", flopActions}, {"turn", turnActions}, {"river", riverActions}}},
+                {"board", _board.toJson()},
+                {"hand", _hand.toJson()},
+                {"pot", _pot},
+                {"bet", _bet},
+                {"won", _won}};
     }
 }  // namespace GameHandler

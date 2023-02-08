@@ -3,31 +3,31 @@
 #include <algorithm>
 
 namespace GameHandler {
-    using ::std::tie;
-    using ::std::ranges::all_of;
-    using ::std::ranges::any_of;
-    using ::std::ranges::find;
+    using std::tie;
+    using std::ranges::all_of;
+    using std::ranges::any_of;
+    using std::ranges::find;
 
     using enum Card::Rank;
 
     Hand::Hand(const Card& firstCard, const Card& secondCard) :
-        firstCard(firstCard), secondCard(secondCard), cards({&firstCard, &secondCard}) {
+        _firstCard(firstCard), _secondCard(secondCard), _cards({&firstCard, &secondCard}) {
         if (firstCard == secondCard) { throw invalid_hand("The two given cards are the same (" + firstCard.getShortName() + ")"); }
 
-        processHand();
+        _processHand();
     }
 
     auto Hand::operator=(const Hand& other) -> Hand& {
         if (this != &other)
         {
-            firstCard  = other.firstCard;
-            secondCard = other.secondCard;
-            cards      = {&firstCard, &secondCard};
-            suited     = other.suited;
-            broadway   = other.broadway;
-            plur       = other.plur;
-            connected  = other.connected;
-            premium    = other.premium;
+            _firstCard  = other._firstCard;
+            _secondCard = other._secondCard;
+            _cards      = {&_firstCard, &_secondCard};
+            _suited     = other._suited;
+            _broadway   = other._broadway;
+            _plur       = other._plur;
+            _connected  = other._connected;
+            _premium    = other._premium;
         }
 
         return *this;
@@ -36,68 +36,81 @@ namespace GameHandler {
     auto Hand::operator=(Hand&& other) noexcept -> Hand& {
         if (this != &other)
         {
-            firstCard  = std::move(other.firstCard);
-            secondCard = std::move(other.secondCard);
-            cards      = {&firstCard, &secondCard};
-            suited     = other.suited;
-            broadway   = other.broadway;
-            plur       = other.plur;
-            connected  = other.connected;
-            premium    = other.premium;
+            _firstCard  = std::move(other._firstCard);
+            _secondCard = std::move(other._secondCard);
+            _cards      = {&_firstCard, &_secondCard};
+            _suited     = other._suited;
+            _broadway   = other._broadway;
+            _plur       = other._plur;
+            _connected  = other._connected;
+            _premium    = other._premium;
         }
 
         return *this;
     }
 
-    auto Hand::operator==(const Hand& rhs) const -> bool { return tie(firstCard, secondCard) == tie(rhs.firstCard, rhs.secondCard); }
+    auto Hand::operator==(const Hand& rhs) const -> bool {
+        return tie(_firstCard, _secondCard) == tie(rhs._firstCard, rhs._secondCard);
+    }
+
     auto Hand::operator!=(const Hand& rhs) const -> bool { return !(rhs == *this); }
-
-    auto Hand::isSuited() -> bool { return firstCard.getSuit() == secondCard.getSuit(); }
-
-    auto Hand::isAceSuited() -> bool {
-        return isSuited() && any_of(cards, [](const auto& card) { return card->getRank() == ACE; });
-    }
-
-    auto Hand::isBroadway() -> bool {
-        return any_of(cards, [this](const auto& card) { return isBroadway(card); });
-    }
-
-    auto Hand::isPlur() -> bool {
-        return all_of(cards, [this](const auto& card) { return isBroadway(card); });
-    }
-
-    auto Hand::isConnected() -> bool {
-        return std::abs(static_cast<int16_t>(firstCard.getRank()) - static_cast<int16_t>(secondCard.getRank())) <= 1
-            || (firstCard.getRank() == ACE && secondCard.getRank() == TWO)
-            || (secondCard.getRank() == ACE && firstCard.getRank() == TWO);
-    }
-
-    auto Hand::isPremium() -> bool {
-        return find(PREMIUM, std::array<Card::Rank, 2>{firstCard.getRank(), secondCard.getRank()}) != PREMIUM.end();
-    }
-
-    auto Hand::processHand() -> void {
-        suited    = isSuited();
-        aceSuited = isAceSuited();
-        broadway  = isBroadway();
-        plur      = isPlur();
-        connected = isConnected();
-        premium   = isPremium();
-    }
 
     auto Hand::toJson() const -> json {
         auto cardsArray = json::array();
 
-        cardsArray.emplace_back(firstCard.toJson());
-        cardsArray.emplace_back(secondCard.toJson());
+        if (!_firstCard.isUnknown()) { cardsArray.emplace_back(_firstCard.toJson()); }
+        if (!_secondCard.isUnknown()) { cardsArray.emplace_back(_secondCard.toJson()); }
+
+        return cardsArray;
+    }
+
+    auto Hand::toDetailedJson() const -> json {
+        auto cardsArray = json::array();
+
+        cardsArray.emplace_back(_firstCard.toJson());
+        cardsArray.emplace_back(_secondCard.toJson());
 
         return {{"cards", cardsArray},
                 {"properties",
-                 {{"suited", suited},
-                  {"aceSuited", aceSuited},
-                  {"broadway", broadway},
-                  {"plur", plur},
-                  {"connected", connected},
-                  {"premium", premium}}}};
+                 {{"suited", _suited},
+                  {"aceSuited", _aceSuited},
+                  {"broadway", _broadway},
+                  {"plur", _plur},
+                  {"connected", _connected},
+                  {"premium", _premium}}}};
+    }
+
+    auto Hand::_isSuited() -> bool { return _firstCard.getSuit() == _secondCard.getSuit(); }
+
+    auto Hand::_isAceSuited() -> bool {
+        return _suited && any_of(_cards, [](const auto& card) { return card->getRank() == ACE; });
+    }
+
+    auto Hand::_isBroadway() -> bool {
+        return any_of(_cards, [](const auto& card) { return card->isBroadway(); });
+    }
+
+    auto Hand::_isPlur() -> bool {
+        return all_of(_cards, [](const auto& card) { return card->isBroadway(); });
+    }
+
+    auto Hand::_isConnected() -> bool {
+        return std::abs(static_cast<int16_t>(_firstCard.getRank()) - static_cast<int16_t>(_secondCard.getRank())) <= 1
+            || (_firstCard.getRank() == ACE && _secondCard.getRank() == TWO)
+            || (_secondCard.getRank() == ACE && _firstCard.getRank() == TWO);
+    }
+
+    auto Hand::_isPremium() -> bool {
+        return find(PREMIUM, std::array<Card::Rank, 2>{_firstCard.getRank(), _secondCard.getRank()}) != PREMIUM.end();
+    }
+
+    auto Hand::_processHand() -> void {
+        // Order is important, aceSuited is using suited
+        _suited    = _isSuited();
+        _aceSuited = _isAceSuited();
+        _broadway  = _isBroadway();
+        _plur      = _isPlur();
+        _connected = _isConnected();
+        _premium   = _isPremium();
     }
 }  // namespace GameHandler

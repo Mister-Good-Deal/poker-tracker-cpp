@@ -18,6 +18,12 @@ namespace GameHandler {
 
             enum class Suit : int8_t { HEART = 0, DIAMOND, CLUB, SPADE, UNKNOWN };
 
+            using enum Card::Rank;
+
+            static constexpr int8_t BROADWAY_NUMBER = 5;
+
+            static constexpr std::array<Card::Rank, BROADWAY_NUMBER> BROADWAY = {TEN, JACK, QUEEN, KING, ACE};
+
             static constexpr auto rankToString(Rank rank) -> std::string {
                 switch (rank)
                 {
@@ -70,28 +76,30 @@ namespace GameHandler {
             }
 
         public:
-            Card() : rank(Rank::UNDEFINED), suit(Suit::UNKNOWN){};
-            Card(const Card& other) = default;
-            Card(Card&& other) noexcept : rank(other.rank), suit(other.suit){};
-            Card(Rank rank, Suit suit) : rank(rank), suit(suit){};
+            Card() : _rank(Rank::UNDEFINED), _suit(Suit::UNKNOWN){};
+            Card(const Card& other)     = default;
+            Card(Card&& other) noexcept = default;
+            Card(Rank rank, Suit suit) : _rank(rank), _suit(suit){};
 
             virtual ~Card() = default;
 
             auto operator=(const Card& other) -> Card& = default;
             auto operator=(Card&& other) noexcept -> Card&;
 
-            auto operator==(const Card& other) const -> bool { return std::tie(rank, suit) == std::tie(other.rank, other.suit); }
+            auto operator==(const Card& other) const -> bool { return std::tie(_rank, _suit) == std::tie(other._rank, other._suit); }
             auto operator!=(const Card& other) const -> bool { return !(other == *this); }
 
-            [[nodiscard]] auto getRank() const -> Rank { return rank; }
-            [[nodiscard]] auto getSuit() const -> Suit { return suit; }
+            [[nodiscard]] auto getRank() const -> Rank { return _rank; }
+            [[nodiscard]] auto getSuit() const -> Suit { return _suit; }
             [[nodiscard]] auto getFullName() const -> std::string;
             [[nodiscard]] auto getShortName() const -> std::string;
+            [[nodiscard]] auto isBroadway() const -> bool;
+            [[nodiscard]] auto isUnknown() const -> bool { return _suit == Suit::UNKNOWN || _rank == Rank::UNDEFINED; };
 
             [[nodiscard]] auto toJson() const -> json;
 
         private:
-            Rank rank;
-            Suit suit;
+            Rank _rank;
+            Suit _suit;
     };
 }  // namespace GameHandler

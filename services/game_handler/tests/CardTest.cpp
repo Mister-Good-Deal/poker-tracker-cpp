@@ -139,7 +139,6 @@ TEST(CardTest, JsonRepresentationShouldBeCorrent) {
     auto expectedJson = R"(
         {
             "shortName": "TS",
-            "fullName": "Ten of Spade",
             "rank": "Ten",
             "suit": "Spade"
         }
