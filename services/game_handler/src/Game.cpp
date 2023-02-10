@@ -56,16 +56,21 @@ namespace GameHandler {
 
     auto Game::toJson() const -> json {
         if (_winner == nullptr) { throw std::runtime_error("The game's winner has not been set"); }
-        
+
         auto roundsArray      = json::array();
         auto playersNameArray = json::array();
 
         for_each(_rounds, [&roundsArray](const Round& round) { roundsArray.emplace_back(round.toJson()); });
         for_each(_players | keys, [&playersNameArray](const auto& playerName) { playersNameArray.emplace_back(playerName); });
 
-        return {{"rounds", roundsArray},        {"players", playersNameArray},
-                {"winner", _winner->getName()}, {"won", _winner->self()},
-                {"balance", _computeBalance()}, {"duration", duration_cast<seconds>(_endTime - _startTime).count()}};
+        return {{"rounds", roundsArray},
+                {"players", playersNameArray},
+                {"winner", _winner->getName()},
+                {"won", _winner->self()},
+                {"buy_in", _buyIn},
+                {"multipliers", _multipliers},
+                {"balance", _computeBalance()},
+                {"duration", duration_cast<seconds>(_endTime - _startTime).count()}};
     }
 
     auto Game::_computeBalance() const -> int32_t { return _buyIn * ((_winner->self() ? _multipliers : 0) - 1); }

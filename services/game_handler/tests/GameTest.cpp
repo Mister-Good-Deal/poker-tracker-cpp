@@ -137,6 +137,8 @@ TEST(GameTest, jsonRepresentationShouldBeCorrect) {
             ],
             "players": ["player_1", "player_2", "player_3"],
             "winner": "player_1",
+            "buy_in": 10,
+            "multipliers": 3,
             "won": true,
             "balance": 20,
             "duration": 0
