@@ -42,7 +42,7 @@ namespace GameHandler {
 
             auto start() -> void;
             auto endStreet() -> void;
-            auto end(bool isWon) -> void;
+            auto end(const Player& winner) -> void;
 
             auto call(const Player& player, int32_t amount) -> void;
             auto bet(const Player& player, int32_t amount) -> void;
@@ -59,6 +59,6 @@ namespace GameHandler {
             int32_t                  _bet            = 0;
             Street                   _currentStreet  = Street::PREFLOP;
             time_point<system_clock> _lastActionTime = system_clock::now();
-            bool                     _won            = false;
+            const Player*            _winner         = nullptr;
     };
 }  // namespace GameHandler

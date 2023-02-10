@@ -18,7 +18,7 @@ namespace GameHandler {
             _bet            = other._bet;
             _currentStreet  = other._currentStreet;
             _lastActionTime = other._lastActionTime;
-            _won            = other._won;
+            _winner         = other._winner;
         }
 
         return *this;
@@ -34,7 +34,7 @@ namespace GameHandler {
             _bet            = other._bet;
             _currentStreet  = other._currentStreet;
             _lastActionTime = other._lastActionTime;
-            _won            = other._won;
+            _winner         = std::move(other._winner);
         }
 
         return *this;
@@ -52,7 +52,7 @@ namespace GameHandler {
     }
 
     auto Round::start() -> void { _lastActionTime = system_clock::now(); }
-    auto Round::end(bool isWon) -> void { _won = isWon; }
+    auto Round::end(const Player& winner) -> void { _winner = &winner; }
 
     auto Round::call(const Player& player, int32_t amount) -> void {
         auto now   = system_clock::now();
@@ -97,6 +97,8 @@ namespace GameHandler {
     }
 
     auto Round::toJson() const -> json {
+        if (_winner == nullptr) { throw std::runtime_error("The round's winner has not been set"); }
+
         auto preFlopActions = json::array();
         auto flopActions    = json::array();
         auto turnActions    = json::array();
@@ -112,6 +114,7 @@ namespace GameHandler {
                 {"hand", _hand.toJson()},
                 {"pot", _pot},
                 {"bet", _bet},
-                {"won", _won}};
+                {"won", _winner->self()},
+                {"winner", _winner->getName()}};
     }
 }  // namespace GameHandler

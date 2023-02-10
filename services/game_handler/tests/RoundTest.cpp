@@ -42,7 +42,7 @@ TEST(RoundTest, jsonRepresentationShouldBeCorrect) {
     round.bet(player1, 600);
     std::this_thread::sleep_for(seconds(4));
     round.fold(player2);
-    round.end(true);
+    round.end(player1);
     // language=json
     auto expectedJson = R"(
         {
@@ -73,7 +73,8 @@ TEST(RoundTest, jsonRepresentationShouldBeCorrect) {
             ],
             "pot": 1000,
             "bet": 700,
-            "won": true
+            "won": true,
+            "winner": "player_1"
         }
     )"_json;
 

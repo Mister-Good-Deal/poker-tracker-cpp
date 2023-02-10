@@ -55,7 +55,7 @@ namespace GameHandler {
             bool             _broadway   = false;
             bool             _plur       = false;
             bool             _connected  = false;
-            // @todo sibblingsConnected
+            // @todo siblingsConnected
             bool _premium = false;
 
             auto _isSuited() -> bool;
