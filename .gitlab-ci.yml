@@ -127,7 +127,7 @@ code_quality:
     paths:
       - $BUILD_PATH/gl-code-quality-report.json
       - $BUILD_PATH/code_checker_html_report/
-    expose_as: 'Code quality HTML/json reports'
+    expose_as: 'Code quality HTML and json reports'
     reports:
       codequality: $BUILD_PATH/gl-code-quality-report.json
   needs:
