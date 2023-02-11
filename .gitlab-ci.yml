@@ -12,7 +12,7 @@ variables:
   MAX_CODE_QUALITY_ISSUE_PER_FILE: 20
 
 default:
-  image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-clang:latest
+  image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-clang-ci:latest
   tags:
     - host
     - runner
@@ -21,6 +21,22 @@ default:
     key: $CI_COMMIT_REF_SLUG
     paths:
       - $BUILD_PATH
+
+include:
+  - template: Jobs/Container-Scanning.gitlab-ci.yml
+
+# Scan docker images for vulnerabilities if Dockerfiles changed or on demand with commit message containing "/docker-scan"
+# @todo only scan one image, maybe useless ?
+container_scanning:
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /\/docker\-scan/
+      changes:
+        - docker/Dockerfile*
+  variables:
+    CS_IMAGE: "registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-gcc"
+    CS_DISABLE_DEPENDENCY_LIST: "true"
+    CS_DISABLE_LANGUAGE_VULNERABILITY_SCAN: "false"
+    CS_DOCKERFILE_PATH: "docker/Dockerfile-builder-linux-gcc"
 
 # This job runs the clang-check tool to analyze the source code and generates a report in clang-check-report.plist
 clang_check:
@@ -32,8 +48,9 @@ clang_check:
     - clang-check -analyze -extra-arg=-std=c++20 -p $BUILD_PATH --analyzer-output-path=${PROJECT_PATH}/clang-check-report.plist ${CPP_SRC_FILES}
   artifacts:
     reports:
-      codequality: clang-check-report.plist
       dotenv: vars.env
+    paths:
+      - clang-check-report.plist
 
 # This job builds the Linux version of the application with the Release configuration
 build_linux:
@@ -46,7 +63,7 @@ build_linux:
       - $BUILD_PATH
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_BRANCH == /^release*/
+    - if: $CI_COMMIT_BRANCH =~/^release/
   variables:
     BUILD_TYPE: Release
   needs:
@@ -56,12 +73,13 @@ build_linux:
 build_linux_debug:
   stage: build
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1 --log-context && cmake --build $BUILD_PATH
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1
+      -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --log-context && cmake --build $BUILD_PATH
   artifacts:
     paths:
       - $BUILD_PATH
   rules:
-    - if: $CI_COMMIT_BRANCH == /^(feature|hotfix)*/
+    - if: $CI_COMMIT_BRANCH =~/^(feature|hotfix)/
   variables:
     BUILD_TYPE: Debug
   needs:
@@ -93,32 +111,39 @@ clang_format:
   needs:
     - clang_check
 
-# This job is responsible for running clang-tidy on the project source files and checking for potential issues and bugs.
-# It uses the 'builder-linux-clang' image
-clang_tidy:
-  stage: lint
+code_quality:
+  stage: test
+  tags:
+    - code-quality
   script:
-    - clang-tidy -checks='*' -warnings-as-errors='*,-*,<file-number>>$MAX_CODE_QUALITY_ISSUE_PER_FILE' -p $BUILD_PATH
-      -extra-arg=-std=c++20 -export-fixes=clang-tidy-report.yaml $CPP_SRC_FILES --
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --log-context
+    - CodeChecker analyze $BUILD_PATH/compile_commands.json -o $BUILD_PATH/code_checker_report -j 8 --ctu --tidy-config $PROJECT_PATH/.clang-tidy
+    - set +e
+    - CodeChecker parse $BUILD_PATH/code_checker_report -e html -o $BUILD_PATH/code_checker_html_report --trim-path-prefix $PROJECT_PATH
+    - CodeChecker parse $BUILD_PATH/code_checker_report -e codeclimate -o $BUILD_PATH/gl-code-quality-report.json --trim-path-prefix $PROJECT_PATH
+    - exit 0
   artifacts:
+    name: code_quality_${CI_COMMIT_TIMESTAMP}
+    paths:
+      - $BUILD_PATH/gl-code-quality-report.json
+      - $BUILD_PATH/code_checker_html_report/
+    expose_as: 'Code quality HTML and json reports'
     reports:
-      codequality: clang-tidy-report.yaml
+      codequality: $BUILD_PATH/gl-code-quality-report.json
   needs:
     - clang_check
 
-# This job is responsible for building and running all tests. It uses the CTest framework to run the
-# tests and generates a JUnit-style report for GitLab to display the test results. It also captures any output from
-# failing tests and makes it available in the artifacts for debugging.
-test:
+# This job is responsible for building and running all game_handler tests. It uses the CTest framework to run the
+# tests and generates a JUnit-style report for GitLab to display the test results.
+test_game_handler:
   stage: test
   script:
     - cmake -S $PROJECT_PATH -B $BUILD_PATH -DBUILD_TESTS=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH
     # @fixme Need to required tests for all subproject with --test-dir
-    - ctest --test-dir $BUILD_PATH/services/poker_game --output-on-failure --extra-verbose -j $(nproc) --output-junit poker_game_ctest.xml --no-compress-output
-    - if [ -e Testing/Temporary/LastTest.log ]; then cat Testing/Temporary/LastTest.log; fi
+    - ctest --test-dir $BUILD_PATH/services/game_handler --output-on-failure --extra-verbose -j $(nproc) --output-junit game_handler_ctest.xml --no-compress-output
   artifacts:
     reports:
-      junit: $BUILD_PATH/services/poker_game/poker_game_ctest.xml
+      junit: $BUILD_PATH/services/game_handler/game_handler_ctest.xml
   needs:
     - clang_check
 
@@ -140,5 +165,4 @@ deploy:
     - if: $CI_COMMIT_BRANCH == "main"
   needs:
     - clang_format
-    - clang_tidy
-    - test
+    - test_game_handler

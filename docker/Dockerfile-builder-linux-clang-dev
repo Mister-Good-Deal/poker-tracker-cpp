@@ -4,21 +4,14 @@ ARG CI_REGISTRY_BUILDER_ROOT_IMAGE
 FROM ${CI_REGISTRY}/${CI_REGISTRY_BUILDER_ROOT_IMAGE}:latest
 
 ARG GDB_VERSION
-ARG GOOGLETEST_VERSION
+ARG MAX_CPU_CORES
 
 # Install GDB with the given GDB_VERSION version
 RUN apt-get -y update && apt-get install -y texinfo libipt-dev libbabeltrace-ctf-dev libmpfr-dev python3-dev && \
     wget http://ftp.gnu.org/gnu/gdb/gdb-${GDB_VERSION}.tar.gz -q -O /tmp/gdb-${GDB_VERSION}.tar.gz && \
     cd /tmp && tar -xvzf gdb-${GDB_VERSION}.tar.gz && cd gdb-${GDB_VERSION} && \
-    ./configure --with-python=/usr/bin/python3 && make -j ${makeCores} && make install && \
+    ./configure --with-python=/usr/bin/python3 && make -j ${MAX_CPU_CORES} && make install && \
     rm -rf /tmp/gdb-${GDB_VERSION}.tar.gz /tmp/gdb-${GDB_VERSION}
-
-# Install googleTest with the given GOOGLETEST_VERSION version from https://github.com/google/googletest
-RUN wget https://github.com/google/googletest/archive/refs/tags/v${GOOGLETEST_VERSION}.tar.gz \
-    -q -O /tmp/googletest-${GOOGLETEST_VERSION}.tar.gz && \
-    cd /tmp && tar -xvzf googletest-${GOOGLETEST_VERSION}.tar.gz && cd googletest-${GOOGLETEST_VERSION} && \
-    cmake . && make -j ${makeCores} && make install && \
-    rm -rf /tmp/googletest-${GOOGLETEST_VERSION}.tar.gz /tmp/googletest-${GOOGLETEST_VERSION}
 
 # Install Rsync and SSH configuration to be able to use remote SSH from IDE with login root:root
 RUN apt-get install -y --no-install-recommends --fix-missing openssh-server rsync && \

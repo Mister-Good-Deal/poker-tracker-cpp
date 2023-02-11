@@ -5,15 +5,15 @@ FROM gcc:${GCC_VERSION}-bullseye
 ARG CMAKE_VERSION
 ARG SDL_VERSION
 ARG OPENCV_VERSION
-
- # Define the number of parallel CPU core to execute MAKE commands
-RUN export makeCores=$(($(nproc)-1))
+ARG NLOHMANN_JSON_VERSION
+ARG GOOGLETEST_VERSION
+ARG MAX_CPU_CORES
 
 # Install CMake with the given CMAKE_VERSION version from https://github.com/Kitware/CMake
 RUN wget https://gitlab.kitware.com/cmake/cmake/-/archive/v${CMAKE_VERSION}/cmake-v${CMAKE_VERSION}.tar.gz \
     -q -O /tmp/cmake-v${CMAKE_VERSION}.tar.gz && \
     cd /tmp && tar -xvzf cmake-v${CMAKE_VERSION}.tar.gz && cd cmake-v${CMAKE_VERSION} && \
-    ./bootstrap --parallel=${makeCores} -- -DCMAKE_USE_OPENSSL=OFF && make -j ${makeCores} && make install && \
+    ./bootstrap --parallel=${MAX_CPU_CORES} -- -DCMAKE_USE_OPENSSL=OFF && make -j ${MAX_CPU_CORES} && make install && \
     rm -rf /tmp/cmake-v${CMAKE_VERSION}.tar.gz /tmp/cmake-v${CMAKE_VERSION}
 
 # Install SDL with the given SDL_VERSION version from https://github.com/libsdl-org/SDL
@@ -21,7 +21,7 @@ RUN apt-get update && apt-get install -y libgtk-3-dev && \
     wget https://github.com/libsdl-org/SDL/archive/refs/tags/release-${SDL_VERSION}.tar.gz \
     -q -O /tmp/sdl-${SDL_VERSION}.tar.gz && \
     cd /tmp && tar -xvzf sdl-${SDL_VERSION}.tar.gz && cd SDL-release-${SDL_VERSION} && \
-    mkdir build && cd build && ../configure && make -j ${makeCores} && make install && \
+    mkdir build && cd build && ../configure && make -j ${MAX_CPU_CORES} && make install && \
     rm -rf /tmp/sdl-${SDL_VERSION}.tar.gz /tmp/SDL-release-${SDL_VERSION}
 
 # Install OpenCV with the given OPENCV_VERSION from https://github.com/opencv/opencv
@@ -34,9 +34,23 @@ RUN apt-get install -y libgtkglext1-dev libopenjp2-7-dev && \
     cd opencv-${OPENCV_VERSION} && mkdir opencv_build && cd opencv_build && \
     cmake .. -DBUILD_LIST="core,highgui,imgcodecs,text" \
     -DOPENCV_EXTRA_MODULES_PATH="../../opencv_contrib-${OPENCV_VERSION}/modules" -DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF \
-    -DWITH_OPENCL=OFF && make -j ${makeCores} && make install && \
+    -DWITH_OPENCL=OFF && make -j ${MAX_CPU_CORES} && make install && \
     rm -rf /tmp/opencv-${OPENCV_VERSION}.tar.gz /tmp/opencv-${OPENCV_VERSION} /tmp/opencv_contrib-${OPENCV_VERSION}.tar.gz \
     /tmp/opencv_contrib-${OPENCV_VERSION}
+
+# Install nlohmann_json with the given NLOHMANN_JSON_VERSION version from https://github.com/nlohmann/json
+RUN wget https://github.com/nlohmann/json/archive/refs/tags/v${NLOHMANN_JSON_VERSION}.tar.gz \
+    -q -O /tmp/json-${NLOHMANN_JSON_VERSION}.tar.gz && \
+    cd /tmp && ls && tar -xvzf json-${NLOHMANN_JSON_VERSION}.tar.gz && cd json-${NLOHMANN_JSON_VERSION} && \
+    mkdir build && cd build && cmake .. && make -j ${MAX_CPU_CORES} && make install && \
+    rm -rf /tmp/json-${NLOHMANN_JSON_VERSION}.tar.gz /tmp/json-${NLOHMANN_JSON_VERSION}
+
+# Install googleTest with the given GOOGLETEST_VERSION version from https://github.com/google/googletest
+RUN wget https://github.com/google/googletest/archive/refs/tags/v${GOOGLETEST_VERSION}.tar.gz \
+    -q -O /tmp/googletest-${GOOGLETEST_VERSION}.tar.gz && \
+    cd /tmp && tar -xvzf googletest-${GOOGLETEST_VERSION}.tar.gz && cd googletest-${GOOGLETEST_VERSION} && \
+    cmake . && make -j ${MAX_CPU_CORES} && make install && \
+    rm -rf /tmp/googletest-${GOOGLETEST_VERSION}.tar.gz /tmp/googletest-${GOOGLETEST_VERSION}
 
 WORKDIR /app
 
