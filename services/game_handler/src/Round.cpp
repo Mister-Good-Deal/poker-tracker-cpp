@@ -34,7 +34,7 @@ namespace GameHandler {
             _bet            = other._bet;
             _currentStreet  = other._currentStreet;
             _lastActionTime = other._lastActionTime;
-            _winner         = std::move(other._winner);
+            _winner         = other._winner;
         }
 
         return *this;
