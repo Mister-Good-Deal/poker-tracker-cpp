@@ -130,7 +130,7 @@ namespace GameHandler {
 
         // Construct cards rank frequences sequence
         for_each(cards, [&frequences](const Card& card) {
-            if (card.getRank() != UNDEFINED) { frequences.at(static_cast<int8_t>(card.getRank()))++; }
+            if (card.getRank() != UNDEFINED) { frequences.at(card.getRank())++; }
         });
 
         return frequences;
@@ -152,7 +152,7 @@ namespace GameHandler {
 
         // Construct cards suit frequences sequence
         for_each(cards, [&frequences](const Card& card) {
-            if (card.getSuit() != Card::Suit::UNKNOWN) { frequences.at(static_cast<int8_t>(card.getSuit()))++; }
+            if (card.getSuit() != Card::Suit::UNKNOWN) { frequences.at(card.getSuit())++; }
         });
 
         return frequences;
@@ -164,7 +164,7 @@ namespace GameHandler {
         rank_frequencies_t& rankFrequencies   = rankFrequenciesOpt == std::nullopt ? _rankFrequencies : rankFrequenciesOpt.value();
 
         // Special Ace case
-        rankFrequencies[0] = rankFrequencies[static_cast<int8_t>(ACE)];
+        rankFrequencies[0] = rankFrequencies[ACE];
 
         const int8_t WINDOW_SIZE = 5;
 

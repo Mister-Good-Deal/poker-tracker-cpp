@@ -55,45 +55,27 @@ namespace GameHandler {
     auto Round::end(const Player& winner) -> void { _winner = &winner; }
 
     auto Round::call(const Player& player, int32_t amount) -> void {
-        auto now   = system_clock::now();
-        auto index = static_cast<int>(_currentStreet);
-
-        _actions.at(index).emplace_back(CALL, player, duration_cast<seconds>(now - _lastActionTime), amount);
+        _actions.at(_currentStreet).emplace_back(CALL, player, _getAndResetLastActionTime(), amount);
 
         if (player.self()) { _bet += amount; }
 
         _pot += amount;
-        _lastActionTime = now;
     }
 
     auto Round::bet(const Player& player, int32_t amount) -> void {
-        auto now   = system_clock::now();
-        auto index = static_cast<int>(_currentStreet);
-
-        _actions.at(index).emplace_back(BET, player, duration_cast<seconds>(now - _lastActionTime), amount);
+        _actions.at(_currentStreet).emplace_back(BET, player, _getAndResetLastActionTime(), amount);
 
         if (player.self()) { _bet += amount; }
 
         _pot += amount;
-        _lastActionTime = now;
     }
 
     auto Round::check(const Player& player) -> void {
-        auto now   = system_clock::now();
-        auto index = static_cast<int>(_currentStreet);
-
-        _actions.at(index).emplace_back(CHECK, player, duration_cast<seconds>(now - _lastActionTime));
-
-        _lastActionTime = now;
+        _actions.at(_currentStreet).emplace_back(CHECK, player, _getAndResetLastActionTime());
     }
 
     auto Round::fold(const Player& player) -> void {
-        auto now   = system_clock::now();
-        auto index = static_cast<int>(_currentStreet);
-
-        _actions.at(index).emplace_back(FOLD, player, duration_cast<seconds>(now - _lastActionTime));
-
-        _lastActionTime = now;
+        _actions.at(_currentStreet).emplace_back(FOLD, player, _getAndResetLastActionTime());
     }
 
     auto Round::toJson() const -> json {
@@ -104,10 +86,10 @@ namespace GameHandler {
         auto turnActions    = json::array();
         auto riverActions   = json::array();
 
-        for_each(_actions[static_cast<int8_t>(PREFLOP)], [&](const auto& action) { preFlopActions.emplace_back(action.toJson()); });
-        for_each(_actions[static_cast<int8_t>(FLOP)], [&](const RoundAction& action) { flopActions.emplace_back(action.toJson()); });
-        for_each(_actions[static_cast<int8_t>(TURN)], [&](const RoundAction& action) { turnActions.emplace_back(action.toJson()); });
-        for_each(_actions[static_cast<int8_t>(RIVER)], [&](const RoundAction& action) { riverActions.emplace_back(action.toJson()); });
+        for_each(_actions[PREFLOP], [&](const RoundAction& action) { preFlopActions.emplace_back(action.toJson()); });
+        for_each(_actions[FLOP], [&](const RoundAction& action) { flopActions.emplace_back(action.toJson()); });
+        for_each(_actions[TURN], [&](const RoundAction& action) { turnActions.emplace_back(action.toJson()); });
+        for_each(_actions[RIVER], [&](const RoundAction& action) { riverActions.emplace_back(action.toJson()); });
 
         return {{"actions", {{"pre_flop", preFlopActions}, {"flop", flopActions}, {"turn", turnActions}, {"river", riverActions}}},
                 {"board", _board.toJson()},
@@ -116,5 +98,14 @@ namespace GameHandler {
                 {"bet", _bet},
                 {"won", _winner->self()},
                 {"winner", _winner->getName()}};
+    }
+
+    auto Round::_getAndResetLastActionTime() -> seconds {
+        auto now            = system_clock::now();
+        auto lastActionTime = duration_cast<seconds>(now - _lastActionTime);
+
+        _lastActionTime = now;
+
+        return lastActionTime;
     }
 }  // namespace GameHandler

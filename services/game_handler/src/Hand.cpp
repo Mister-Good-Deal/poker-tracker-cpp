@@ -95,7 +95,7 @@ namespace GameHandler {
     }
 
     auto Hand::_isConnected() -> bool {
-        return std::abs(static_cast<int16_t>(_firstCard.getRank()) - static_cast<int16_t>(_secondCard.getRank())) <= 1
+        return std::abs(_firstCard.getRank() - _secondCard.getRank()) <= 1
             || (_firstCard.getRank() == ACE && _secondCard.getRank() == TWO)
             || (_secondCard.getRank() == ACE && _firstCard.getRank() == TWO);
     }

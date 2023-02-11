@@ -1,11 +1,5 @@
 #pragma once
 
-#include <array>
-#include <chrono>
-#include <map>
-#include <string>
-#include <vector>
-
 #include "Board.hpp"
 #include "RoundAction.hpp"
 
@@ -24,7 +18,7 @@ namespace GameHandler {
         public:
             using round_actions_t = std::array<std::vector<RoundAction>, STREET_NUMBER>;
 
-            enum class Street : int8_t { PREFLOP = 0, FLOP, TURN, RIVER, SHOWDOWN };
+            enum Street : int8_t { PREFLOP = 0, FLOP, TURN, RIVER, SHOWDOWN };
 
             Round()                   = default;
             Round(const Round& other) = default;
@@ -60,5 +54,7 @@ namespace GameHandler {
             Street                   _currentStreet  = Street::PREFLOP;
             time_point<system_clock> _lastActionTime = system_clock::now();
             const Player*            _winner         = nullptr;
+
+            auto _getAndResetLastActionTime() -> seconds;
     };
 }  // namespace GameHandler
