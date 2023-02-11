@@ -45,11 +45,12 @@ clang_check:
     - CPP_SRC_FILES=$(find ${PROJECT_PATH}/services -regex '.*\.\(cpp\|hpp\)' | tr "\n" " ")
     - echo "CPP_SRC_FILES=${CPP_SRC_FILES}" >> vars.env
     - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-    #- clang-check -analyze -extra-arg=-std=c++20 -p $BUILD_PATH --analyzer-output-path=${PROJECT_PATH}/clang-check-report.plist ${CPP_SRC_FILES}
+    - clang-check -analyze -extra-arg=-std=c++20 -p $BUILD_PATH --analyzer-output-path=${PROJECT_PATH}/clang-check-report.plist ${CPP_SRC_FILES}
   artifacts:
     reports:
-      #codequality: clang-check-report.plist
       dotenv: vars.env
+    paths:
+      - clang-check-report.plist
 
 # This job builds the Linux version of the application with the Release configuration
 build_linux:
