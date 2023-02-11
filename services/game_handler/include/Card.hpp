@@ -18,8 +18,6 @@ namespace GameHandler {
 
             enum Suit : int8_t { HEART = 0, DIAMOND, CLUB, SPADE, UNKNOWN };
 
-            using enum Card::Rank;
-
             static constexpr int8_t BROADWAY_NUMBER = 5;
 
             static constexpr std::array<Card::Rank, BROADWAY_NUMBER> BROADWAY = {TEN, JACK, QUEEN, KING, ACE};
