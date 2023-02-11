@@ -1,17 +1,19 @@
 cmake_minimum_required(VERSION 3.25)
 project(game_handler)
 
+# Make cache variables for install destinations
+include(GNUInstallDirs)
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Required libs
-find_package(OpenCV REQUIRED)
-find_package(SDL2 REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
-add_library(
-    game_handler
+# Source and header files
+set(
+    SRC
     src/Board.cpp
     src/Card.cpp
     src/CardFactory.cpp
@@ -22,16 +24,52 @@ add_library(
     src/RoundAction.cpp
 )
 
-target_include_directories(game_handler PUBLIC include)
-
-target_link_libraries(
-    game_handler
-    PRIVATE nlohmann_json::nlohmann_json
-    ${OpenCV_LIBS}
-    ${SDL2_LIBRARIES}
+set(
+    HEADERS
+    include/Board.hpp
+    include/Card.hpp
+    include/CardFactory.hpp
+    include/Game.hpp
+    include/Hand.hpp
+    include/Player.hpp
+    include/Round.hpp
+    include/RoundAction.hpp
 )
 
-add_executable(main main.cpp)
+# Create the library
+add_library(game_handler STATIC ${SRC})
+
+target_include_directories(
+    game_handler
+    PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+)
+
+target_link_libraries(game_handler PRIVATE nlohmann_json::nlohmann_json)
+
+install(
+    TARGETS game_handler
+    EXPORT game_handler_targets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+install(
+    EXPORT game_handler_targets
+    FILE game_handler_targets.cmake
+    NAMESPACE GameHandler::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/GameHandler
+)
+
+# To use the exported GameHandler library in other projects use:
+# include(${INSTALL_PREFIX}/lib/cmake/game_handler_targets.cmake)
+# ...
+# target_link_libraries(someTarget PRIVATE game_handler::game_handler)
 
 # Add the test subdirectory for building tests
 if (BUILD_TESTS)
