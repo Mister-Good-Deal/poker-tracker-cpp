@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Card.hpp"
 #include "Hand.hpp"
 
 namespace GameHandler {
