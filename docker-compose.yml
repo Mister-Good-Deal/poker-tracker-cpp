@@ -11,6 +11,8 @@ services:
         - CMAKE_VERSION=${CMAKE_VERSION}
         - SDL_VERSION=${SDL_VERSION}
         - OPENCV_VERSION=${OPENCV_VERSION}
+        - NLOHMANN_JSON_VERSION=${NLOHMANN_JSON_VERSION}
+        - MAX_CPU_CORES=${MAX_CPU_CORES}
     image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-gcc:latest
 
   builder-linux-clang:
@@ -59,6 +61,10 @@ services:
         - PKG_CONFIG_VERSION=${PKG_CONFIG_VERSION}
         - BINUTILS_VERSION=${BINUTILS_VERSION}
         - GCC_VERSION=${GCC_VERSION}
+        - SDL_VERSION=${SDL_VERSION}
+        - OPENCV_VERSION=${OPENCV_VERSION}
+        - NLOHMANN_JSON_VERSION=${NLOHMANN_JSON_VERSION}
+        - MAX_CPU_CORES=${MAX_CPU_CORES}
     image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-windows-mingw:latest
 
   deploy:

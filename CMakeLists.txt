@@ -17,4 +17,4 @@ endif ()
 
 project(poker_bot)
 
-add_subdirectory(services/poker_game)
+add_subdirectory(services/game_handler)

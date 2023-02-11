@@ -9,6 +9,10 @@ ARG GCC_VERSION
 ARG PKG_CONFIG_VERSION
 ARG BINUTILS_VERSION
 ARG MINGW_VERSION
+ARG SDL_VERSION
+ARG OPENCV_VERSION
+ARG NLOHMANN_JSON_VERSION
+ARG MAX_CPU_CORES
 
 SHELL [ "/bin/bash", "-c" ]
 
@@ -67,7 +71,7 @@ RUN set -ex \
         --with-internal-glib \
         --disable-shared \
         --disable-nls \
-    && make -j`nproc` \
+    && make -j ${MAX_CPU_CORES} \
     && make install \
     && cd .. \
     \
@@ -75,8 +79,8 @@ RUN set -ex \
     && cd cmake-${CMAKE_VERSION} \
     && ./configure \
         --prefix=/usr/local \
-        --parallel=`nproc` \
-    && make -j`nproc` \
+        --parallel=${MAX_CPU_CORES} \
+    && make -j ${MAX_CPU_CORES} \
     && make install \
     && cd .. \
     \
@@ -93,7 +97,7 @@ RUN set -ex \
         --disable-nls \
         --disable-werror \
         --with-system-zlib \
-    && make -j`nproc` \
+    && make -j ${MAX_CPU_CORES} \
     && make install \
     && cd .. \
     \
@@ -127,7 +131,7 @@ RUN set -ex \
         --disable-lto \
         --disable-nls \
         --disable-werror \
-    && make -j`nproc` all-gcc \
+    && make -j ${MAX_CPU_CORES} all-gcc \
     && make install-gcc \
     && cd .. \
     \
@@ -150,13 +154,13 @@ RUN set -ex \
         --host=x86_64-w64-mingw32 \
         --enable-static \
         --disable-shared \
-    && make -j`nproc` \
+    && make -j ${MAX_CPU_CORES} \
     && make install \
     && cd .. \
     \
     # Recompile GCC
     && cd gcc \
-    && make -j`nproc` \
+    && make -j ${MAX_CPU_CORES} \
     && make install \
     && cd .. \
     \
@@ -165,10 +169,40 @@ RUN set -ex \
     && rm -r cmake-${CMAKE_VERSION} \
     && rm -r binutils-${BINUTILS_VERSION} \
     && rm -r mingw-w64 mingw-w64-v${MINGW_VERSION} \
-    && rm -r gcc gcc-${GCC_VERSION} \
-    \
-    # Clean ubuntu apt packages
-    && apt-get remove --purge -y file gcc g++ zlib1g-dev libssl-dev libgmp-dev libmpfr-dev libmpc-dev libisl-dev gnupg \
+    && rm -r gcc gcc-${GCC_VERSION}
+
+
+# Install SDL with the given SDL_VERSION version from https://github.com/libsdl-org/SDL
+RUN apt-get update && apt-get install -y libgtk-3-dev && \
+    wget https://github.com/libsdl-org/SDL/archive/refs/tags/release-${SDL_VERSION}.tar.gz \
+    -q -O /tmp/sdl-${SDL_VERSION}.tar.gz && \
+    cd /tmp && tar -xvzf sdl-${SDL_VERSION}.tar.gz && cd SDL-release-${SDL_VERSION} && \
+    mkdir build && cd build && ../configure && make -j ${MAX_CPU_CORES} && make install && \
+    rm -rf /tmp/sdl-${SDL_VERSION}.tar.gz /tmp/SDL-release-${SDL_VERSION}
+
+# Install OpenCV with the given OPENCV_VERSION from https://github.com/opencv/opencv
+RUN apt-get install -y libgtkglext1-dev libopenjp2-7-dev && \
+    wget https://github.com/opencv/opencv/archive/refs/tags/${OPENCV_VERSION}.tar.gz \
+    -q -O /tmp/opencv-${OPENCV_VERSION}.tar.gz && \
+    wget https://github.com/opencv/opencv_contrib/archive/refs/tags/${OPENCV_VERSION}.tar.gz \
+    -q -O /tmp/opencv_contrib-${OPENCV_VERSION}.tar.gz && \
+    cd /tmp && tar -xvzf opencv-${OPENCV_VERSION}.tar.gz && tar -xvzf opencv_contrib-${OPENCV_VERSION}.tar.gz && \
+    cd opencv-${OPENCV_VERSION} && mkdir opencv_build && cd opencv_build && \
+    cmake .. -DBUILD_LIST="core,highgui,imgcodecs,text" \
+    -DOPENCV_EXTRA_MODULES_PATH="../../opencv_contrib-${OPENCV_VERSION}/modules" -DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF \
+    -DWITH_OPENCL=OFF && make -j ${MAX_CPU_CORES} && make install && \
+    rm -rf /tmp/opencv-${OPENCV_VERSION}.tar.gz /tmp/opencv-${OPENCV_VERSION} /tmp/opencv_contrib-${OPENCV_VERSION}.tar.gz \
+    /tmp/opencv_contrib-${OPENCV_VERSION}
+
+# Install nlohmann_json with the given NLOHMANN_JSON_VERSION version from https://github.com/nlohmann/json
+RUN wget https://github.com/nlohmann/json/archive/refs/tags/v${NLOHMANN_JSON_VERSION}.tar.gz \
+    -q -O /tmp/json-${NLOHMANN_JSON_VERSION}.tar.gz && \
+    cd /tmp && ls && tar -xvzf json-${NLOHMANN_JSON_VERSION}.tar.gz && cd json-${NLOHMANN_JSON_VERSION} && \
+    mkdir build && cd build && cmake .. && make -j ${MAX_CPU_CORES} && make install && \
+    rm -rf /tmp/json-${NLOHMANN_JSON_VERSION}.tar.gz /tmp/json-${NLOHMANN_JSON_VERSION}
+
+# Clean ubuntu apt packages
+RUN apt-get remove --purge -y file gcc g++ zlib1g-dev libssl-dev libgmp-dev libmpfr-dev libmpc-dev libisl-dev gnupg \
     && apt-get autoremove --purge -y \
     && apt-get clean
 

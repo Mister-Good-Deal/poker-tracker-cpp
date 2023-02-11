@@ -25,7 +25,7 @@ default:
 include:
   - template: Jobs/Container-Scanning.gitlab-ci.yml
 
-# Scan docker images for vulnebarilities if Dockerfiles changed or on demand with commit message containing "/docker-scan"
+# Scan docker images for vulnerabilities if Dockerfiles changed or on demand with commit message containing "/docker-scan"
 # @todo only scan one image, maybe useless ?
 container_scanning:
   rules:
@@ -48,8 +48,9 @@ clang_check:
     - clang-check -analyze -extra-arg=-std=c++20 -p $BUILD_PATH --analyzer-output-path=${PROJECT_PATH}/clang-check-report.plist ${CPP_SRC_FILES}
   artifacts:
     reports:
-      codequality: clang-check-report.plist
       dotenv: vars.env
+    paths:
+      - clang-check-report.plist
 
 # This job builds the Linux version of the application with the Release configuration
 build_linux:
@@ -122,11 +123,12 @@ code_quality:
     - CodeChecker parse $BUILD_PATH/code_checker_report -e codeclimate -o $BUILD_PATH/gl-code-quality-report.json --trim-path-prefix $PROJECT_PATH
     - exit 0
   artifacts:
+    name: code_quality_html_${CI_COMMIT_TIMESTAMP}
+    paths:
+      - $BUILD_PATH/code_checker_html_report/
+    expose_as: 'Code quality HTML report'
     reports:
       codequality: $BUILD_PATH/gl-code-quality-report.json
-    expose_as: 'code quality HTML report'
-    paths:
-      - $BUILD_PATH/code_checker_html_report
   needs:
     - clang_check
 
@@ -138,11 +140,11 @@ test:
   script:
     - cmake -S $PROJECT_PATH -B $BUILD_PATH -DBUILD_TESTS=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH
     # @fixme Need to required tests for all subproject with --test-dir
-    - ctest --test-dir $BUILD_PATH/services/poker_game --output-on-failure --extra-verbose -j $(nproc) --output-junit poker_game_ctest.xml --no-compress-output
+    - ctest --test-dir $BUILD_PATH/services/game_handler --output-on-failure --extra-verbose -j $(nproc) --output-junit game_handler_ctest.xml --no-compress-output
     - if [ -e Testing/Temporary/LastTest.log ]; then cat Testing/Temporary/LastTest.log; fi
   artifacts:
     reports:
-      junit: $BUILD_PATH/services/poker_game/poker_game_ctest.xml
+      junit: $BUILD_PATH/services/game_handler/game_handler_ctest.xml
   needs:
     - clang_check
 
