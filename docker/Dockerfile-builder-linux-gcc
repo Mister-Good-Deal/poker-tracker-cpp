@@ -6,6 +6,7 @@ ARG CMAKE_VERSION
 ARG SDL_VERSION
 ARG OPENCV_VERSION
 ARG NLOHMANN_JSON_VERSION
+ARG GOOGLETEST_VERSION
 ARG MAX_CPU_CORES
 
 # Install CMake with the given CMAKE_VERSION version from https://github.com/Kitware/CMake
@@ -43,6 +44,13 @@ RUN wget https://github.com/nlohmann/json/archive/refs/tags/v${NLOHMANN_JSON_VER
     cd /tmp && ls && tar -xvzf json-${NLOHMANN_JSON_VERSION}.tar.gz && cd json-${NLOHMANN_JSON_VERSION} && \
     mkdir build && cd build && cmake .. && make -j ${MAX_CPU_CORES} && make install && \
     rm -rf /tmp/json-${NLOHMANN_JSON_VERSION}.tar.gz /tmp/json-${NLOHMANN_JSON_VERSION}
+
+# Install googleTest with the given GOOGLETEST_VERSION version from https://github.com/google/googletest
+RUN wget https://github.com/google/googletest/archive/refs/tags/v${GOOGLETEST_VERSION}.tar.gz \
+    -q -O /tmp/googletest-${GOOGLETEST_VERSION}.tar.gz && \
+    cd /tmp && tar -xvzf googletest-${GOOGLETEST_VERSION}.tar.gz && cd googletest-${GOOGLETEST_VERSION} && \
+    cmake . && make -j ${MAX_CPU_CORES} && make install && \
+    rm -rf /tmp/googletest-${GOOGLETEST_VERSION}.tar.gz /tmp/googletest-${GOOGLETEST_VERSION}
 
 WORKDIR /app
 

@@ -3,17 +3,9 @@ ARG CI_REGISTRY_BUILDER_ROOT_IMAGE
 
 FROM ${CI_REGISTRY}/${CI_REGISTRY_BUILDER_ROOT_IMAGE}:latest
 
-ARG GOOGLETEST_VERSION
 ARG CODE_CHECKER_VERSION
 ARG CPP_CHECK_VERSION
 ARG MAX_CPU_CORES
-
-# Install googleTest with the given GOOGLETEST_VERSION version from https://github.com/google/googletest
-RUN wget https://github.com/google/googletest/archive/refs/tags/v${GOOGLETEST_VERSION}.tar.gz \
-    -q -O /tmp/googletest-${GOOGLETEST_VERSION}.tar.gz && \
-    cd /tmp && tar -xvzf googletest-${GOOGLETEST_VERSION}.tar.gz && cd googletest-${GOOGLETEST_VERSION} && \
-    cmake . && make -j ${MAX_CPU_CORES} && make install && \
-    rm -rf /tmp/googletest-${GOOGLETEST_VERSION}.tar.gz /tmp/googletest-${GOOGLETEST_VERSION}
 
 # Install cpp-check with the given CPP_CHECK_VERSION version from https://github.com/danmar/cppcheck
 RUN wget https://github.com/danmar/cppcheck/archive/refs/tags/${CPP_CHECK_VERSION}.tar.gz \

@@ -123,25 +123,24 @@ code_quality:
     - CodeChecker parse $BUILD_PATH/code_checker_report -e codeclimate -o $BUILD_PATH/gl-code-quality-report.json --trim-path-prefix $PROJECT_PATH
     - exit 0
   artifacts:
-    name: code_quality_html_${CI_COMMIT_TIMESTAMP}
+    name: code_quality_${CI_COMMIT_TIMESTAMP}
     paths:
+      - $BUILD_PATH/gl-code-quality-report.json
       - $BUILD_PATH/code_checker_html_report/
-    expose_as: 'Code quality HTML report'
+    expose_as: 'Code quality HTML/json reports'
     reports:
       codequality: $BUILD_PATH/gl-code-quality-report.json
   needs:
     - clang_check
 
-# This job is responsible for building and running all tests. It uses the CTest framework to run the
-# tests and generates a JUnit-style report for GitLab to display the test results. It also captures any output from
-# failing tests and makes it available in the artifacts for debugging.
-test:
+# This job is responsible for building and running all game_handler tests. It uses the CTest framework to run the
+# tests and generates a JUnit-style report for GitLab to display the test results.
+test_game_handler:
   stage: test
   script:
     - cmake -S $PROJECT_PATH -B $BUILD_PATH -DBUILD_TESTS=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH
     # @fixme Need to required tests for all subproject with --test-dir
     - ctest --test-dir $BUILD_PATH/services/game_handler --output-on-failure --extra-verbose -j $(nproc) --output-junit game_handler_ctest.xml --no-compress-output
-    - if [ -e Testing/Temporary/LastTest.log ]; then cat Testing/Temporary/LastTest.log; fi
   artifacts:
     reports:
       junit: $BUILD_PATH/services/game_handler/game_handler_ctest.xml
@@ -166,4 +165,4 @@ deploy:
     - if: $CI_COMMIT_BRANCH == "main"
   needs:
     - clang_format
-    - test
+    - test_game_handler
