@@ -68,7 +68,7 @@ for FILE in $FILES; do
 
       # shellcheck disable=SC2181
       if ! [ $? -eq 0 ]; then
-        printf "\nThis file has some code formating error, try to fix it ... "
+        printf "\nThis file has some code formatting error, try to fix it ... "
 
         # Fix the current file
         clang-format -i "${FILE}"
@@ -78,7 +78,7 @@ for FILE in $FILES; do
 
          # shellcheck disable=SC2181
          if ! [ $? -eq 0 ]; then
-           printf "\nCould not fix the code formating, please fix the followings errors\n"
+           printf "\nCould not fix the code formatting, please fix the followings errors\n"
 
            clang-format --Werror --dry-run --Wclang-format-violations "${FILE}"
 
