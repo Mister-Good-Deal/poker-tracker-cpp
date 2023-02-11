@@ -18,3 +18,4 @@ endif ()
 project(poker_bot)
 
 add_subdirectory(services/game_handler)
+add_subdirectory(services/ocr)
