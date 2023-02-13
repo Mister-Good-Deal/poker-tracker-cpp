@@ -4,6 +4,8 @@ FROM gcc:${GCC_VERSION}-bullseye
 
 ARG CMAKE_VERSION
 ARG SDL_VERSION
+ARG LEPTONICA_VERSION
+ARG TESSERACT_VERSION
 ARG OPENCV_VERSION
 ARG NLOHMANN_JSON_VERSION
 ARG GOOGLETEST_VERSION
@@ -24,6 +26,24 @@ RUN apt-get update && apt-get install -y libgtk-3-dev && \
     mkdir build && cd build && ../configure && make -j ${MAX_CPU_CORES} && make install && \
     rm -rf /tmp/sdl-${SDL_VERSION}.tar.gz /tmp/SDL-release-${SDL_VERSION}
 
+# Install leptonica with the given LEPTONICA_VERSION from https://github.com/DanBloomberg/leptonica
+RUN wget https://github.com/DanBloomberg/leptonica/archive/refs/tags/${LEPTONICA_VERSION}.tar.gz \
+    -q -O /tmp/leptonica-${LEPTONICA_VERSION}.tar.gz && \
+    cd /tmp && tar -xvzf leptonica-${LEPTONICA_VERSION}.tar.gz && cd leptonica-${LEPTONICA_VERSION} && \
+    mkdir build && cd build && cmake .. && make -j ${MAX_CPU_CORES} && make install && \
+    rm -rf /tmp/leptonica-${LEPTONICA_VERSION}.tar.gz /tmp/leptonica-${LEPTONICA_VERSION}
+
+# Install tesseract with the given TESSERACT_VERSION from https://github.com/tesseract-ocr/tesseract
+RUN wget https://github.com/tesseract-ocr/tesseract/archive/refs/tags/${TESSERACT_VERSION}.tar.gz \
+    -q -O /tmp/tesseract-${TESSERACT_VERSION}.tar.gz && \
+    cd /tmp && tar -xvzf tesseract-${TESSERACT_VERSION}.tar.gz && cd tesseract-${TESSERACT_VERSION} && \
+    mkdir build && cd build && cmake .. -DCMAKE_MODULE_LINKER_FLAGS="-fPIC" && make -j ${MAX_CPU_CORES} && make install && \
+    rm -rf /tmp/tesseract-${TESSERACT_VERSION}.tar.gz /tmp/tesseract-${TESSERACT_VERSION}
+
+# Get tesseract latin trained data for tesseract
+RUN export TESSDATA_PREFIX="/usr/share/tesseract-ocr/tessdata" && mkdir -p ${TESSDATA_PREFIX} && \
+    wget https://github.com/tesseract-ocr/tessdata_fast/raw/main/srp_latn.traineddata -q -O ${TESSDATA_PREFIX}/srp_latn.traineddata
+
 # Install OpenCV with the given OPENCV_VERSION from https://github.com/opencv/opencv
 RUN apt-get install -y libgtkglext1-dev libopenjp2-7-dev && \
     wget https://github.com/opencv/opencv/archive/refs/tags/${OPENCV_VERSION}.tar.gz \
@@ -34,7 +54,7 @@ RUN apt-get install -y libgtkglext1-dev libopenjp2-7-dev && \
     cd opencv-${OPENCV_VERSION} && mkdir opencv_build && cd opencv_build && \
     cmake .. -DBUILD_LIST="core,highgui,imgcodecs,text" \
     -DOPENCV_EXTRA_MODULES_PATH="../../opencv_contrib-${OPENCV_VERSION}/modules" -DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF \
-    -DWITH_OPENCL=OFF && make -j ${MAX_CPU_CORES} && make install && \
+    -DWITH_OPENCL=OFF -DENABLE_CXX20=ON && make -j ${MAX_CPU_CORES} && make install && \
     rm -rf /tmp/opencv-${OPENCV_VERSION}.tar.gz /tmp/opencv-${OPENCV_VERSION} /tmp/opencv_contrib-${OPENCV_VERSION}.tar.gz \
     /tmp/opencv_contrib-${OPENCV_VERSION}
 
