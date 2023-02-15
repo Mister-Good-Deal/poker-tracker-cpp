@@ -84,8 +84,11 @@ services:
       - "3022:22"
     tty: true
     stdin_open: true
+    environment:
+      - DISPLAY=${DISPLAY}
     volumes:
       - .:/app
+      - /tmp/.X11-unix:/tmp/.X11-unix
     entrypoint: docker/docker-entrypoint-dev.sh
 
   ci:
