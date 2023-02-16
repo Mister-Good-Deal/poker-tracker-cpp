@@ -62,6 +62,28 @@ namespace GameHandler {
                 }
             }
 
+            static constexpr auto charToRank(char rank) -> Rank {
+                switch (rank)
+                {
+                    case '2': return Rank::TWO;
+                    case '3': return Rank::THREE;
+                    case '4': return Rank::FOUR;
+                    case '5': return Rank::FIVE;
+                    case '6': return Rank::SIX;
+                    case '7': return Rank::SEVEN;
+                    case '8': return Rank::EIGHT;
+                    case '9': return Rank::NINE;
+                    case 'T': return Rank::TEN;
+                    case 'J': return Rank::JACK;
+                    case 'Q': return Rank::QUEEN;
+                    case 'K': return Rank::KING;
+                    case 'A': return Rank::ACE;
+                    default:
+                        throw std::invalid_argument("The given rank char ASCII(" + std::to_string(static_cast<int32_t>(rank))
+                                                    + ") is invalid");
+                }
+            }
+
             static constexpr auto suitToString(Suit suit) -> std::string {
                 switch (suit)
                 {

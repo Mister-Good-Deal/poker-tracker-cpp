@@ -1,13 +1,17 @@
 #pragma once
 
-#include "Card.hpp"
 #include <opencv4/opencv2/opencv.hpp>
+#include <opencv4/opencv2/text.hpp>
+
+#include "Card.hpp"
 
 namespace OCR {
+    using cv::text::OCRTesseract;
     using GameHandler::Card;
 
     class OcrInterface {
         public:
+            OcrInterface();
             OcrInterface(const OcrInterface&) = default;
             OcrInterface(OcrInterface&&)      = default;
 
@@ -16,8 +20,13 @@ namespace OCR {
             auto operator=(const OcrInterface&) -> OcrInterface& = default;
             auto operator=(OcrInterface&&) -> OcrInterface&      = default;
 
-            virtual auto readCard(const cv::Mat& image) -> Card        = 0;
-            virtual auto readText(const cv::Mat& image) -> std::string = 0;
+            virtual auto readCardRank(cv::Mat& rankImage) const -> Card::Rank = 0;
+            virtual auto readCardSuit(cv::Mat& suitImage) const -> Card::Suit = 0;
+            virtual auto readCard(cv::Mat& rankImage, cv::Mat& suitImage) const -> Card;
+
+        protected:
+            cv::Ptr<OCRTesseract> _tesseractCard;
+            cv::Ptr<OCRTesseract> _tesseractWord;
     };
 
 }  // namespace OCR

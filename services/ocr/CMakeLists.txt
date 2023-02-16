@@ -16,11 +16,13 @@ find_package(OpenCV REQUIRED)
 set(
     SRC
     src/OcrInterface.cpp
+    src/WinamaxOcr.cpp
 )
 
 set(
     HEADERS
     include/OcrInterface.hpp
+    include/WinamaxOcr.hpp
 )
 
 # Create the library
@@ -35,7 +37,7 @@ target_include_directories(
     game_handler
 )
 
-target_link_libraries(ocr PRIVATE game_handler opencv_core opencv_imgproc)
+target_link_libraries(ocr PRIVATE game_handler opencv_core opencv_imgproc opencv_text)
 
 install(
     TARGETS ocr
