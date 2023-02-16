@@ -147,6 +147,18 @@ test_game_handler:
   needs:
     - clang_check
 
+test_ocr:
+  stage: test
+  script:
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DBUILD_TESTS=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH
+    # @fixme Need to required tests for all subproject with --test-dir
+    - ctest --test-dir $BUILD_PATH/services/ocr --output-on-failure --extra-verbose -j $(nproc) --output-junit ocr_ctest.xml --no-compress-output
+  artifacts:
+    reports:
+      junit: $BUILD_PATH/services/game_handler/ocr_ctest.xml
+  needs:
+    - clang_check
+
 # This job is responsible for packaging the built artifacts from the previous build jobs and deploying them to the
 # desired target.
 deploy:

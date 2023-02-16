@@ -111,6 +111,14 @@ IncludeCategories:
     Priority: 4
     SortPriority: 4
     CaseSensitive: false
+  - Regex: '^<(quill)'
+    Priority: 5
+    SortPriority: 5
+    CaseSensitive: false
+  - Regex: '^<(nlohmann)'
+    Priority: 6
+    SortPriority: 6
+    CaseSensitive: false
   - Regex: '.*'
     Priority: 100
     SortPriority: 100
