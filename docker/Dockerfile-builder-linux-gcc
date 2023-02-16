@@ -46,9 +46,9 @@ RUN wget https://github.com/tesseract-ocr/tesseract/archive/refs/tags/${TESSERAC
 
 # Get tesseract latin trained data for tesseract
 ENV TESSDATA_PREFIX "/usr/local/share/tessdata"
-
+# tessdata_fast fail on detecting Queen 'Q' on Winamax OCR
 RUN mkdir -p ${TESSDATA_PREFIX} && \
-    wget https://github.com/tesseract-ocr/tessdata_fast/raw/main/srp_latn.traineddata -q -O ${TESSDATA_PREFIX}/srp_latn.traineddata
+    wget https://github.com/tesseract-ocr/tessdata_best/raw/main/eng.traineddata -q -O ${TESSDATA_PREFIX}/eng.traineddata
 
 # Install OpenCV with the given OPENCV_VERSION from https://github.com/opencv/opencv
 RUN apt-get install -y libgtkglext1-dev libopenjp2-7-dev libgtk-3-dev libcanberra-gtk3-module && \

@@ -107,6 +107,10 @@ IncludeCategories:
     Priority: 3
     SortPriority: 3
     CaseSensitive: false
+  - Regex: '^<(opencv)'
+    Priority: 4
+    SortPriority: 4
+    CaseSensitive: false
   - Regex: '.*'
     Priority: 100
     SortPriority: 100
