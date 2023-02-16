@@ -4,7 +4,7 @@ project(game_handler)
 # Make cache variables for install destinations
 include(GNUInstallDirs)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -44,9 +44,11 @@ target_include_directories(
     PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+    PRIVATE
+    logger
 )
 
-target_link_libraries(game_handler PRIVATE nlohmann_json::nlohmann_json)
+target_link_libraries(game_handler PRIVATE logger nlohmann_json::nlohmann_json)
 
 install(
     TARGETS game_handler

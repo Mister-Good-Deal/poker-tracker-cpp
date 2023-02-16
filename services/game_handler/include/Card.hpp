@@ -6,8 +6,11 @@
 
 #include <nlohmann/json.hpp>
 
+#include "Logger.hpp"
+
 namespace GameHandler {
-    using json = nlohmann::json;
+    using json   = nlohmann::json;
+    using Logger = Logger::Quill;
 
     constexpr int8_t RANK_CARDS_NUMBER = 13;
     constexpr int8_t SUIT_CARDS_NUMBER = 4;
@@ -79,8 +82,9 @@ namespace GameHandler {
                     case 'K': return Rank::KING;
                     case 'A': return Rank::ACE;
                     default:
-                        throw std::invalid_argument("The given rank char ASCII(" + std::to_string(static_cast<int32_t>(rank))
-                                                    + ") is invalid");
+                        LOG_ERROR(Logger::getLogger(), "The given rank char ASCII({}) is invalid", static_cast<int>(rank));
+
+                        return Rank::UNDEFINED;
                 }
             }
 

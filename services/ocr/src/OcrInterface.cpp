@@ -13,4 +13,4 @@ namespace OCR {
     auto OCR::OcrInterface::readCard(cv::Mat& rankImage, cv::Mat& suitImage) const -> Card {
         return {readCardRank(rankImage), readCardSuit(suitImage)};
     }
-};  // namespace OCR
+}  // namespace OCR

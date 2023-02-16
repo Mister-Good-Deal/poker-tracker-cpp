@@ -2,9 +2,10 @@
 
 #include <opencv4/opencv2/imgcodecs.hpp>
 
+#include "CardFactory.hpp"
 #include "WinamaxOcr.hpp"
 
-using OCR::UndefinedCardSuit;
+using GameHandler::Factory::card;
 using OCR::WinamaxOcr;
 
 using enum GameHandler::Card::Suit;
@@ -41,13 +42,19 @@ TEST(WinamaxOcrTest, readCardRankShouldWork) {
     auto queen = cv::imread(std::string(RANK_IMAGES_DIR) + "/Q.png");
     auto king  = cv::imread(std::string(RANK_IMAGES_DIR) + "/K.png");
 
-    EXPECT_TRUE(Env::winamaxOcr().readCardRank(two) == TWO);
-    EXPECT_TRUE(Env::winamaxOcr().readCardRank(four) == FOUR);
-    EXPECT_TRUE(Env::winamaxOcr().readCardRank(five) == FIVE);
-    EXPECT_TRUE(Env::winamaxOcr().readCardRank(seven) == SEVEN);
-    EXPECT_TRUE(Env::winamaxOcr().readCardRank(eight) == EIGHT);
-    EXPECT_TRUE(Env::winamaxOcr().readCardRank(queen) == QUEEN);
-    EXPECT_TRUE(Env::winamaxOcr().readCardRank(king) == KING);
+    EXPECT_EQ(Env::winamaxOcr().readCardRank(two), TWO);
+    EXPECT_EQ(Env::winamaxOcr().readCardRank(four), FOUR);
+    EXPECT_EQ(Env::winamaxOcr().readCardRank(five), FIVE);
+    EXPECT_EQ(Env::winamaxOcr().readCardRank(seven), SEVEN);
+    EXPECT_EQ(Env::winamaxOcr().readCardRank(eight), EIGHT);
+    EXPECT_EQ(Env::winamaxOcr().readCardRank(queen), QUEEN);
+    EXPECT_EQ(Env::winamaxOcr().readCardRank(king), KING);
+}
+
+TEST(WinamaxOcrTest, readCardRankShouldReturnUndefinedOnUnknowSuitColor) {
+    auto unknown = cv::imread(std::string(SUIT_IMAGES_DIR) + "/unknown.png");
+
+    EXPECT_EQ(Env::winamaxOcr().readCardRank(unknown), UNDEFINED);
 }
 
 TEST(WinamaxOcrTest, readCardSuitShouldWork) {
@@ -56,17 +63,23 @@ TEST(WinamaxOcrTest, readCardSuitShouldWork) {
     auto heart   = cv::imread(std::string(SUIT_IMAGES_DIR) + "/heart.png");
     auto spade   = cv::imread(std::string(SUIT_IMAGES_DIR) + "/spade.png");
 
-    EXPECT_TRUE(Env::winamaxOcr().readCardSuit(club) == CLUB);
-    EXPECT_TRUE(Env::winamaxOcr().readCardSuit(diamond) == DIAMOND);
-    EXPECT_TRUE(Env::winamaxOcr().readCardSuit(heart) == HEART);
-    EXPECT_TRUE(Env::winamaxOcr().readCardSuit(spade) == SPADE);
+    EXPECT_EQ(Env::winamaxOcr().readCardSuit(club), CLUB);
+    EXPECT_EQ(Env::winamaxOcr().readCardSuit(diamond), DIAMOND);
+    EXPECT_EQ(Env::winamaxOcr().readCardSuit(heart), HEART);
+    EXPECT_EQ(Env::winamaxOcr().readCardSuit(spade), SPADE);
 }
 
-TEST(WinamaxOcrTest, readCardSuitShouldThrowErrorOnUnknowSuitColor) {
+TEST(WinamaxOcrTest, readCardSuitShouldReturnUnkownOnUnknowSuitColor) {
     auto unknown = cv::imread(std::string(SUIT_IMAGES_DIR) + "/unknown.png");
 
-    EXPECT_THROW_WITH_MESSAGE(Env::winamaxOcr().readCardSuit(unknown), UndefinedCardSuit,
-                              "The middle pixel color BGR(211, 57, 207) does not match a suit");
+    EXPECT_EQ(Env::winamaxOcr().readCardSuit(unknown), UNKNOWN);
+}
+
+TEST(WinamaxOcrTest, readCardShouldWork) {
+    auto club  = cv::imread(std::string(SUIT_IMAGES_DIR) + "/club.png");
+    auto seven = cv::imread(std::string(RANK_IMAGES_DIR) + "/7.png");
+
+    EXPECT_EQ(Env::winamaxOcr().readCard(seven, club), card("7C"));
 }
 
 auto main(int argc, char* argv[]) -> int {

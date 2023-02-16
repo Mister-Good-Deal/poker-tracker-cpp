@@ -4,7 +4,7 @@ project(ocr)
 # Make cache variables for install destinations
 include(GNUInstallDirs)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -34,10 +34,11 @@ target_include_directories(
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     PRIVATE
+    logger
     game_handler
 )
 
-target_link_libraries(ocr PRIVATE game_handler opencv_core opencv_imgproc opencv_text)
+target_link_libraries(ocr PRIVATE logger game_handler opencv_core opencv_imgproc opencv_text)
 
 install(
     TARGETS ocr

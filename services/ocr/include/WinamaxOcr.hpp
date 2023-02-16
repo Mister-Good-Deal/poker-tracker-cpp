@@ -3,11 +3,6 @@
 #include "OcrInterface.hpp"
 
 namespace OCR {
-    class UndefinedCardSuit : public std::runtime_error {
-        public:
-            explicit UndefinedCardSuit(const std::string& arg) : runtime_error(arg){};
-    };
-
     class WinamaxOcr final : public OcrInterface {
         public:
             WinamaxOcr()                        = default;

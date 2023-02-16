@@ -1,7 +1,10 @@
-
 #include "WinamaxOcr.hpp"
 
+#include "Logger.hpp"
+
 namespace OCR {
+    using Logger = Logger::Quill;
+
     using enum GameHandler::Card::Suit;
 
     auto WinamaxOcr::operator=(WinamaxOcr&& other) noexcept -> WinamaxOcr& {
@@ -16,7 +19,7 @@ namespace OCR {
     auto WinamaxOcr::readCardRank(cv::Mat& rankImage) const -> Card::Rank {
         std::string rank;
 
-        _tesseractCard->run(rankImage, rank);
+        _cardOcr()->run(rankImage, rank);
 
         return Card::charToRank(rank[0]);
     }
@@ -28,7 +31,7 @@ namespace OCR {
         const cv::Vec3b CLUB_COLOR    = {46, 138, 0};   // Green
         const cv::Vec3b SPADE_COLOR   = {0, 0, 0};      // Black
 
-        Card::Suit suit;
+        Card::Suit suit = UNKNOWN;
 
         auto middlePixelColor = suitImage.at<cv::Vec3b>(suitImage.cols / 2, suitImage.rows / 2);
 
@@ -42,7 +45,7 @@ namespace OCR {
         } else if (middlePixelColor == SPADE_COLOR) {
             suit = SPADE;
         } else {
-            throw UndefinedCardSuit("The middle pixel color BGR" + _cvColorToString(middlePixelColor) + " does not match a suit");
+            LOG_ERROR(Logger::getLogger(), "The middle pixel color BGR{}, does not match a suit", _cvColorToString(middlePixelColor));
         }
 
         return suit;
