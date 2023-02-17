@@ -9,8 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Required libs
-find_package(fmt REQUIRED)
-find_package(quill REQUIRED)
+find_package(quill CONFIG REQUIRED)
 
 # Source and header files
 set(
@@ -33,7 +32,7 @@ target_include_directories(
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
-target_link_libraries(logger PRIVATE fmt::fmt quill::quill)
+target_link_libraries(logger PRIVATE quill::quill)
 
 install(
     TARGETS logger

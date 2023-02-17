@@ -15,21 +15,20 @@ else ()
     set(CMAKE_GENERATOR "Unix Makefiles")
 endif ()
 
-if (${LOG_LEVEL})
-    message(STATUS "LOG_LEVEL = ${LOG_LEVEL}")
+# Configure the logger
+if (NOT DEFINED QUILL_ACTIVE_LOG_LEVEL)
+    message(STATUS "QUILL_ACTIVE_LOG_LEVEL is not set, getting default value based on CMAKE_BUILD_TYPE")
 
-    add_definitions(-DLOG_LEVEL="${LOG_LEVEL}")
-else ()
     string(TOLOWER ${CMAKE_BUILD_TYPE} build_type)
 
     if (${build_type} STREQUAL debug)
-        message(NOTICE "LOG_LEVEL is not defined, set default to DEBUG")
+        message(STATUS "LOG_LEVEL is set to DEBUG")
 
-        add_definitions(-DLOG_LEVEL_DEBUG=1)
+        add_compile_definitions(QUILL_ACTIVE_LOG_LEVEL=QUILL_LOG_LEVEL_DEBUG)
     else ()
-        message(NOTICE "LOG_LEVEL is not defined, set default to INFO")
+        message(STATUS "LOG_LEVEL is set to INFO")
 
-        add_definitions(-DLOG_LEVEL_INFO=1)
+        add_compile_definitions(QUILL_ACTIVE_LOG_LEVEL=QUILL_LOG_LEVEL_INFO)
     endif ()
 endif ()
 

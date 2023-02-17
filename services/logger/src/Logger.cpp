@@ -17,12 +17,6 @@ namespace Logger {
 
         auto* logger = quill::get_root_logger();
 
-#ifdef LOG_LEVEL_DEBUG
-        logger->set_log_level(quill::LogLevel::Debug);
-#endif
-#ifdef LOG_LEVEL_INFO
-        logger->set_log_level(quill::LogLevel::Info);
-#endif
         // enable a backtrace that will get flushed when we log CRITICAL
         logger->init_backtrace(2, quill::LogLevel::Critical);
 
