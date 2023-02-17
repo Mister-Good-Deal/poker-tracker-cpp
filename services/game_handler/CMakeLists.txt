@@ -9,6 +9,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Required libs
+# logger target is automatically imported by parent project call
+find_package(fmt REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
 # Source and header files
@@ -48,7 +50,7 @@ target_include_directories(
     logger
 )
 
-target_link_libraries(game_handler PRIVATE logger nlohmann_json::nlohmann_json)
+target_link_libraries(game_handler PRIVATE fmt::fmt logger nlohmann_json::nlohmann_json)
 
 install(
     TARGETS game_handler

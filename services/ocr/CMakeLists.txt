@@ -9,7 +9,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Required libs
-# GameHandler target is automatically imported by parent project call
+# logger and GameHandler targets are automatically imported by parent project call
+find_package(fmt REQUIRED)
 find_package(OpenCV REQUIRED)
 
 # Source and header files
@@ -38,7 +39,7 @@ target_include_directories(
     game_handler
 )
 
-target_link_libraries(ocr PRIVATE logger game_handler opencv_core opencv_imgproc opencv_text)
+target_link_libraries(ocr PRIVATE fmt::fmt logger game_handler opencv_core opencv_imgproc opencv_text)
 
 install(
     TARGETS ocr

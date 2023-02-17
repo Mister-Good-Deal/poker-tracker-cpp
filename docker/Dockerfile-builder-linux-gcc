@@ -8,6 +8,7 @@ ARG LEPTONICA_VERSION
 ARG TESSERACT_VERSION
 ARG OPENCV_VERSION
 ARG NLOHMANN_JSON_VERSION
+ARG FMT_VERSION
 ARG QUILL_VERSION
 ARG GOOGLETEST_VERSION
 ARG MAX_CPU_CORES
@@ -70,10 +71,16 @@ RUN wget https://github.com/nlohmann/json/archive/refs/tags/v${NLOHMANN_JSON_VER
     mkdir build && cd build && cmake .. && make -j ${MAX_CPU_CORES} && make install && \
     rm -rf /tmp/json-${NLOHMANN_JSON_VERSION}.tar.gz /tmp/json-${NLOHMANN_JSON_VERSION}
 
+# Install fmt with the given FMT_VERSION version from https://github.com/fmtlib/fmt
+RUN wget https://github.com/fmtlib/fmt/archive/refs/tags/${FMT_VERSION}.tar.gz -q -O /tmp/fmt-${FMT_VERSION}.tar.gz && \
+    cd /tmp && ls && tar -xvzf fmt-${FMT_VERSION}.tar.gz && cd fmt-${FMT_VERSION} && \
+    mkdir build && cd build && cmake .. -DBUILD_SHARED_LIBS=ON && make -j ${MAX_CPU_CORES} && make install && \
+    rm -rf /tmp/fmt-${FMT_VERSION}.tar.gz /tmp/fmt-${FMT_VERSION}
+
 # Install quill with the given QUILL_VERSION version from https://github.com/odygrd/quill
 RUN wget https://github.com/odygrd/quill/archive/refs/tags/v${QUILL_VERSION}.tar.gz -q -O /tmp/quill-${QUILL_VERSION}.tar.gz && \
     cd /tmp && ls && tar -xvzf quill-${QUILL_VERSION}.tar.gz && cd quill-${QUILL_VERSION} && \
-    mkdir build && cd build && cmake .. && make -j ${MAX_CPU_CORES} && make install && \
+    mkdir build && cd build && cmake .. -DQUILL_FMT_EXTERNAL=ON -DBUILD_SHARED_LIBS=ON && make -j ${MAX_CPU_CORES} && make install && \
     rm -rf /tmp/quill-${QUILL_VERSION}.tar.gz /tmp/quill-${QUILL_VERSION}
 
 # Install googleTest with the given GOOGLETEST_VERSION version from https://github.com/google/googletest
