@@ -18,6 +18,6 @@ namespace OCR {
             auto readCardSuit(cv::Mat& suitImage) const -> Card::Suit override;
 
         private:
-            [[nodiscard]] auto _cvColorToString(cv::Vec3b color) const -> std::string;
+            [[nodiscard]] auto _cvColorToString(const cv::Vec3b& color) const -> std::string;
     };
 }  // namespace OCR
