@@ -12,11 +12,9 @@ function(add_class_test class_name)
 endfunction()
 
 # Add the image file as a resource
-set(SUIT_IMAGES_DIR "${PROJECT_SOURCE_DIR}/resources/winamax/suits")
-set(RANK_IMAGES_DIR "${PROJECT_SOURCE_DIR}/resources/winamax/ranks")
+set(WINAMAX_IMAGES_DIR "${PROJECT_SOURCE_DIR}/resources/winamax")
 
-add_definitions(-DSUIT_IMAGES_DIR="${SUIT_IMAGES_DIR}")
-add_definitions(-DRANK_IMAGES_DIR="${RANK_IMAGES_DIR}")
+add_definitions(-DWINAMAX_IMAGES_DIR="${WINAMAX_IMAGES_DIR}")
 
 message(STATUS "The unit tests for ocr are stored in ${CMAKE_BINARY_DIR}")
 

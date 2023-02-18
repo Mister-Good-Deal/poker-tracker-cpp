@@ -8,10 +8,7 @@ namespace OCR {
     using enum GameHandler::Card::Suit;
 
     auto WinamaxOcr::operator=(WinamaxOcr&& other) noexcept -> WinamaxOcr& {
-        if (this != &other)
-        {
-            // @todo, prefer using var = std::move(...);
-        }
+        if (this != &other) { _cardsSkin = std::move(other._cardsSkin); }
 
         return *this;
     }
@@ -53,6 +50,13 @@ namespace OCR {
         }
 
         return suit;
+    }
+
+    auto WinamaxOcr::hasFolded(cv::Mat& cardsSkinImage) const -> bool {
+        double errorL2    = cv::norm(cardsSkinImage, _cardsSkin, cv::NORM_L2);
+        double similarity = errorL2 / static_cast<double>(cardsSkinImage.rows * cardsSkinImage.cols);
+
+        return similarity >= SIMILARITY_THRESHOLD;
     }
 
     auto WinamaxOcr::_cvColorToString(const cv::Vec3b& color) const -> std::string {

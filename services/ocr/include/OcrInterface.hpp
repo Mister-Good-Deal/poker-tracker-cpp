@@ -23,6 +23,7 @@ namespace OCR {
             virtual auto readCardRank(cv::Mat& rankImage) const -> Card::Rank = 0;
             virtual auto readCardSuit(cv::Mat& suitImage) const -> Card::Suit = 0;
             virtual auto readCard(cv::Mat& rankImage, cv::Mat& suitImage) const -> Card;
+            virtual auto readWord(cv::Mat& wordImage) const -> std::string;
 
         protected:
             [[nodiscard]] auto _cardOcr() const -> const cv::Ptr<OCRTesseract>& { return _tesseractCard; }

@@ -65,7 +65,8 @@ namespace GameHandler {
                 }
             }
 
-            static constexpr auto charToRank(char rank) -> Rank {
+            // @todo put constexpr when c++23
+            static auto charToRank(char rank) -> Rank {
                 switch (rank)
                 {
                     case '2': return Rank::TWO;
