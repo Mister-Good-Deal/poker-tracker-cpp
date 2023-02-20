@@ -1,6 +1,10 @@
 #include "OcrInterface.hpp"
 
+#include "Logger.hpp"
+
 namespace OCR {
+    using Logger = Logger::Quill;
+
     using enum cv::text::ocr_engine_mode;
     using enum cv::text::page_seg_mode;
 
@@ -37,5 +41,23 @@ namespace OCR {
         trim(word);
 
         return word;
+    }
+    auto OcrInterface::similarityScore(const cv::Mat& firstImage, const cv::Mat& secondImage) const -> double {
+        double similarity = 0;
+
+        if (firstImage.rows != secondImage.rows)
+        {
+            LOG_ERROR(Logger::getLogger(), "The images rows are not equal in similarity images computation ({} != {})",
+                      firstImage.rows, secondImage.rows);
+        } else if (firstImage.cols != secondImage.cols) {
+            LOG_ERROR(Logger::getLogger(), "The images cols are not equal in similarity images computation ({} != {})",
+                      firstImage.cols, secondImage.cols);
+        } else {
+            double errorL2 = cv::norm(firstImage, secondImage, cv::NORM_L2);
+
+            similarity = errorL2 / static_cast<double>(firstImage.rows * firstImage.cols);
+        }
+
+        return similarity;
     }
 }  // namespace OCR

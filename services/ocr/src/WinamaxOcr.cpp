@@ -53,10 +53,7 @@ namespace OCR {
     }
 
     auto WinamaxOcr::hasFolded(cv::Mat& cardsSkinImage) const -> bool {
-        double errorL2    = cv::norm(cardsSkinImage, _cardsSkin, cv::NORM_L2);
-        double similarity = errorL2 / static_cast<double>(cardsSkinImage.rows * cardsSkinImage.cols);
-
-        return similarity >= SIMILARITY_THRESHOLD;
+        return similarityScore(cardsSkinImage, _cardsSkin) >= SIMILARITY_THRESHOLD;
     }
 
     auto WinamaxOcr::_cvColorToString(const cv::Vec3b& color) const -> std::string {

@@ -6,12 +6,15 @@ endif ()
 
 # Check the system type
 if (CMAKE_SYSTEM_NAME STREQUAL Windows)
+    message(STATUS "Windows build")
+
     set(CMAKE_C_COMPILER x86_64-w64-mingw32-gcc)
     set(CMAKE_CXX_COMPILER x86_64-w64-mingw32-g++)
     set(CMAKE_RC_COMPILER x86_64-w64-mingw32-windres)
     set(CMAKE_GENERATOR "MinGW Makefiles")
 else ()
-    # Default to native build
+    message(STATUS "Linux build")
+
     set(CMAKE_GENERATOR "Unix Makefiles")
 endif ()
 
