@@ -4,8 +4,12 @@ FROM gcc:${GCC_VERSION}-bullseye
 
 ARG CMAKE_VERSION
 ARG SDL_VERSION
+ARG LEPTONICA_VERSION
+ARG TESSERACT_VERSION
 ARG OPENCV_VERSION
 ARG NLOHMANN_JSON_VERSION
+ARG FMT_VERSION
+ARG QUILL_VERSION
 ARG GOOGLETEST_VERSION
 ARG MAX_CPU_CORES
 
@@ -13,7 +17,7 @@ ARG MAX_CPU_CORES
 RUN wget https://gitlab.kitware.com/cmake/cmake/-/archive/v${CMAKE_VERSION}/cmake-v${CMAKE_VERSION}.tar.gz \
     -q -O /tmp/cmake-v${CMAKE_VERSION}.tar.gz && \
     cd /tmp && tar -xvzf cmake-v${CMAKE_VERSION}.tar.gz && cd cmake-v${CMAKE_VERSION} && \
-    ./bootstrap --parallel=${MAX_CPU_CORES} -- -DCMAKE_USE_OPENSSL=OFF && make -j ${MAX_CPU_CORES} && make install && \
+    ./bootstrap --parallel=${MAX_CPU_CORES} -- -DCMAKE_USE_OPENSSL=ON && make -j ${MAX_CPU_CORES} && make install && \
     rm -rf /tmp/cmake-v${CMAKE_VERSION}.tar.gz /tmp/cmake-v${CMAKE_VERSION}
 
 # Install SDL with the given SDL_VERSION version from https://github.com/libsdl-org/SDL
@@ -24,17 +28,39 @@ RUN apt-get update && apt-get install -y libgtk-3-dev && \
     mkdir build && cd build && ../configure && make -j ${MAX_CPU_CORES} && make install && \
     rm -rf /tmp/sdl-${SDL_VERSION}.tar.gz /tmp/SDL-release-${SDL_VERSION}
 
+# Install leptonica with the given LEPTONICA_VERSION from https://github.com/DanBloomberg/leptonica
+RUN wget https://github.com/DanBloomberg/leptonica/archive/refs/tags/${LEPTONICA_VERSION}.tar.gz \
+    -q -O /tmp/leptonica-${LEPTONICA_VERSION}.tar.gz && \
+    cd /tmp && tar -xvzf leptonica-${LEPTONICA_VERSION}.tar.gz && cd leptonica-${LEPTONICA_VERSION} && \
+    mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_PROG=OFF -DSW_BUILD=OFF -DBUILD_SHARED_LIBS=ON && \
+    make -j ${MAX_CPU_CORES} && make install && \
+    rm -rf /tmp/leptonica-${LEPTONICA_VERSION}.tar.gz /tmp/leptonica-${LEPTONICA_VERSION}
+
+# Install tesseract with the given TESSERACT_VERSION from https://github.com/tesseract-ocr/tesseract
+RUN wget https://github.com/tesseract-ocr/tesseract/archive/refs/tags/${TESSERACT_VERSION}.tar.gz \
+    -q -O /tmp/tesseract-${TESSERACT_VERSION}.tar.gz && \
+    cd /tmp && tar -xvzf tesseract-${TESSERACT_VERSION}.tar.gz && cd tesseract-${TESSERACT_VERSION} && \
+    mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Release -DSW_BUILD=OFF -DBUILD_TRAINING_TOOLS=OFF -DGRAPHICS_DISABLED=ON \
+    -DENABLE_LTO=ON -DBUILD_SHARED_LIBS=ON && \
+    make -j ${MAX_CPU_CORES} && make install && \
+    rm -rf /tmp/tesseract-${TESSERACT_VERSION}.tar.gz /tmp/tesseract-${TESSERACT_VERSION}
+
+# Get tesseract latin trained data for tesseract
+ENV TESSDATA_PREFIX "/usr/local/share/tessdata"
+# tessdata_fast fail on detecting Queen 'Q' on Winamax OCR
+RUN mkdir -p ${TESSDATA_PREFIX} && \
+    wget https://github.com/tesseract-ocr/tessdata_best/raw/main/eng.traineddata -q -O ${TESSDATA_PREFIX}/eng.traineddata
+
 # Install OpenCV with the given OPENCV_VERSION from https://github.com/opencv/opencv
-RUN apt-get install -y libgtkglext1-dev libopenjp2-7-dev && \
-    wget https://github.com/opencv/opencv/archive/refs/tags/${OPENCV_VERSION}.tar.gz \
-    -q -O /tmp/opencv-${OPENCV_VERSION}.tar.gz && \
+RUN apt-get install -y libgtkglext1-dev libopenjp2-7-dev libgtk-3-dev libcanberra-gtk3-module && \
+    wget https://github.com/opencv/opencv/archive/refs/tags/${OPENCV_VERSION}.tar.gz -q -O /tmp/opencv-${OPENCV_VERSION}.tar.gz && \
     wget https://github.com/opencv/opencv_contrib/archive/refs/tags/${OPENCV_VERSION}.tar.gz \
     -q -O /tmp/opencv_contrib-${OPENCV_VERSION}.tar.gz && \
     cd /tmp && tar -xvzf opencv-${OPENCV_VERSION}.tar.gz && tar -xvzf opencv_contrib-${OPENCV_VERSION}.tar.gz && \
     cd opencv-${OPENCV_VERSION} && mkdir opencv_build && cd opencv_build && \
     cmake .. -DBUILD_LIST="core,highgui,imgcodecs,text" \
     -DOPENCV_EXTRA_MODULES_PATH="../../opencv_contrib-${OPENCV_VERSION}/modules" -DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF \
-    -DWITH_OPENCL=OFF && make -j ${MAX_CPU_CORES} && make install && \
+    -DWITH_OPENCL=OFF -DENABLE_CXX11=ON && make -j ${MAX_CPU_CORES} && make install && \
     rm -rf /tmp/opencv-${OPENCV_VERSION}.tar.gz /tmp/opencv-${OPENCV_VERSION} /tmp/opencv_contrib-${OPENCV_VERSION}.tar.gz \
     /tmp/opencv_contrib-${OPENCV_VERSION}
 
@@ -44,6 +70,12 @@ RUN wget https://github.com/nlohmann/json/archive/refs/tags/v${NLOHMANN_JSON_VER
     cd /tmp && ls && tar -xvzf json-${NLOHMANN_JSON_VERSION}.tar.gz && cd json-${NLOHMANN_JSON_VERSION} && \
     mkdir build && cd build && cmake .. && make -j ${MAX_CPU_CORES} && make install && \
     rm -rf /tmp/json-${NLOHMANN_JSON_VERSION}.tar.gz /tmp/json-${NLOHMANN_JSON_VERSION}
+
+# Install quill with the given QUILL_VERSION version from https://github.com/odygrd/quill
+RUN wget https://github.com/odygrd/quill/archive/refs/tags/v${QUILL_VERSION}.tar.gz -q -O /tmp/quill-${QUILL_VERSION}.tar.gz && \
+    cd /tmp && ls && tar -xvzf quill-${QUILL_VERSION}.tar.gz && cd quill-${QUILL_VERSION} && \
+    mkdir build && cd build && cmake .. && make -j ${MAX_CPU_CORES} && make install && \
+    rm -rf /tmp/quill-${QUILL_VERSION}.tar.gz /tmp/quill-${QUILL_VERSION}
 
 # Install googleTest with the given GOOGLETEST_VERSION version from https://github.com/google/googletest
 RUN wget https://github.com/google/googletest/archive/refs/tags/v${GOOGLETEST_VERSION}.tar.gz \

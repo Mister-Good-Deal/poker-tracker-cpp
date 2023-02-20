@@ -6,8 +6,11 @@
 
 #include <nlohmann/json.hpp>
 
+#include "Logger.hpp"
+
 namespace GameHandler {
-    using json = nlohmann::json;
+    using json   = nlohmann::json;
+    using Logger = Logger::Quill;
 
     constexpr int8_t RANK_CARDS_NUMBER = 13;
     constexpr int8_t SUIT_CARDS_NUMBER = 4;
@@ -59,6 +62,30 @@ namespace GameHandler {
                     case Rank::KING: return "K";
                     case Rank::ACE: return "A";
                     default: throw std::invalid_argument("The given rank is invalid");
+                }
+            }
+
+            // @todo put constexpr when c++23
+            static auto charToRank(char rank) -> Rank {
+                switch (rank)
+                {
+                    case '2': return Rank::TWO;
+                    case '3': return Rank::THREE;
+                    case '4': return Rank::FOUR;
+                    case '5': return Rank::FIVE;
+                    case '6': return Rank::SIX;
+                    case '7': return Rank::SEVEN;
+                    case '8': return Rank::EIGHT;
+                    case '9': return Rank::NINE;
+                    case 'T': return Rank::TEN;
+                    case 'J': return Rank::JACK;
+                    case 'Q': return Rank::QUEEN;
+                    case 'K': return Rank::KING;
+                    case 'A': return Rank::ACE;
+                    default:
+                        LOG_ERROR(Logger::getLogger(), "The given rank char ASCII({}) is invalid", static_cast<int>(rank));
+
+                        return Rank::UNDEFINED;
                 }
             }
 
