@@ -1,10 +1,10 @@
 #include "Logger.hpp"
 
 namespace Logger {
-    quill::Logger* Quill::_logger = nullptr;
+    std::shared_ptr<quill::Logger> Quill::_logger = nullptr;
 
-    auto Quill::getLogger() -> quill::Logger* {
-        if (_logger == nullptr) { _logger = _initLogger(); }
+    auto Quill::getLogger() -> std::shared_ptr<quill::Logger> const {
+        if (_logger == nullptr) { _logger = std::shared_ptr<quill::Logger>(_initLogger()); }
 
         return _logger;
     }

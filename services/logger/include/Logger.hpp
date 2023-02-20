@@ -7,10 +7,10 @@ namespace Logger {
         public:
             Quill() = delete;
 
-            static auto getLogger() -> quill::Logger*;
+            static auto getLogger() -> std::shared_ptr<quill::Logger> const;
 
         private:
-            static quill::Logger* _logger;
+            static std::shared_ptr<quill::Logger> _logger;
 
             static auto _initLogger() -> quill::Logger*;
     };
