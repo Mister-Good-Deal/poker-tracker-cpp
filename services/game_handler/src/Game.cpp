@@ -9,8 +9,8 @@ namespace GameHandler {
         {
             _rounds      = std::move(other._rounds);
             _players     = std::move(other._players);
-            _startTime   = std::move(other._startTime);
-            _endTime     = std::move(other._endTime);
+            _startTime   = other._startTime;
+            _endTime     = other._endTime;
             _winner      = other._winner;
             _buyIn       = other._buyIn;
             _multipliers = other._multipliers;

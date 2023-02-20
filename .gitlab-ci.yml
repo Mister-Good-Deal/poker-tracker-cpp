@@ -92,6 +92,7 @@ build_windows:
   stage: build
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-windows-mingw:latest
   script:
+    - export CC=x86_64-w64-mingw32-gcc && export CXX=x86_64-w64-mingw32-g++
     - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_SYSTEM_NAME=Windows && cmake --build $BUILD_PATH
   artifacts:
     paths:
@@ -144,6 +145,18 @@ test_game_handler:
   artifacts:
     reports:
       junit: $BUILD_PATH/services/game_handler/game_handler_ctest.xml
+  needs:
+    - clang_check
+
+test_ocr:
+  stage: test
+  script:
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DBUILD_TESTS=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH
+    # @fixme Need to required tests for all subproject with --test-dir
+    - ctest --test-dir $BUILD_PATH/services/ocr --output-on-failure --extra-verbose -j $(nproc) --output-junit ocr_ctest.xml --no-compress-output
+  artifacts:
+    reports:
+      junit: $BUILD_PATH/services/ocr/ocr_ctest.xml
   needs:
     - clang_check
 
