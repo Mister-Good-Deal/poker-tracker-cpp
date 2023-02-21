@@ -9,6 +9,9 @@ class WinamaxScraperTest : public ::testing::Test {};
 TEST(WinamaxScraperTest, displayScreenshot) {
     WinamaxScraper scraper;
 
-    cv::imshow("screenshot", scraper.getScreenshot("rom1@msi-P100: ~/Projects/poker-bot"));
-    cv::waitKey(-1);
+    for (const auto& windowName : scraper.getWindowsName())
+    { std::cout << "- " << windowName << std::endl; }
+
+    //    cv::imshow("screenshot", scraper.getScreenshot("rom1@msi-P100: ~/Projects/poker-bot"));
+    //    cv::waitKey(-1);
 }

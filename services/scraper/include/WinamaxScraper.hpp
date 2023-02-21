@@ -1,48 +1,41 @@
 #pragma once
 
-#include <map>
-#include <string>
-
-#include <opencv4/opencv2/opencv.hpp>
-
-#include "Logger.hpp"
-
-#ifdef _WIN32
-
-#include <tlhelp32.h>
-#include <windows.h>
-
-#elif __linux__
-
-#include <X11/Xlib.h>
-#include <X11/Xos.h>
-#include <X11/Xutil.h>
-
-#endif
+#include <ScraperInterface.hpp>
 
 namespace Scraper {
-    class WinamaxScraper {
+    class WinamaxScraper : public ScraperInterface {
         public:
-#ifdef _WIN32
-            using windows_t = std::map<std::string, HWND>;
-#elif __linux__
-            using windows_t = std::map<std::string, Window>;
-#endif
-
             WinamaxScraper()                            = default;
             WinamaxScraper(const WinamaxScraper& other) = default;
             WinamaxScraper(WinamaxScraper&& other) noexcept { *this = std::move(other); };
 
-            virtual ~WinamaxScraper() = default;
+            ~WinamaxScraper() override = default;
 
             auto operator=(const WinamaxScraper& other) -> WinamaxScraper& = default;
             auto operator=(WinamaxScraper&& other) noexcept -> WinamaxScraper&;
 
-            auto getScreenshot(const std::string& windowName) -> cv::Mat;
-
-        private:
-            windows_t _activeWindows;
-
-            auto _parseActiveWindows() -> void;
+            auto getFirstCardCoordinate() -> cv::Rect override { return {}; }
+            auto getSecondCardCoordinate() -> cv::Rect override { return {}; }
+            auto getPotCoordinate() -> cv::Rect override { return {}; }
+            auto getPrizePoolCoordinate() -> cv::Rect override { return {}; }
+            auto getBoardCard1Coordinate() -> cv::Rect override { return {}; }
+            auto getBoardCard2Coordinate() -> cv::Rect override { return {}; }
+            auto getBoardCard3Coordinate() -> cv::Rect override { return {}; }
+            auto getBoardCard4Coordinate() -> cv::Rect override { return {}; }
+            auto getBoardCard5Coordinate() -> cv::Rect override { return {}; }
+            auto getPlayer1NameCoordinate() -> cv::Rect override { return {}; }
+            auto getPlayer2NameCoordinate() -> cv::Rect override { return {}; }
+            auto getPlayer3NameCoordinate() -> cv::Rect override { return {}; }
+            auto getPlayer1ButtonCoordinate() -> cv::Rect override { return {}; }
+            auto getPlayer2ButtonCoordinate() -> cv::Rect override { return {}; }
+            auto getPlayer3ButtonCoordinate() -> cv::Rect override { return {}; }
+            auto getPlayer1StackCoordinate() -> cv::Rect override { return {}; }
+            auto getPlayer2StackCoordinate() -> cv::Rect override { return {}; }
+            auto getPlayer3StackCoordinate() -> cv::Rect override { return {}; }
+            auto getPlayer1BetCoordinate() -> cv::Rect override { return {}; }
+            auto getPlayer2BetCoordinate() -> cv::Rect override { return {}; }
+            auto getPlayer3BetCoordinate() -> cv::Rect override { return {}; }
+            auto getPlayer2CardsCoordinate() -> cv::Rect override { return {}; }
+            auto getPlayer3CardsCoordinate() -> cv::Rect override { return {}; }
     };
 }  // namespace Scraper
