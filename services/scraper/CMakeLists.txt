@@ -11,6 +11,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Required libs
 # logger and GameHandler targets are automatically imported by parent project call
 find_package(quill CONFIG REQUIRED)
+find_package(OpenCV REQUIRED)
 find_package(SDL2 REQUIRED)
 
 # Source and header files
@@ -39,7 +40,13 @@ target_include_directories(
     game_handler
 )
 
-target_link_libraries(scraper PRIVATE logger game_handler ${SDL2_LIBRARIES})
+set(COMMON_LIBS logger game_handler opencv_core opencv_imgproc ${SDL2_LIBRARIES})
+
+if (CMAKE_SYSTEM_NAME STREQUAL Windows)
+    target_link_libraries(scraper PRIVATE user32 gdi32 ${COMMON_LIBS})
+else ()
+    target_link_libraries(scraper PRIVATE X11 Xext ${COMMON_LIBS})
+endif ()
 
 install(
     TARGETS scraper

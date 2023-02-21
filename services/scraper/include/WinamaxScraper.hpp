@@ -1,15 +1,33 @@
 #pragma once
 
+#include <map>
 #include <string>
-#include <tuple>
-#include <vector>
 
-#include <SDL2/SDL.h>
+#include <opencv4/opencv2/opencv.hpp>
+
+#include "Logger.hpp"
+
+#ifdef _WIN32
+
+#include <tlhelp32.h>
+#include <windows.h>
+
+#elif __linux__
+
+#include <X11/Xlib.h>
+#include <X11/Xos.h>
+#include <X11/Xutil.h>
+
+#endif
 
 namespace Scraper {
     class WinamaxScraper {
         public:
-            using window_t = std::tuple<int32_t, std::string_view>;
+#ifdef _WIN32
+            using windows_t = std::map<std::string, HWND>;
+#elif __linux__
+            using windows_t = std::map<std::string, Window>;
+#endif
 
             WinamaxScraper()                            = default;
             WinamaxScraper(const WinamaxScraper& other) = default;
@@ -20,6 +38,11 @@ namespace Scraper {
             auto operator=(const WinamaxScraper& other) -> WinamaxScraper& = default;
             auto operator=(WinamaxScraper&& other) noexcept -> WinamaxScraper&;
 
-            auto getActiveWindows() -> std::vector<window_t>;
+            auto getScreenshot(const std::string& windowName) -> cv::Mat;
+
+        private:
+            windows_t _activeWindows;
+
+            auto _parseActiveWindows() -> void;
     };
 }  // namespace Scraper
