@@ -20,9 +20,18 @@ namespace Scraper {
 
         while ((hwnd = FindWindowEx(nullptr, hwnd, nullptr, nullptr)) != nullptr)
         {
-            char title[1024];
-            GetWindowText(hwnd, title, sizeof(title));
-            if (strlen(title) > 0) {_activeWindows[title] = hwnd); }
+            auto titleLength = GetWindowTextLength(hwnd);
+            auto title       = static_cast<PSTR>(VirtualAlloc(nullptr, titleLength + 1, MEM_COMMIT, PAGE_READWRITE));
+            auto titleSize   = GetWindowText(hwnd, title, titleLength);
+
+            if (titleSize == 0)
+            {
+                LOG_DEBUG(Logger::getLogger(), "The windows's title could not be retrieved\n\n{}", GetLastError());
+            } else {
+                _activeWindows[title] = hwnd;
+            }
+
+            VirtualFree(title, 0, MEM_RELEASE);
         }
 
 #elif __linux__
@@ -61,15 +70,16 @@ namespace Scraper {
 
 #ifdef _WIN32
         RECT rc;
+
         GetClientRect(window, &rc);
 
         HDC hdcScreen = GetDC(nullptr);
-        HDC hdcWindow = GetDC(screenshot);
-        HDC hdcMemDC  = CreateCompatibleDC(hdcScreen);
+        HDC hdcWindow = GetDC(window);
 
-        int32_t width  = rc.right - rc.left;
-        int32_t height = rc.bottom - rc.top;
+        int width  = rc.right - rc.left;
+        int height = rc.bottom - rc.top;
 
+        HDC     hdcMemDC  = CreateCompatibleDC(hdcScreen);
         HBITMAP hbmScreen = CreateCompatibleBitmap(hdcScreen, width, height);
         HGDIOBJ oldObj    = SelectObject(hdcMemDC, hbmScreen);
 
@@ -77,15 +87,16 @@ namespace Scraper {
 
         cv::Mat screenshot(height, width, CV_8UC4);
 
-        GetBitmapBits(hbmScreen, mat.total() * mat.elemSize(), mat.data);
+        GetBitmapBits(hbmScreen, static_cast<LONG>(screenshot.total() * screenshot.elemSize()), screenshot.data);
 
-        screenshot = cv::imdecode(mat, cv::IMREAD_COLOR);
+        screenshot = cv::imdecode(screenshot, cv::IMREAD_COLOR);
 
         SelectObject(hdcMemDC, oldObj);
         DeleteDC(hdcMemDC);
         ReleaseDC(nullptr, hdcScreen);
         ReleaseDC(window, hdcWindow);
         DeleteObject(hbmScreen);
+
 #elif __linux__
         Display*          display = XOpenDisplay(nullptr);
         XWindowAttributes attributes;

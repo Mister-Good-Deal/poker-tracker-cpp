@@ -9,7 +9,6 @@
 
 #ifdef _WIN32
 
-    #include <tlhelp32.h>
     #include <windows.h>
 
 #elif __linux__
