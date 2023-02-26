@@ -148,7 +148,7 @@ RUN set -ex \
         --enable-wildcard \
         --disable-lib32 \
         --enable-lib64 \
-    && (make || make || make || make) \
+    && (make -j ${MAX_CPU_CORES} || make -j ${MAX_CPU_CORES} || make -j ${MAX_CPU_CORES} || make -j ${MAX_CPU_CORES}) \
     && make install \
     && cd .. \
     \
@@ -176,11 +176,11 @@ RUN set -ex \
     && rm -r mingw-w64 mingw-w64-v${MINGW_VERSION} \
     && rm -r gcc gcc-${GCC_VERSION}
 
-ENV INSTALL_PREFIX=/usr/local/lib/mingw
+ENV INSTALL_PREFIX=/usr/local/x86_64-w64-mingw32
 ENV CMAKE_TOOLCHAIN=/tmp/mingw-w64-x86_64.cmake
 
+# Copy cmake tolchain fro windows cross compiling
 COPY cmake/mingw-w64-x86_64.cmake /tmp
-
 # Define default compiler as mingw
 RUN export CC="/usr/local/bin/x86_64-w64-mingw32-gcc" && export CXX="/usr/local/bin/x86_64-w64-mingw32-g++"
 
@@ -206,8 +206,11 @@ RUN wget https://github.com/DanBloomberg/leptonica/archive/refs/tags/${LEPTONICA
 RUN wget https://github.com/tesseract-ocr/tesseract/archive/refs/tags/${TESSERACT_VERSION}.tar.gz \
     -q -O /tmp/tesseract-${TESSERACT_VERSION}.tar.gz && \
     cd /tmp && tar -xvzf tesseract-${TESSERACT_VERSION}.tar.gz && cd tesseract-${TESSERACT_VERSION} && \
+    # @fixme include an extra libraries search directory with a CMake flag instead of hacking the CMakeLists.txt
+    sed -i 's/LIB_Ws2_32 Ws2_32/LIB_Ws2_32 \/usr\/local\/x86_64-w64-mingw32\/lib\/libws2_32\.a/g' CMakeLists.txt && \
     mkdir build && cd build && cmake .. --install-prefix ${INSTALL_PREFIX} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN} \
-    -DCMAKE_BUILD_TYPE=Release -DSW_BUILD=OFF -DBUILD_TRAINING_TOOLS=OFF -DGRAPHICS_DISABLED=ON -DENABLE_LTO=ON -DBUILD_SHARED_LIBS=ON && \
+    -DCMAKE_BUILD_TYPE=Release -DDISABLED_LEGACY_ENGINE=ON -DSW_BUILD=OFF -DBUILD_TRAINING_TOOLS=OFF -DGRAPHICS_DISABLED=ON \
+    -DENABLE_LTO=ON -DBUILD_SHARED_LIBS=ON -DDISABLE_ARCHIVE=ON -DDISABLE_CURL=ON && \
     make -j ${MAX_CPU_CORES} && make install && \
     rm -rf /tmp/tesseract-${TESSERACT_VERSION}.tar.gz /tmp/tesseract-${TESSERACT_VERSION}
 
@@ -234,7 +237,7 @@ RUN apt-get install -y libgtkglext1-dev libopenjp2-7-dev libgtk-3-dev libcanberr
 RUN wget https://github.com/nlohmann/json/archive/refs/tags/v${NLOHMANN_JSON_VERSION}.tar.gz \
     -q -O /tmp/json-${NLOHMANN_JSON_VERSION}.tar.gz && \
     cd /tmp && ls && tar -xvzf json-${NLOHMANN_JSON_VERSION}.tar.gz && cd json-${NLOHMANN_JSON_VERSION} && \
-    mkdir build && cd build && cmake .. --install-prefix -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN} \
+    mkdir build && cd build && cmake .. --install-prefix ${INSTALL_PREFIX} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN} \
     ${INSTALL_PREFIX} -DBUILD_SHARED_LIBS=ON && make -j ${MAX_CPU_CORES} && \
     make install && \
     rm -rf /tmp/json-${NLOHMANN_JSON_VERSION}.tar.gz /tmp/json-${NLOHMANN_JSON_VERSION}
