@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(game_handler)
+project(game_handler LANGUAGES CXX)
 
 # Make cache variables for install destinations
 include(GNUInstallDirs)

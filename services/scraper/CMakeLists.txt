@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(scraper)
+project(scraper LANGUAGES CXX)
 
 # Make cache variables for install destinations
 include(GNUInstallDirs)
