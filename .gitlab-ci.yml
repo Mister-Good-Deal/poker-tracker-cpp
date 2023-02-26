@@ -92,8 +92,8 @@ build_windows:
   stage: build
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-windows-mingw:latest
   script:
-    - CC="/usr/local/x86_64-w64-mingw32-gcc" CXX="/usr/local/x86_64-w64-mingw32-g++"
-      cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_TOOLCHAIN_FILE=cmake/mingw-w64-x86_64.cmake
+    - export CC="/usr/local/x86_64-w64-mingw32-gcc" && export CXX="/usr/local/x86_64-w64-mingw32-g++"
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_TOOLCHAIN_FILE=cmake/mingw-w64-x86_64.cmake
       && cmake --build $BUILD_PATH
   artifacts:
     paths:
