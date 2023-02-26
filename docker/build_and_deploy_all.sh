@@ -12,6 +12,7 @@ docker compose -f "${DOCKER_COMPOSE_FILE_PATH}" build builder-linux-clang && doc
 docker compose -f "${DOCKER_COMPOSE_FILE_PATH}" build builder-linux-clang-dev && docker compose push builder-linux-clang-dev
 docker compose -f "${DOCKER_COMPOSE_FILE_PATH}" build builder-linux-clang-ci && docker compose push builder-linux-clang-ci
 docker compose -f "${DOCKER_COMPOSE_FILE_PATH}" build builder-windows-mingw && docker compose push builder-windows-mingw
+docker compose -f "${DOCKER_COMPOSE_FILE_PATH}" build builder-windows-mingw-dev && docker compose push builder-windows-mingw-dev
 
 echo "All docker builders images built and deployed"
 

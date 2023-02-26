@@ -1,0 +1,13 @@
+ARG CI_REGISTRY
+ARG CI_REGISTRY_BUILDER_ROOT_IMAGE
+
+FROM ${CI_REGISTRY}/${CI_REGISTRY_BUILDER_ROOT_IMAGE}:latest
+
+# Install Rsync and SSH configuration to be able to use remote SSH from IDE with login root:root
+RUN apt-get install -y --no-install-recommends --fix-missing openssh-server rsync && \
+    sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+    echo "root:root" | chpasswd
+
+WORKDIR /app
+
+CMD ["/bin/bash"]

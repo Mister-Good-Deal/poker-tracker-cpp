@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.25)
 
 if (BUILD_TESTS)
     enable_testing()
+    # GoogleTest is linked as shared lib
+    add_compile_definitions(GTEST_LINKED_AS_SHARED_LIBRARY=1)
 endif ()
 
 project(poker_bot)
