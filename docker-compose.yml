@@ -90,7 +90,7 @@ services:
 
   # ---------------------------------------------------- Execution -----------------------------------------------------
 
-  dev:
+  dev-linux:
     image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-clang-dev:latest
     container_name: "Linux_GCC_and_Clang_dev_env"
     ports:
@@ -108,7 +108,7 @@ services:
     image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-windows-mingw-dev:latest
     container_name: "Windows_mingw_dev_env"
     ports:
-      - "3022:22"
+      - "3023:22"
     tty: true
     stdin_open: true
     environment:
