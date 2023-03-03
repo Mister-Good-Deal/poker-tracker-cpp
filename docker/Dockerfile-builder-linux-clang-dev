@@ -16,7 +16,10 @@ RUN apt-get -y update && apt-get install -y texinfo libipt-dev libbabeltrace-ctf
 # Install Rsync and SSH configuration to be able to use remote SSH from IDE with login root:root
 RUN apt-get install -y --no-install-recommends --fix-missing openssh-server rsync && \
     sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
-    echo "root:root" | chpasswd
+    echo "root:root" | chpasswd && \
+    mkdir -p /root/.ssh && chmod 0700 /root/.ssh
+
+COPY docker/id_rsa docker/id_rsa.pub /root/.ssh/
 
 WORKDIR /app
 
