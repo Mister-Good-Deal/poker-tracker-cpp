@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.24)
 project(ocr LANGUAGES CXX)
 
 # Make cache variables for install destinations
@@ -10,7 +10,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Required libs
 # logger and GameHandler targets are automatically imported by parent project call
-find_package(quill CONFIG REQUIRED)
 find_package(OpenCV REQUIRED)
 
 # Source and header files
@@ -27,7 +26,7 @@ set(
 )
 
 # Create the library
-add_library(ocr STATIC ${SRC})
+add_library(ocr SHARED ${SRC})
 
 target_include_directories(
     ocr

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.24)
 project(game_handler LANGUAGES CXX)
 
 # Make cache variables for install destinations
@@ -10,7 +10,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Required libs
 # logger target is automatically imported by parent project call
-find_package(quill CONFIG REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
 # Source and header files
@@ -39,7 +38,7 @@ set(
 )
 
 # Create the library
-add_library(game_handler STATIC ${SRC})
+add_library(game_handler SHARED ${SRC})
 
 target_include_directories(
     game_handler

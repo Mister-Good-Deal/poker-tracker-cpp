@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.24)
 project(logger LANGUAGES CXX)
 
 # Make cache variables for install destinations
@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Required libs
-find_package(quill CONFIG REQUIRED)
+find_package(quill REQUIRED)
 
 # Source and header files
 set(
@@ -23,7 +23,7 @@ set(
 )
 
 # Create the library
-add_library(logger STATIC ${SRC})
+add_library(logger SHARED ${SRC})
 
 target_include_directories(
     logger
@@ -32,7 +32,7 @@ target_include_directories(
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
-target_link_libraries(logger PRIVATE quill::quill)
+target_link_libraries(logger PUBLIC quill::quill)
 
 install(
     TARGETS logger

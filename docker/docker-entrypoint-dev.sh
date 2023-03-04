@@ -1,7 +1,13 @@
 #!/bin/bash
 
 # Start SSH server for IDE integration
-/usr/sbin/sshd -D
+if hash service 2>/dev/null; then
+  # In ubuntu container
+  service ssh start
+else
+  # In alpine container
+  /usr/sbin/sshd -D
+fi
 
 # Launch GDB server session on a loop
 #while true
