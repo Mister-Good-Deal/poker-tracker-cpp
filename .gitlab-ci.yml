@@ -51,6 +51,9 @@ clang_check:
       dotenv: vars.env
     paths:
       - clang-check-report.plist
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /\/build\-only/
+      when: never
 
 # This job builds the Linux version of the application with the Release configuration
 build_linux:
@@ -64,6 +67,8 @@ build_linux:
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH =~/^release/
+    - if: $CI_COMMIT_MESSAGE =~ /\/build\-windows\-only/
+      when: never
   variables:
     BUILD_TYPE: Release
   needs:
@@ -80,6 +85,8 @@ build_linux_debug:
       - $BUILD_PATH
   rules:
     - if: $CI_COMMIT_BRANCH =~/^(feature|hotfix)/
+    - if: $CI_COMMIT_MESSAGE =~ /\/build\-windows\-only/
+      when: never
   variables:
     BUILD_TYPE: Debug
   needs:
@@ -92,16 +99,15 @@ build_windows:
   stage: build
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-windows-mingw:latest
   script:
-    - export CC="/usr/local/x86_64-w64-mingw32-gcc" && export CXX="/usr/local/x86_64-w64-mingw32-g++"
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_C_COMPILER=/usr/local/bin/x86_64-w64-mingw32-gcc
-      -DCMAKE_CXX_COMPILER=/usr/local/bin/x86_64-w64-mingw32-g++ -DCMAKE_TOOLCHAIN_FILE=cmake/mingw-w64-x86_64.cmake && cmake --build $BUILD_PATH
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_TOOLCHAIN_FILE=cmake/mingw-w64-x86_64.cmake
+      && cmake --build $BUILD_PATH
   artifacts:
     paths:
       - $BUILD_PATH/bin/*.exe
       - /usr/local/x86_64-w64-mingw32/bin/*.dll
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_MESSAGE =~ /\/windows\-build/
+    - if: $CI_COMMIT_MESSAGE =~ /\/build\-windows/
   needs:
     - clang_check
 
@@ -112,6 +118,9 @@ clang_format:
   stage: lint
   script:
     - clang-format --Werror --Wclang-format-violations --dry-run $CPP_SRC_FILES
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /\/build\-only/
+      when: never
   needs:
     - clang_check
 
@@ -134,6 +143,9 @@ code_quality:
     expose_as: 'Code quality HTML and json reports'
     reports:
       codequality: $BUILD_PATH/gl-code-quality-report.json
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /\/build\-only/
+      when: never
   needs:
     - clang_check
 
@@ -148,6 +160,9 @@ test_game_handler:
   artifacts:
     reports:
       junit: $BUILD_PATH/services/game_handler/game_handler_ctest.xml
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /\/build\-only/
+      when: never
   needs:
     - clang_check
 
@@ -160,6 +175,9 @@ test_ocr:
   artifacts:
     reports:
       junit: $BUILD_PATH/services/ocr/ocr_ctest.xml
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /\/build\-only/
+      when: never
   needs:
     - clang_check
 
@@ -179,6 +197,8 @@ deploy:
     - git push --tags
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_MESSAGE =~ /\/build\-only/
+      when: never
   needs:
     - clang_format
     - test_game_handler
