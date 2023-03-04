@@ -1,6 +1,6 @@
 stages:
-  - check
   - build
+  - check
   - lint
   - test
   - deploy
@@ -38,23 +38,6 @@ container_scanning:
     CS_DISABLE_LANGUAGE_VULNERABILITY_SCAN: "false"
     CS_DOCKERFILE_PATH: "docker/Dockerfile-builder-linux-gcc"
 
-# This job runs the clang-check tool to analyze the source code and generates a report in clang-check-report.plist
-clang_check:
-  stage: check
-  script:
-    - CPP_SRC_FILES=$(find ${PROJECT_PATH}/services -regex '.*\.\(cpp\|hpp\)' | tr "\n" " ")
-    - echo "CPP_SRC_FILES=${CPP_SRC_FILES}" >> vars.env
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-    - clang-check -analyze -extra-arg=-std=c++20 -p $BUILD_PATH --analyzer-output-path=${PROJECT_PATH}/clang-check-report.plist ${CPP_SRC_FILES}
-  artifacts:
-    reports:
-      dotenv: vars.env
-    paths:
-      - clang-check-report.plist
-  rules:
-    - if: $CI_COMMIT_MESSAGE =~ /\/build\-only/
-      when: never
-
 # This job builds the Linux version of the application with the Release configuration
 build_linux:
   stage: build
@@ -71,8 +54,6 @@ build_linux:
       when: never
   variables:
     BUILD_TYPE: Release
-  needs:
-    - clang_check
 
 # This job builds the Linux version of the application with the Debug configuration
 build_linux_debug:
@@ -89,8 +70,6 @@ build_linux_debug:
       when: never
   variables:
     BUILD_TYPE: Debug
-  needs:
-    - clang_check
 
 # This job is responsible for building the project for the Windows platform using MinGW Makefiles. It uses the
 # 'builder-windows-mingw' image and sets the 'CMAKE_SYSTEM_NAME' to 'Windows' during configuration. It also sets the
@@ -108,8 +87,23 @@ build_windows:
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_MESSAGE =~ /\/build\-windows/
-  needs:
-    - clang_check
+
+# This job runs the clang-check tool to analyze the source code and generates a report in clang-check-report.plist
+clang_check:
+  stage: check
+  script:
+    - CPP_SRC_FILES=$(find ${PROJECT_PATH}/services -regex '.*\.\(cpp\|hpp\)' | tr "\n" " ")
+    - echo "CPP_SRC_FILES=${CPP_SRC_FILES}" >> vars.env
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+    - clang-check -analyze -extra-arg=-std=c++20 -p $BUILD_PATH --analyzer-output-path=${PROJECT_PATH}/clang-check-report.plist ${CPP_SRC_FILES}
+  artifacts:
+    reports:
+      dotenv: vars.env
+    paths:
+      - clang-check-report.plist
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /\/build\-only/
+      when: never
 
 # This job is responsible for running clang-format on the project source files and checking if the code formatting
 # adheres to the project's code style. It uses the 'builder-linux-clang' image and checks the code formatting using the
@@ -202,3 +196,4 @@ deploy:
   needs:
     - clang_format
     - test_game_handler
+    - test_ocr
