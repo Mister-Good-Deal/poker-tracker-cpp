@@ -50,8 +50,7 @@ build_linux:
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH =~/^release/
-    - if: $CI_COMMIT_MESSAGE =~ /\/build\-windows\-only/
-      when: never
+    - if: $CI_COMMIT_MESSAGE !~ /\/build\-windows\-only/m
   variables:
     BUILD_TYPE: Release
 
@@ -66,8 +65,7 @@ build_linux_debug:
       - $BUILD_PATH
   rules:
     - if: $CI_COMMIT_BRANCH =~/^(feature|hotfix)/
-    - if: $CI_COMMIT_MESSAGE =~ /\/build\-windows\-only/
-      when: never
+    - if: $CI_COMMIT_MESSAGE !~ /\/build\-windows\-only/m
   variables:
     BUILD_TYPE: Debug
 
@@ -86,7 +84,7 @@ build_windows:
       - /usr/local/x86_64-w64-mingw32/bin/*.dll
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_MESSAGE =~ /\/build\-windows/
+    - if: $CI_COMMIT_MESSAGE =~ /\/build\-windows/m
 
 # This job runs the clang-check tool to analyze the source code and generates a report in clang-check-report.plist
 clang_check:
@@ -102,8 +100,7 @@ clang_check:
     paths:
       - clang-check-report.plist
   rules:
-    - if: $CI_COMMIT_MESSAGE =~ /\/build\-only/
-      when: never
+    - if: $CI_COMMIT_MESSAGE !~ /\/build\-only/m
 
 # This job is responsible for running clang-format on the project source files and checking if the code formatting
 # adheres to the project's code style. It uses the 'builder-linux-clang' image and checks the code formatting using the
@@ -113,8 +110,7 @@ clang_format:
   script:
     - clang-format --Werror --Wclang-format-violations --dry-run $CPP_SRC_FILES
   rules:
-    - if: $CI_COMMIT_MESSAGE =~ /\/build\-only/
-      when: never
+    - if: $CI_COMMIT_MESSAGE !~ /\/build\-only/m
   needs:
     - clang_check
 
@@ -138,8 +134,7 @@ code_quality:
     reports:
       codequality: $BUILD_PATH/gl-code-quality-report.json
   rules:
-    - if: $CI_COMMIT_MESSAGE =~ /\/build\-only/
-      when: never
+    - if: $CI_COMMIT_MESSAGE !~ /\/build\-only/m
   needs:
     - clang_check
 
@@ -155,8 +150,7 @@ test_game_handler:
     reports:
       junit: $BUILD_PATH/services/game_handler/game_handler_ctest.xml
   rules:
-    - if: $CI_COMMIT_MESSAGE =~ /\/build\-only/
-      when: never
+    - if: $CI_COMMIT_MESSAGE !~ /\/build\-only/m
   needs:
     - clang_check
 
@@ -170,8 +164,7 @@ test_ocr:
     reports:
       junit: $BUILD_PATH/services/ocr/ocr_ctest.xml
   rules:
-    - if: $CI_COMMIT_MESSAGE =~ /\/build\-only/
-      when: never
+    - if: $CI_COMMIT_MESSAGE !~ /\/build\-only/m
   needs:
     - clang_check
 
@@ -191,8 +184,7 @@ deploy:
     - git push --tags
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_MESSAGE =~ /\/build\-only/
-      when: never
+    - if: $CI_COMMIT_MESSAGE !~ /\/build\-only/m
   needs:
     - clang_format
     - test_game_handler
