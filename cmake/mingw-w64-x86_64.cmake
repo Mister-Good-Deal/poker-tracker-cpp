@@ -12,4 +12,5 @@ set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 # Export all symbols in DLL
-set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+# WARNING ! CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS do not work on mingw linux compilation env ... Hours of debugging to find out
+set(CMAKE_CXX_FLAGS "-Wl,--export-all-symbols")
