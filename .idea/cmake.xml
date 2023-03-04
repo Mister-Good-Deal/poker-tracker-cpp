@@ -16,7 +16,7 @@
           </envs>
         </ADDITIONAL_GENERATION_ENVIRONMENT>
       </configuration>
-      <configuration PROFILE_NAME="Debug - Docker SSH poker-bot - mingw" ENABLED="true" GENERATION_DIR="build-mingw" CONFIG_NAME="Debug" TOOLCHAIN_NAME="Docker poker-bot SSH windows" GENERATION_OPTIONS="-DCMAKE_TOOLCHAIN_FILE=cmake/mingw-w64-x86_64.cmake -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON" />
+      <configuration PROFILE_NAME="Debug - Docker SSH poker-bot - mingw" ENABLED="true" GENERATION_DIR="build-mingw" CONFIG_NAME="Debug" TOOLCHAIN_NAME="Docker poker-bot SSH windows" GENERATION_OPTIONS="-DCMAKE_TOOLCHAIN_FILE=/app/cmake/mingw-w64-x86_64.cmake -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON" />
     </configurations>
   </component>
 </project>

@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Start SSH client for IDE integration
-service ssh start
+# Start SSH server for IDE integration
+/usr/sbin/sshd -D
 
 # Launch GDB server session on a loop
 #while true
