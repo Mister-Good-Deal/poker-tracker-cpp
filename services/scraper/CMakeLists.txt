@@ -1,19 +1,22 @@
 cmake_minimum_required(VERSION 3.24)
-project(scraper LANGUAGES CXX)
 
-# Make cache variables for install destinations
-include(GNUInstallDirs)
+project(scraper LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Required libs
-# logger and GameHandler targets are automatically imported by parent project call
+#-----------------------------------------------------------------------------------------------------------------------
+# Libs dependencies
+#-----------------------------------------------------------------------------------------------------------------------
+
 find_package(OpenCV REQUIRED)
 find_package(SDL2 REQUIRED)
 
-# Source and header files
+#-----------------------------------------------------------------------------------------------------------------------
+# Source files definition
+#-----------------------------------------------------------------------------------------------------------------------
+
 set(
     SRC
     src/ScraperInterface.cpp
@@ -26,7 +29,10 @@ set(
     include/WinamaxScraper.hpp
 )
 
-# Create the library
+#-----------------------------------------------------------------------------------------------------------------------
+# Library target creation and setup
+#-----------------------------------------------------------------------------------------------------------------------
+
 add_library(scraper SHARED ${SRC})
 
 target_include_directories(
@@ -41,11 +47,23 @@ target_include_directories(
 
 set(COMMON_LIBS logger game_handler opencv_core opencv_imgproc ${SDL2_LIBRARIES})
 
-if (CMAKE_SYSTEM_NAME STREQUAL Windows)
+if (WIN32)
     target_link_libraries(scraper PRIVATE user32 opencv_highgui ${COMMON_LIBS})
-else ()
+elseif (LINUX)
     target_link_libraries(scraper PRIVATE X11 Xext ${COMMON_LIBS})
 endif ()
+
+#-----------------------------------------------------------------------------------------------------------------------
+# Tests
+#-----------------------------------------------------------------------------------------------------------------------
+
+if (BUILD_TESTS)
+    add_subdirectory(tests)
+endif ()
+
+#-----------------------------------------------------------------------------------------------------------------------
+# Installation
+#-----------------------------------------------------------------------------------------------------------------------
 
 install(
     TARGETS scraper
@@ -53,10 +71,8 @@ install(
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/scraper
 )
-
-install(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 install(
     EXPORT scraper_targets
@@ -65,12 +81,3 @@ install(
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/scraper
 )
 
-# To use the exported ocr library in other projects use:
-# include(${INSTALL_PREFIX}/lib/cmake/ocr_targets.cmake)
-# ...
-# target_link_libraries(someTarget PRIVATE ocr::ocr)
-
-# Add the test subdirectory for building tests
-if (BUILD_TESTS)
-    add_subdirectory(tests)
-endif ()

@@ -1,17 +1,21 @@
 cmake_minimum_required(VERSION 3.24)
-project(logger LANGUAGES CXX)
 
-# Make cache variables for install destinations
-include(GNUInstallDirs)
+project(logger LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Required libs
+#-----------------------------------------------------------------------------------------------------------------------
+# Libs dependencies
+#-----------------------------------------------------------------------------------------------------------------------
+
 find_package(quill REQUIRED)
 
-# Source and header files
+#-----------------------------------------------------------------------------------------------------------------------
+# Source files definition
+#-----------------------------------------------------------------------------------------------------------------------
+
 set(
     SRC
     src/Logger.cpp
@@ -22,7 +26,10 @@ set(
     include/Logger.hpp
 )
 
-# Create the library
+#-----------------------------------------------------------------------------------------------------------------------
+# Library target creation and setup
+#-----------------------------------------------------------------------------------------------------------------------
+
 add_library(logger SHARED ${SRC})
 
 target_include_directories(
@@ -34,16 +41,20 @@ target_include_directories(
 
 target_link_libraries(logger PUBLIC quill::quill)
 
+#-----------------------------------------------------------------------------------------------------------------------
+# Installation
+#-----------------------------------------------------------------------------------------------------------------------
+
+include(GNUInstallDirs)
+
 install(
     TARGETS logger
     EXPORT logger_targets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/logger
 )
-
-install(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 install(
     EXPORT logger_targets

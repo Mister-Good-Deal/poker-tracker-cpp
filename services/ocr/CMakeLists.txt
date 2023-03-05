@@ -1,18 +1,21 @@
 cmake_minimum_required(VERSION 3.24)
-project(ocr LANGUAGES CXX)
 
-# Make cache variables for install destinations
-include(GNUInstallDirs)
+project(ocr LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Required libs
-# logger and GameHandler targets are automatically imported by parent project call
+#-----------------------------------------------------------------------------------------------------------------------
+# Libs dependencies
+#-----------------------------------------------------------------------------------------------------------------------
+
 find_package(OpenCV REQUIRED)
 
-# Source and header files
+#-----------------------------------------------------------------------------------------------------------------------
+# Source files definition
+#-----------------------------------------------------------------------------------------------------------------------
+
 set(
     SRC
     src/OcrInterface.cpp
@@ -25,7 +28,10 @@ set(
     include/WinamaxOcr.hpp
 )
 
-# Create the library
+#-----------------------------------------------------------------------------------------------------------------------
+# Library target creation and setup
+#-----------------------------------------------------------------------------------------------------------------------
+
 add_library(ocr SHARED ${SRC})
 
 target_include_directories(
@@ -40,16 +46,28 @@ target_include_directories(
 
 target_link_libraries(ocr PRIVATE logger game_handler opencv_core opencv_imgproc opencv_text)
 
+#-----------------------------------------------------------------------------------------------------------------------
+# Tests
+#-----------------------------------------------------------------------------------------------------------------------
+
+if (BUILD_TESTS)
+    add_subdirectory(tests)
+endif ()
+
+#-----------------------------------------------------------------------------------------------------------------------
+# Installation
+#-----------------------------------------------------------------------------------------------------------------------
+
+include(GNUInstallDirs)
+
 install(
     TARGETS ocr
     EXPORT ocr_targets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ocr
 )
-
-install(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 install(
     EXPORT ocr_targets
@@ -57,13 +75,3 @@ install(
     NAMESPACE OCR::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ocr
 )
-
-# To use the exported ocr library in other projects use:
-# include(${INSTALL_PREFIX}/lib/cmake/ocr_targets.cmake)
-# ...
-# target_link_libraries(someTarget PRIVATE ocr::ocr)
-
-# Add the test subdirectory for building tests
-if (BUILD_TESTS)
-    add_subdirectory(tests)
-endif ()
