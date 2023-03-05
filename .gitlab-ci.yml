@@ -34,10 +34,10 @@ build_linux:
     paths:
       - $BUILD_PATH_LINUX
   rules:
-    - if: $CI_COMMIT_MESSAGE !~ /\/build\-windows\-only/m
+    - if: $CI_COMMIT_MESSAGE =~ /\/build\-windows\-only/m
+      when: never
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH =~/^release/
-    - if: $CI_COMMIT_MESSAGE =~ /\/build\-only/m
     - if: $CI_COMMIT_MESSAGE =~ /\/packaging\-only/m
   variables:
     BUILD_TYPE: Release
@@ -52,9 +52,8 @@ build_linux_debug:
     paths:
       - $BUILD_PATH_LINUX
   rules:
-    - if: $CI_COMMIT_MESSAGE !~ /\/build\-windows\-only/m
-    - if: $CI_COMMIT_MESSAGE !~ /\/build\-only/m
-    - if: $CI_COMMIT_MESSAGE !~ /\/packaging\-only/m
+    - if: $CI_COMMIT_MESSAGE =~ /\/(build|packaging)\-only/m
+      when: never
     - if: $CI_COMMIT_BRANCH =~/^(feature|hotfix)/
   variables:
     BUILD_TYPE: Debug
@@ -90,9 +89,10 @@ clang_check:
     paths:
       - clang-check-report.plist
   rules:
-    - if: $CI_COMMIT_MESSAGE !~ /\/build\-only/m
-    - if: $CI_COMMIT_MESSAGE !~ /\/packaging\-only/m
-    - if: $CI_COMMIT_MESSAGE !~ /\/no\-lint/m && $CI_COMMIT_MESSAGE !~ /\/no\-code\-quality/m && $CI_COMMIT_MESSAGE !~ /\/no\-test/m
+    - if: $CI_COMMIT_MESSAGE =~ /\/(build|packaging)\-only/m
+      when: never
+    - if: $CI_COMMIT_MESSAGE =~ /\/no\-lint/m && $CI_COMMIT_MESSAGE =~ /\/no\-code\-quality/m && $CI_COMMIT_MESSAGE =~ /\/no\-test/m
+      when: never
 
 # This job is responsible for running clang-format on the project source files and checking if the code formatting
 # adheres to the project's code style. It uses the 'builder-linux-clang' image and checks the code formatting using the
@@ -102,8 +102,8 @@ clang_format:
   script:
     - clang-format --Werror --Wclang-format-violations --dry-run $CPP_SRC_FILES
   rules:
-    - if: $CI_COMMIT_MESSAGE !~ /\/build\-only/m
-    - if: $CI_COMMIT_MESSAGE !~ /\/packaging\-only/m
+    - if: $CI_COMMIT_MESSAGE =~ /\/(build|packaging)\-only/m
+      when: never
     - if: $CI_COMMIT_MESSAGE !~ /\/no\-lint/m
   needs:
     - clang_check
@@ -128,9 +128,10 @@ code_quality:
     reports:
       codequality: $BUILD_PATH_LINUX/gl-code-quality-report.json
   rules:
-    - if: $CI_COMMIT_MESSAGE !~ /\/build\-only/m
-    - if: $CI_COMMIT_MESSAGE !~ /\/packaging\-only/m
-    - if: $CI_COMMIT_MESSAGE !~ /\/no\-code\-quality/m
+    - if: $CI_COMMIT_MESSAGE =~ /\/(build|packaging)\-only/m
+      when: never
+    - if: $CI_COMMIT_MESSAGE =~ /\/no\-code\-quality/m
+      when: never
   needs:
     - clang_check
 
@@ -147,9 +148,10 @@ test_game_handler:
     reports:
       junit: $BUILD_PATH_LINUX/services/game_handler/game_handler_ctest.xml
   rules:
-    - if: $CI_COMMIT_MESSAGE !~ /\/build\-only/m
-    - if: $CI_COMMIT_MESSAGE !~ /\/packaging\-only/m
-    - if: $CI_COMMIT_MESSAGE !~ /\/no\-test/m
+    - if: $CI_COMMIT_MESSAGE =~ /\/(build|packaging)\-only/m
+      when: never
+    - if: $CI_COMMIT_MESSAGE =~ /\/no\-test/m
+      when: never
   needs:
     - clang_check
 
@@ -163,9 +165,10 @@ test_ocr:
     reports:
       junit: $BUILD_PATH_LINUX/services/ocr/ocr_ctest.xml
   rules:
-    - if: $CI_COMMIT_MESSAGE !~ /\/build\-only/m
-    - if: $CI_COMMIT_MESSAGE !~ /\/packaging\-only/m
-    - if: $CI_COMMIT_MESSAGE !~ /\/no\-test/m
+    - if: $CI_COMMIT_MESSAGE =~ /\/(build|packaging)\-only/m
+      when: never
+    - if: $CI_COMMIT_MESSAGE =~ /\/no\-test/m
+      when: never
   needs:
     - clang_check
 
@@ -214,8 +217,10 @@ deploy:
     - git tag $NEW_VERSION
     - git push --tags
   rules:
-    - if: $CI_COMMIT_MESSAGE !~ /\/build\-only/m
-    - if: $CI_COMMIT_MESSAGE !~ /\/packaging\-only/m
+    - if: $CI_COMMIT_MESSAGE =~ /\/build\-only/m
+      when: never
+    - if: $CI_COMMIT_MESSAGE =~ /\/packaging\-only/m
+      when: manual
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH =~/^release/
   needs:
