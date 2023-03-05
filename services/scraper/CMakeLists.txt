@@ -11,7 +11,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 #-----------------------------------------------------------------------------------------------------------------------
 
 find_package(OpenCV REQUIRED)
-find_package(SDL2 REQUIRED)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Source files definition
@@ -45,12 +44,12 @@ target_include_directories(
     game_handler
 )
 
-set(COMMON_LIBS logger game_handler opencv_core opencv_imgproc ${SDL2_LIBRARIES})
+set(COMMON_LIBS logger game_handler opencv_core opencv_imgproc)
 
 if (WIN32)
-    target_link_libraries(scraper PRIVATE user32 opencv_highgui ${COMMON_LIBS})
+    target_link_libraries(scraper PUBLIC user32 opencv_highgui ${COMMON_LIBS})
 elseif (LINUX)
-    target_link_libraries(scraper PRIVATE X11 Xext ${COMMON_LIBS})
+    target_link_libraries(scraper PUBLIC X11 Xext ${COMMON_LIBS})
 endif ()
 
 #-----------------------------------------------------------------------------------------------------------------------

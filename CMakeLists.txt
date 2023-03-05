@@ -67,9 +67,28 @@ add_subdirectory(services/scraper)
 # Add and link the program
 #-----------------------------------------------------------------------------------------------------------------------
 
-add_executable(main main.cpp)
+add_executable(poker_bot main.cpp)
 
-target_link_libraries(main logger)
+target_link_libraries(poker_bot logger game_handler ocr scraper)
+
+#-----------------------------------------------------------------------------------------------------------------------
+# Installation
+#-----------------------------------------------------------------------------------------------------------------------
+
+install(
+    TARGETS poker_bot
+    EXPORT poker_bot_targets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(
+    EXPORT poker_bot_targets
+    FILE poker_bot_targets.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake
+)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Packaging
