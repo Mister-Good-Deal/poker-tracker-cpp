@@ -169,7 +169,7 @@ packaging_linux:
     - cpack --config $BUILD_PATH_LINUX/CPackConfig.cmake
   artifacts:
     paths:
-      - "*.tar.gz"
+      - $BUILD_PATH_LINUX/poker-bot*.tar.gz
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH =~/^release/
@@ -184,7 +184,7 @@ packaging_windows:
     - cpack --config $BUILD_PATH_WINDOWS/CPackConfig.cmake
   artifacts:
     paths:
-      - "*.zip"
+      - $BUILD_PATH_WINDOWS/poker-bot*.zip
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH =~/^release/

@@ -1,6 +1,16 @@
 cmake_minimum_required(VERSION 3.24)
 
-project(poker_bot)
+#-----------------------------------------------------------------------------------------------------------------------
+# Resolve version
+#-----------------------------------------------------------------------------------------------------------------------
+
+include(cmake/helpers.cmake)
+
+extract_version()
+
+project(poker_bot VERSION ${POKER_BOT_VERSION} LANGUAGES CXX)
+
+message(STATUS "POKER_BOT_VERSION ${POKER_BOT_VERSION}")
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Enable tests compilation on demand
@@ -67,12 +77,19 @@ target_link_libraries(main logger)
 
 if (WIN32)
     set(CPACK_GENERATOR ZIP)
+
+    include(InstallRequiredSystemLibraries)
 elseif (LINUX)
     set(CPACK_GENERATOR TGZ)
 endif ()
 
-set(CPACK_PACKAGE_NAME "PokerBot")
+set(CPACK_PACKAGE_NAME "poker-bot")
 set(CPACK_PACKAGE_VENDOR "Romain Laneuville")
+set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH})
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "C++ poker bot for playing on online rooms")
 set(CPACK_PACKAGE_DIRECTORY ${PROJECT_BINARY_DIR})
 
 include(CPack)
