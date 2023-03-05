@@ -3,12 +3,14 @@ stages:
   - check
   - lint
   - test
+  - packaging
   - deploy
 
 variables:
   PROJECT_PATH: $CI_PROJECT_DIR
   BUILD_TYPE: Release
-  BUILD_PATH: ${PROJECT_PATH}/_build
+  BUILD_PATH_LINUX: ${PROJECT_PATH}/build-linux
+  BUILD_PATH_WINDOWS: ${PROJECT_PATH}/build-windows
   MAX_CODE_QUALITY_ISSUE_PER_FILE: 20
 
 default:
@@ -20,37 +22,22 @@ default:
     # Enable per-branch caching
     key: $CI_COMMIT_REF_SLUG
     paths:
-      - $BUILD_PATH
-
-include:
-  - template: Jobs/Container-Scanning.gitlab-ci.yml
-
-# Scan docker images for vulnerabilities if Dockerfiles changed or on demand with commit message containing "/docker-scan"
-# @todo only scan one image, maybe useless ?
-container_scanning:
-  rules:
-    - if: $CI_COMMIT_MESSAGE =~ /\/docker\-scan/
-      changes:
-        - docker/Dockerfile*
-  variables:
-    CS_IMAGE: "registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-gcc"
-    CS_DISABLE_DEPENDENCY_LIST: "true"
-    CS_DISABLE_LANGUAGE_VULNERABILITY_SCAN: "false"
-    CS_DOCKERFILE_PATH: "docker/Dockerfile-builder-linux-gcc"
+      - $BUILD_PATH_LINUX
 
 # This job builds the Linux version of the application with the Release configuration
 build_linux:
   stage: build
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-gcc:latest
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH_LINUX
   artifacts:
     paths:
-      - $BUILD_PATH
+      - $BUILD_PATH_LINUX
   rules:
+    - if: $CI_COMMIT_MESSAGE !~ /\/build\-windows\-only/m
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_BRANCH =~/^release/
-    - if: $CI_COMMIT_MESSAGE !~ /\/build\-windows\-only/m
+    - if: $CI_COMMIT_MESSAGE =~ /\/packaging\-only/m
   variables:
     BUILD_TYPE: Release
 
@@ -58,14 +45,15 @@ build_linux:
 build_linux_debug:
   stage: build
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1
-      -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --log-context && cmake --build $BUILD_PATH
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1
+      -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --log-context && cmake --build $BUILD_PATH_LINUX
   artifacts:
     paths:
-      - $BUILD_PATH
+      - $BUILD_PATH_LINUX
   rules:
-    - if: $CI_COMMIT_BRANCH =~/^(feature|hotfix)/
     - if: $CI_COMMIT_MESSAGE !~ /\/build\-windows\-only/m
+    - if: $CI_COMMIT_MESSAGE !~ /\/packaging\-only/m
+    - if: $CI_COMMIT_BRANCH =~/^(feature|hotfix)/
   variables:
     BUILD_TYPE: Debug
 
@@ -76,14 +64,15 @@ build_windows:
   stage: build
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-windows-mingw:latest
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_MAKE_PROGRAM=/usr/bin/make
-      -DCMAKE_TOOLCHAIN_FILE=cmake/mingw-w64-x86_64.cmake && cmake --build $BUILD_PATH
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH_WINDOWS -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_MAKE_PROGRAM=/usr/bin/make
+      -DCMAKE_TOOLCHAIN_FILE=cmake/mingw-w64-x86_64.cmake && cmake --build $BUILD_PATH_WINDOWS
   artifacts:
     paths:
-      - $BUILD_PATH/bin/*.exe
+      - $BUILD_PATH_WINDOWS
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_MESSAGE =~ /\/build\-windows/m
+    - if: $CI_COMMIT_MESSAGE =~ /\/packaging\-only/m
 
 # This job runs the clang-check tool to analyze the source code and generates a report in clang-check-report.plist
 clang_check:
@@ -91,15 +80,16 @@ clang_check:
   script:
     - CPP_SRC_FILES=$(find ${PROJECT_PATH}/services -regex '.*\.\(cpp\|hpp\)' | tr "\n" " ")
     - echo "CPP_SRC_FILES=${CPP_SRC_FILES}" >> vars.env
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-    - clang-check -analyze -extra-arg=-std=c++20 -p $BUILD_PATH --analyzer-output-path=${PROJECT_PATH}/clang-check-report.plist ${CPP_SRC_FILES}
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+    - clang-check -analyze -extra-arg=-std=c++20 -p $BUILD_PATH_LINUX --analyzer-output-path=${PROJECT_PATH}/clang-check-report.plist ${CPP_SRC_FILES}
   artifacts:
     reports:
       dotenv: vars.env
     paths:
       - clang-check-report.plist
   rules:
-    - if: $CI_COMMIT_MESSAGE !~ /\/build\-only/m
+    - if: $CI_COMMIT_MESSAGE !~ /\/(build|packaging)\-only/m
+    - if: $CI_COMMIT_MESSAGE !~ /\/no\-lint/m && $CI_COMMIT_MESSAGE !~ /\/no\-code\-quality/m && $CI_COMMIT_MESSAGE !~ /\/no\-test/m
 
 # This job is responsible for running clang-format on the project source files and checking if the code formatting
 # adheres to the project's code style. It uses the 'builder-linux-clang' image and checks the code formatting using the
@@ -109,7 +99,8 @@ clang_format:
   script:
     - clang-format --Werror --Wclang-format-violations --dry-run $CPP_SRC_FILES
   rules:
-    - if: $CI_COMMIT_MESSAGE !~ /\/build\-only/m
+    - if: $CI_COMMIT_MESSAGE !~ /\/(build|packaging)\-only/m
+    - if: $CI_COMMIT_MESSAGE !~ /\/no\-lint/m
   needs:
     - clang_check
 
@@ -118,22 +109,23 @@ code_quality:
   tags:
     - code-quality
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --log-context
-    - CodeChecker analyze $BUILD_PATH/compile_commands.json -o $BUILD_PATH/code_checker_report -j 8 --ctu --tidy-config $PROJECT_PATH/.clang-tidy
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --log-context
+    - CodeChecker analyze $BUILD_PATH_LINUX/compile_commands.json -o $BUILD_PATH_LINUX/code_checker_report -j 8 --ctu --tidy-config $PROJECT_PATH/.clang-tidy
     - set +e
-    - CodeChecker parse $BUILD_PATH/code_checker_report -e html -o $BUILD_PATH/code_checker_html_report --trim-path-prefix $PROJECT_PATH
-    - CodeChecker parse $BUILD_PATH/code_checker_report -e codeclimate -o $BUILD_PATH/gl-code-quality-report.json --trim-path-prefix $PROJECT_PATH
+    - CodeChecker parse $BUILD_PATH_LINUX/code_checker_report -e html -o $BUILD_PATH_LINUX/code_checker_html_report --trim-path-prefix $PROJECT_PATH
+    - CodeChecker parse $BUILD_PATH_LINUX/code_checker_report -e codeclimate -o $BUILD_PATH_LINUX/gl-code-quality-report.json --trim-path-prefix $PROJECT_PATH
     - exit 0
   artifacts:
     name: code_quality_${CI_COMMIT_TIMESTAMP}
     paths:
-      - $BUILD_PATH/gl-code-quality-report.json
-      - $BUILD_PATH/code_checker_html_report/
+      - $BUILD_PATH_LINUX/gl-code-quality-report.json
+      - $BUILD_PATH_LINUX/code_checker_html_report/
     expose_as: 'Code quality HTML and json reports'
     reports:
-      codequality: $BUILD_PATH/gl-code-quality-report.json
+      codequality: $BUILD_PATH_LINUX/gl-code-quality-report.json
   rules:
-    - if: $CI_COMMIT_MESSAGE !~ /\/build\-only/m
+    - if: $CI_COMMIT_MESSAGE !~ /\/(build|packaging)\-only/m
+    - if: $CI_COMMIT_MESSAGE !~ /\/no\-code\-quality/m
   needs:
     - clang_check
 
@@ -142,30 +134,63 @@ code_quality:
 test_game_handler:
   stage: test
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DBUILD_TESTS=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DBUILD_TESTS=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH_LINUX
     # @fixme Need to required tests for all subproject with --test-dir
-    - ctest --test-dir $BUILD_PATH/services/game_handler --output-on-failure --extra-verbose -j $(nproc) --output-junit game_handler_ctest.xml --no-compress-output
+    - ctest --test-dir $BUILD_PATH_LINUX/services/game_handler --output-on-failure --extra-verbose -j $(nproc)
+      --output-junit game_handler_ctest.xml --no-compress-output
   artifacts:
     reports:
-      junit: $BUILD_PATH/services/game_handler/game_handler_ctest.xml
+      junit: $BUILD_PATH_LINUX/services/game_handler/game_handler_ctest.xml
   rules:
-    - if: $CI_COMMIT_MESSAGE !~ /\/build\-only/m
+    - if: $CI_COMMIT_MESSAGE !~ /\/(build|packaging)\-only/m
+    - if: $CI_COMMIT_MESSAGE !~ /\/no\-test/m
   needs:
     - clang_check
 
 test_ocr:
   stage: test
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DBUILD_TESTS=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DBUILD_TESTS=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH_LINUX
     # @fixme Need to required tests for all subproject with --test-dir
-    - ctest --test-dir $BUILD_PATH/services/ocr --output-on-failure --extra-verbose -j $(nproc) --output-junit ocr_ctest.xml --no-compress-output
+    - ctest --test-dir $BUILD_PATH_LINUX/services/ocr --output-on-failure --extra-verbose -j $(nproc) --output-junit ocr_ctest.xml --no-compress-output
   artifacts:
     reports:
-      junit: $BUILD_PATH/services/ocr/ocr_ctest.xml
+      junit: $BUILD_PATH_LINUX/services/ocr/ocr_ctest.xml
   rules:
-    - if: $CI_COMMIT_MESSAGE !~ /\/build\-only/m
+    - if: $CI_COMMIT_MESSAGE !~ /\/(build|packaging)\-only/m
+    - if: $CI_COMMIT_MESSAGE !~ /\/no\-test/m
   needs:
     - clang_check
+
+packaging_linux:
+  stage: packaging
+  image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-gcc:latest
+  script:
+    - cpack --config $BUILD_PATH_LINUX/CPackConfig.cmake
+  artifacts:
+    paths:
+      - "*.tar.gz"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH =~/^release/
+    - if: $CI_COMMIT_MESSAGE =~ /\/packaging\-only/m
+  needs:
+    - build_linux
+
+packaging_windows:
+  stage: packaging
+  image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-windows-mingw:latest
+  script:
+    - cpack --config $BUILD_PATH_WINDOWS/CPackConfig.cmake
+  artifacts:
+    paths:
+      - "*.zip"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH =~/^release/
+    - if: $CI_COMMIT_MESSAGE =~ /\/packaging\-only/m
+  needs:
+    - build_windows
 
 # This job is responsible for packaging the built artifacts from the previous build jobs and deploying them to the
 # desired target.
@@ -182,9 +207,9 @@ deploy:
     - git tag $NEW_VERSION
     - git push --tags
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_MESSAGE !~ /\/build\-only/m
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH =~/^release/
   needs:
-    - clang_format
-    - test_game_handler
-    - test_ocr
+    - packaging_linux
+    - packaging_windows
