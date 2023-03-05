@@ -76,12 +76,11 @@ build_windows:
   stage: build
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-windows-mingw:latest
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_TOOLCHAIN_FILE=cmake/mingw-w64-x86_64.cmake
-      && cmake --build $BUILD_PATH
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_MAKE_PROGRAM=/usr/bin/make
+      -DCMAKE_TOOLCHAIN_FILE=cmake/mingw-w64-x86_64.cmake && cmake --build $BUILD_PATH
   artifacts:
     paths:
       - $BUILD_PATH/bin/*.exe
-      - /usr/local/x86_64-w64-mingw32/bin/*.dll
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
     - if: $CI_COMMIT_MESSAGE =~ /\/build\-windows/m
