@@ -90,7 +90,7 @@ install(
 if (WIN32)
     add_custom_command(
         TARGET game_handler POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:game_handler> ${CMAKE_INSTALL_BINDIR}
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:game_handler> $<TARGET_FILE_DIR:game_handler>
         COMMAND_EXPAND_LISTS
     )
 endif ()

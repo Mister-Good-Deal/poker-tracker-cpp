@@ -66,7 +66,7 @@ install(
 if (WIN32)
     add_custom_command(
         TARGET logger POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:logger> ${CMAKE_INSTALL_BINDIR}
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:logger> $<TARGET_FILE_DIR:logger>
         COMMAND_EXPAND_LISTS
     )
 endif ()

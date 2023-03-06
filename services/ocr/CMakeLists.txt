@@ -79,7 +79,7 @@ install(
 if (WIN32)
     add_custom_command(
         TARGET ocr POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:ocr> ${CMAKE_INSTALL_BINDIR}
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:ocr> $<TARGET_FILE_DIR:ocr>
         COMMAND_EXPAND_LISTS
     )
 endif ()
