@@ -86,3 +86,11 @@ install(
     NAMESPACE GameHandler::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/game_handler
 )
+
+if (WIN32)
+    add_custom_command(
+        TARGET game_handler POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:game_handler> ${CMAKE_INSTALL_BINDIR}
+        COMMAND_EXPAND_LISTS
+    )
+endif ()

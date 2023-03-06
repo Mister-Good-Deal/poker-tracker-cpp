@@ -80,3 +80,10 @@ install(
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/scraper
 )
 
+if (WIN32)
+    add_custom_command(
+        TARGET scraper POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:scraper> ${CMAKE_INSTALL_BINDIR}
+        COMMAND_EXPAND_LISTS
+    )
+endif ()
