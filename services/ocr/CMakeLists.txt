@@ -10,7 +10,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Libs dependencies
 #-----------------------------------------------------------------------------------------------------------------------
 
-find_package(OpenCV REQUIRED)
+find_package(OpenCV CONFIG REQUIRED)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Source files definition
@@ -77,9 +77,13 @@ install(
 )
 
 if (WIN32)
-    add_custom_command(
-        TARGET ocr POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:ocr> $<TARGET_FILE_DIR:ocr>
-        COMMAND_EXPAND_LISTS
+    install(
+        FILES $<TARGET_FILE:opencv_core> $<TARGET_FILE:opencv_imgproc> $<TARGET_FILE:opencv_text>
+        DESTINATION ${CMAKE_INSTALL_BINDIR}
+    )
+elseif (LINUX)
+    install(
+        FILES $<TARGET_FILE:opencv_core> $<TARGET_FILE:opencv_imgproc> $<TARGET_FILE:opencv_text>
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
 endif ()

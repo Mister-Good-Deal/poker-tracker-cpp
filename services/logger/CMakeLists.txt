@@ -10,7 +10,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Libs dependencies
 #-----------------------------------------------------------------------------------------------------------------------
 
-find_package(quill REQUIRED)
+find_package(quill CONFIG REQUIRED)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Source files definition
@@ -63,10 +63,9 @@ install(
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/logger
 )
 
-if (WIN32)
-    add_custom_command(
-        TARGET logger POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:logger> $<TARGET_FILE_DIR:logger>
-        COMMAND_EXPAND_LISTS
-    )
-endif ()
+# Quill lib install dependencies
+
+install(
+    FILES $<TARGET_FILE:quill::quill>
+    DESTINATION $<IF:$<STREQUAL:$<TARGET_FILE_SUFFIX:quill::quill>,.dll>,${CMAKE_INSTALL_BINDIR},${CMAKE_INSTALL_LIBDIR}>
+)

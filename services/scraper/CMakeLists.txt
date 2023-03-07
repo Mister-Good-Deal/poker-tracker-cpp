@@ -81,9 +81,18 @@ install(
 )
 
 if (WIN32)
-    add_custom_command(
-        TARGET scraper POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:scraper> $<TARGET_FILE_DIR:scraper>
-        COMMAND_EXPAND_LISTS
+    install(
+        FILES $<TARGET_FILE:opencv_core> $<TARGET_FILE:opencv_imgproc> $<TARGET_FILE:opencv_highgui>
+        DESTINATION ${CMAKE_INSTALL_BINDIR}
+    )
+
+    install(
+        FILES ${CMAKE_FIND_ROOT_PATH}/lib/libuser32.a
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
+elseif (LINUX)
+    install(
+        FILES $<TARGET_FILE:opencv_core> $<TARGET_FILE:opencv_imgproc> /usr/lib/x86_64-linux-gnu/libX11.so /usr/lib/x86_64-linux-gnu/libXext.so
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
 endif ()

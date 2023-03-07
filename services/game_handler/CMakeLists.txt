@@ -10,7 +10,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Libs dependencies
 #-----------------------------------------------------------------------------------------------------------------------
 
-find_package(nlohmann_json REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Source files definition
@@ -86,11 +86,3 @@ install(
     NAMESPACE GameHandler::
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/game_handler
 )
-
-if (WIN32)
-    add_custom_command(
-        TARGET game_handler POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:game_handler> $<TARGET_FILE_DIR:game_handler>
-        COMMAND_EXPAND_LISTS
-    )
-endif ()
