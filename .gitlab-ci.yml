@@ -93,6 +93,8 @@ clang_check:
       when: never
     - if: $CI_COMMIT_MESSAGE =~ /\/no\-lint/m && $CI_COMMIT_MESSAGE =~ /\/no\-code\-quality/m && $CI_COMMIT_MESSAGE =~ /\/no\-test/m
       when: never
+    # Always run otherwise
+    - if: $CI
 
 # This job is responsible for running clang-format on the project source files and checking if the code formatting
 # adheres to the project's code style. It uses the 'builder-linux-clang' image and checks the code formatting using the
