@@ -45,6 +45,7 @@ namespace OCR {
 
         return word;
     }
+
     auto OcrInterface::similarityScore(const cv::Mat& firstImage, const cv::Mat& secondImage) const -> double {
         double similarity = 0;
 
