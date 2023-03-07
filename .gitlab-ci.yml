@@ -214,6 +214,7 @@ deploy:
     - GIT_VERSION=$(git describe --tags | grep -P '\d+\.\d+\.\d+' -o)
     - if [ "${NEW_VERSION}" = "`echo -e "${NEW_VERSION}\n${GIT_VERSION}" | sort -V | head -n1`" ]; then
       echo "VERSION.txt (${NEW_VERSION}) is lower or equals to current git version tag (${GIT_VERSION})." && exit 1
+      fi
     - echo "Creating release for ${CI_PROJECT_NAME} v${NEW_VERSION}"
     - gitlab-artifacts download build_windows build_linux
     - git tag ${NEW_VERSION}
