@@ -76,10 +76,17 @@ TEST(WinamaxOcrTest, readCardSuitShouldReturnUnkownOnUnknowSuitColor) {
 }
 
 TEST(WinamaxOcrTest, readCardShouldWork) {
-    auto club  = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/suits/club.png");
-    auto seven = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/ranks/7.png");
+    auto heightOfDiamond = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards/8D.png");
+    auto nineOfSpade     = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards/9S.png");
+    auto aceOfSpade      = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards/AS.png");
+    auto twoOfHeart      = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards/2H.png");
+    auto kingOfClub      = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards/KC.png");
 
-    EXPECT_EQ(Env::winamaxOcr().readCard(seven, club), card("7C"));
+    EXPECT_EQ(Env::winamaxOcr().readCard(heightOfDiamond), card("8D"));
+    EXPECT_EQ(Env::winamaxOcr().readCard(nineOfSpade), card("9S"));
+    EXPECT_EQ(Env::winamaxOcr().readCard(aceOfSpade), card("AS"));
+    EXPECT_EQ(Env::winamaxOcr().readCard(twoOfHeart), card("2H"));
+    EXPECT_EQ(Env::winamaxOcr().readCard(kingOfClub), card("KC"));
 }
 
 TEST(WinamaxOcrTest, readWordShouldWork) {
