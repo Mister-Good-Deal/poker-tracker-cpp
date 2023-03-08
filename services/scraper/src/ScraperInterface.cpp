@@ -42,15 +42,18 @@ namespace Scraper {
 
         if (XQueryTree(display, DefaultRootWindow(display), &root, &parent, &children, &childrenNumber))
         {
+            // C++ way to avoid pointer arithmetic use
+            auto childrenArray = std::span(children, childrenNumber);
+
             for (uint32_t i = 0; i < childrenNumber; ++i)
             {
-                if (XGetWindowAttributes(display, children[i], &attributes) && attributes.map_state == IsViewable)
+                if (XGetWindowAttributes(display, childrenArray[i], &attributes) && attributes.map_state == IsViewable)
                 {
                     char* title = nullptr;
 
-                    if (XFetchName(display, children[i], &title))
+                    if (XFetchName(display, childrenArray[i], &title))
                     {
-                        _activeWindows[title] = children[i];
+                        _activeWindows[title] = childrenArray[i];
                         XFree(title);
                     }
                 }

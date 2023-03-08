@@ -18,9 +18,10 @@ namespace OCR {
 
             auto setCardsSkin(const cv::Mat& cardsSkin) -> void { _cardsSkin = cardsSkin; }
 
+            // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
             [[nodiscard]] auto getRankCardArea() const -> cv::Rect override { return {0, 0, 20, 23}; }
             [[nodiscard]] auto getSuitCardArea() const -> cv::Rect override { return {2, 25, 14, 16}; }
-
+            // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
             auto readCardRank(cv::Mat& rankImage) const -> Card::Rank override;
             auto readCardSuit(cv::Mat& suitImage) const -> Card::Suit override;
             auto hasFolded(cv::Mat& cardsSkinImage) const -> bool;

@@ -1,6 +1,7 @@
 #include "Logger.hpp"
 
 namespace Logger {
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables) => https://github.com/llvm/llvm-project/issues/47384
     quill::Logger* Quill::_instance = nullptr;
 
     auto Quill::getLogger() -> quill::Logger* {

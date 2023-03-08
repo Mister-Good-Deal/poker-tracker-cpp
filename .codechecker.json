@@ -1,0 +1,8 @@
+{
+    "analyze": [
+        "--skip",
+        "-*cetintrin.h",
+        "--skip",
+        "-*quill/Logger.h"
+    ]
+}
