@@ -113,7 +113,7 @@ code_quality:
   script:
     - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --log-context
     - CodeChecker analyze $BUILD_PATH_LINUX/compile_commands.json -o $BUILD_PATH_LINUX/code_checker_report -j 8 --ctu --tidy-config $PROJECT_PATH/.clang-tidy
-      --config $PROJECT_PATH/.codechecker.json
+      --skip $PROJECT_PATH/.code-checker-skip-files
     - set +e
     - CodeChecker parse $BUILD_PATH_LINUX/code_checker_report -e html -o $BUILD_PATH_LINUX/code_checker_html_report --trim-path-prefix $PROJECT_PATH
     - CodeChecker parse $BUILD_PATH_LINUX/code_checker_report -e codeclimate -o $BUILD_PATH_LINUX/gl-code-quality-report.json --trim-path-prefix $PROJECT_PATH
