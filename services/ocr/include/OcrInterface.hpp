@@ -20,9 +20,12 @@ namespace OCR {
             auto operator=(const OcrInterface&) -> OcrInterface& = default;
             auto operator=(OcrInterface&&) -> OcrInterface&      = default;
 
+            [[nodiscard]] virtual auto getRankCardArea() const -> cv::Rect = 0;
+            [[nodiscard]] virtual auto getSuitCardArea() const -> cv::Rect = 0;
+
             virtual auto readCardRank(cv::Mat& rankImage) const -> Card::Rank = 0;
             virtual auto readCardSuit(cv::Mat& suitImage) const -> Card::Suit = 0;
-            virtual auto readCard(cv::Mat& rankImage, cv::Mat& suitImage) const -> Card;
+            virtual auto readCard(cv::Mat& cardImage) const -> Card;
             virtual auto readWord(cv::Mat& wordImage) const -> std::string;
 
             [[nodiscard]] virtual auto similarityScore(const cv::Mat& firstImage, const cv::Mat& secondImage) const -> double;

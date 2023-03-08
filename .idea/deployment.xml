@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="Docker poker-bot SSH (61b19fb5-f53b-44f5-966b-448c58767df9)" remoteFilesAllowedToDisappearOnAutoupload="false">
+  <component name="PublishConfigData" remoteFilesAllowedToDisappearOnAutoupload="false">
     <serverData>
       <paths name="Docker cpp-back SSH (83a3b842-9d8e-4247-95ca-bca7de86a749)">
         <serverdata>
@@ -12,16 +12,30 @@
           </excludedPaths>
         </serverdata>
       </paths>
-      <paths name="Docker poker-bot SSH (61b19fb5-f53b-44f5-966b-448c58767df9)">
+      <paths name="Docker poker-bot SSH linux (61b19fb5-f53b-44f5-966b-448c58767df9)">
         <serverdata>
           <mappings>
             <mapping deploy="/app" local="$PROJECT_DIR$" />
           </mappings>
           <excludedPaths>
             <excludedPath local="true" path="$PROJECT_DIR$/build" />
+            <excludedPath local="true" path="$PROJECT_DIR$/build-mingw" />
             <excludedPath local="true" path="$PROJECT_DIR$/build_docker" />
             <excludedPath local="true" path="$PROJECT_DIR$/build-clang" />
             <excludedPath local="true" path="$PROJECT_DIR$/build-gcc" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
+      <paths name="Docker poker-bot SSH windows (a5a35c4c-3227-4b8a-a7e4-766430979ef3)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/app" local="$PROJECT_DIR$" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/build-mingw" />
+            <excludedPath local="true" path="$PROJECT_DIR$/build_docker" />
+            <excludedPath local="true" path="$PROJECT_DIR$/build-gcc" />
+            <excludedPath local="true" path="$PROJECT_DIR$/build-clang" />
           </excludedPaths>
         </serverdata>
       </paths>

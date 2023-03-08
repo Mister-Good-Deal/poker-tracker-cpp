@@ -1,26 +1,32 @@
 #include "Logger.hpp"
 
 namespace Logger {
-    std::shared_ptr<quill::Logger> Quill::_logger = nullptr;
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables) => https://github.com/llvm/llvm-project/issues/47384
+    quill::Logger* Quill::_instance = nullptr;
 
-    auto Quill::getLogger() -> std::shared_ptr<quill::Logger> const {
-        if (_logger == nullptr) { _logger = std::shared_ptr<quill::Logger>(_initLogger()); }
+    auto Quill::getLogger() -> quill::Logger* {
+        if (_instance == nullptr)
+        {
+            _initLogger();
+            _instance = quill::get_root_logger();
+        }
 
-        return _logger;
+        return _instance;
     }
 
-    auto Quill::_initLogger() -> quill::Logger* {
+    auto Quill::_initLogger() -> void {
         quill::Config cfg;
+
         cfg.enable_console_colours = true;
+        cfg.backend_thread_yield   = true;
+
         quill::configure(cfg);
         quill::start();
 
-        auto* logger = quill::get_root_logger();
-
         // enable a backtrace that will get flushed when we log CRITICAL
-        logger->init_backtrace(2, quill::LogLevel::Critical);
+        quill::get_root_logger()->init_backtrace(2, quill::LogLevel::Critical);
 
-        return logger;
+        quill::get_root_logger()->set_log_level(quill::LogLevel::TraceL3);
     }
 
 }  // namespace Logger

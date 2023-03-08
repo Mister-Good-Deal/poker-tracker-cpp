@@ -1,19 +1,21 @@
-cmake_minimum_required(VERSION 3.25)
-project(game_handler)
+cmake_minimum_required(VERSION 3.24)
 
-# Make cache variables for install destinations
-include(GNUInstallDirs)
+project(game_handler LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Required libs
-# logger target is automatically imported by parent project call
-find_package(quill CONFIG REQUIRED)
-find_package(nlohmann_json REQUIRED)
+#-----------------------------------------------------------------------------------------------------------------------
+# Libs dependencies
+#-----------------------------------------------------------------------------------------------------------------------
 
-# Source and header files
+find_package(nlohmann_json CONFIG REQUIRED)
+
+#-----------------------------------------------------------------------------------------------------------------------
+# Source files definition
+#-----------------------------------------------------------------------------------------------------------------------
+
 set(
     SRC
     src/Board.cpp
@@ -38,8 +40,11 @@ set(
     include/RoundAction.hpp
 )
 
-# Create the library
-add_library(game_handler STATIC ${SRC})
+#-----------------------------------------------------------------------------------------------------------------------
+# Library target creation and setup
+#-----------------------------------------------------------------------------------------------------------------------
+
+add_library(game_handler SHARED ${SRC})
 
 target_include_directories(
     game_handler
@@ -52,30 +57,32 @@ target_include_directories(
 
 target_link_libraries(game_handler PRIVATE logger nlohmann_json::nlohmann_json)
 
+#-----------------------------------------------------------------------------------------------------------------------
+# Tests
+#-----------------------------------------------------------------------------------------------------------------------
+
+if (BUILD_TESTS)
+    add_subdirectory(tests)
+endif ()
+
+#-----------------------------------------------------------------------------------------------------------------------
+# Installation
+#-----------------------------------------------------------------------------------------------------------------------
+
+include(GNUInstallDirs)
+
 install(
     TARGETS game_handler
     EXPORT game_handler_targets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/game_handler
 )
-
-install(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 install(
     EXPORT game_handler_targets
     FILE game_handler_targets.cmake
     NAMESPACE GameHandler::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/GameHandler
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/game_handler
 )
-
-# To use the exported GameHandler library in other projects use:
-# include(${INSTALL_PREFIX}/lib/cmake/game_handler_targets.cmake)
-# ...
-# target_link_libraries(someTarget PRIVATE game_handler::game_handler)
-
-# Add the test subdirectory for building tests
-if (BUILD_TESTS)
-    add_subdirectory(tests)
-endif ()
