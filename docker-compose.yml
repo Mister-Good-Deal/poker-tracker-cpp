@@ -58,17 +58,31 @@ services:
       context: .
       dockerfile: docker/Dockerfile-builder-windows-mingw
       args:
-        - MINGW_VERSION=${MINGW_VERSION}
-        - CMAKE_VERSION=${CMAKE_VERSION}
-        - PKG_CONFIG_VERSION=${PKG_CONFIG_VERSION}
-        - BINUTILS_VERSION=${BINUTILS_VERSION}
         - GCC_VERSION=${GCC_VERSION}
+        - CMAKE_VERSION=${CMAKE_VERSION}
+        - MINGW_VERSION=${MINGW_VERSION}
+        - BINUTILS_VERSION=${BINUTILS_VERSION}
         - SDL_VERSION=${SDL_VERSION}
+        - OPENJPEG_VERSION=${OPENJPEG_VERSION}
+        - WEBP_VERSION=${WEBP_VERSION}
+        - TIFF_VERSION=${TIFF_VERSION}
+        - LEPTONICA_VERSION=${LEPTONICA_VERSION}
+        - TESSERACT_VERSION=${TESSERACT_VERSION}
         - OPENCV_VERSION=${OPENCV_VERSION}
         - NLOHMANN_JSON_VERSION=${NLOHMANN_JSON_VERSION}
+        - QUILL_VERSION=${QUILL_VERSION}
         - GOOGLETEST_VERSION=${GOOGLETEST_VERSION}
         - MAX_CPU_CORES=${MAX_CPU_CORES}
     image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-windows-mingw:latest
+
+  builder-windows-mingw-dev:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile-builder-windows-mingw-dev
+      args:
+        - CI_REGISTRY=${REGISTRY_HOST}
+        - CI_REGISTRY_BUILDER_ROOT_IMAGE=${REGISTRY_REPO_PATH}/builder-windows-mingw
+    image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-windows-mingw-dev:latest
 
   deploy:
     build:
@@ -78,11 +92,25 @@ services:
 
   # ---------------------------------------------------- Execution -----------------------------------------------------
 
-  dev:
+  dev-linux:
     image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-clang-dev:latest
     container_name: "Linux_GCC_and_Clang_dev_env"
     ports:
       - "3022:22"
+    tty: true
+    stdin_open: true
+    environment:
+      - DISPLAY=${DISPLAY}
+    volumes:
+      - .:/app
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    entrypoint: docker/docker-entrypoint-dev.sh
+
+  dev-windows:
+    image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-windows-mingw-dev:latest
+    container_name: "Windows_mingw_dev_env"
+    ports:
+      - "3023:22"
     tty: true
     stdin_open: true
     environment:

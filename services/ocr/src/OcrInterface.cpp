@@ -29,7 +29,10 @@ namespace OCR {
         _tesseractWord = cv::text::OCRTesseract::create(nullptr, "eng", nullptr, OEM_CUBE_ONLY, PSM_SINGLE_WORD);
     }
 
-    auto OCR::OcrInterface::readCard(cv::Mat& rankImage, cv::Mat& suitImage) const -> Card {
+    auto OCR::OcrInterface::readCard(cv::Mat& cardImage) const -> Card {
+        cv::Mat rankImage = cardImage(getRankCardArea());
+        cv::Mat suitImage = cardImage(getSuitCardArea());
+
         return {readCardRank(rankImage), readCardSuit(suitImage)};
     }
 
@@ -42,6 +45,7 @@ namespace OCR {
 
         return word;
     }
+
     auto OcrInterface::similarityScore(const cv::Mat& firstImage, const cv::Mat& secondImage) const -> double {
         double similarity = 0;
 

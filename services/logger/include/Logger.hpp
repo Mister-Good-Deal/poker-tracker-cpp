@@ -7,11 +7,12 @@ namespace Logger {
         public:
             Quill() = delete;
 
-            static auto getLogger() -> std::shared_ptr<quill::Logger> const;
+            static auto getLogger() -> quill::Logger*;
 
         private:
-            static std::shared_ptr<quill::Logger> _logger;
+            // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables) => https://github.com/llvm/llvm-project/issues/47384
+            static quill::Logger* _instance;
 
-            static auto _initLogger() -> quill::Logger*;
+            static auto _initLogger() -> void;
     };
 }  // namespace Logger

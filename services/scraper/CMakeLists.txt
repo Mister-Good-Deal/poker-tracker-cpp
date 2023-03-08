@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.24)
 
-project(ocr LANGUAGES CXX)
+project(scraper LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -10,7 +10,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Libs dependencies
 #-----------------------------------------------------------------------------------------------------------------------
 
-find_package(OpenCV CONFIG REQUIRED)
+find_package(OpenCV REQUIRED)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Source files definition
@@ -18,24 +18,24 @@ find_package(OpenCV CONFIG REQUIRED)
 
 set(
     SRC
-    src/OcrInterface.cpp
-    src/WinamaxOcr.cpp
+    src/ScraperInterface.cpp
+    src/WinamaxScraper.cpp
 )
 
 set(
     HEADERS
-    include/OcrInterface.hpp
-    include/WinamaxOcr.hpp
+    include/ScraperInterface.hpp
+    include/WinamaxScraper.hpp
 )
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Library target creation and setup
 #-----------------------------------------------------------------------------------------------------------------------
 
-add_library(ocr SHARED ${SRC})
+add_library(scraper SHARED ${SRC})
 
 target_include_directories(
-    ocr
+    scraper
     PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
@@ -44,7 +44,13 @@ target_include_directories(
     game_handler
 )
 
-target_link_libraries(ocr PRIVATE logger game_handler opencv_core opencv_imgproc opencv_text)
+set(COMMON_LIBS logger game_handler opencv_core opencv_imgproc)
+
+if (WIN32)
+    target_link_libraries(scraper PUBLIC user32 opencv_highgui ${COMMON_LIBS})
+elseif (LINUX)
+    target_link_libraries(scraper PUBLIC X11 Xext ${COMMON_LIBS})
+endif ()
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Tests
@@ -58,32 +64,35 @@ endif ()
 # Installation
 #-----------------------------------------------------------------------------------------------------------------------
 
-include(GNUInstallDirs)
-
 install(
-    TARGETS ocr
-    EXPORT ocr_targets
+    TARGETS scraper
+    EXPORT scraper_targets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ocr
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/scraper
 )
 
 install(
-    EXPORT ocr_targets
-    FILE ocr_targets.cmake
-    NAMESPACE OCR::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ocr
+    EXPORT scraper_targets
+    FILE scraper_targets.cmake
+    NAMESPACE Scraper::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/scraper
 )
 
 if (WIN32)
     install(
-        FILES $<TARGET_FILE:opencv_core> $<TARGET_FILE:opencv_imgproc> $<TARGET_FILE:opencv_text>
+        FILES $<TARGET_FILE:opencv_core> $<TARGET_FILE:opencv_imgproc> $<TARGET_FILE:opencv_highgui>
         DESTINATION ${CMAKE_INSTALL_BINDIR}
+    )
+
+    install(
+        FILES ${CMAKE_FIND_ROOT_PATH}/lib/libuser32.a
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
 elseif (LINUX)
     install(
-        FILES $<TARGET_FILE:opencv_core> $<TARGET_FILE:opencv_imgproc> $<TARGET_FILE:opencv_text>
+        FILES $<TARGET_FILE:opencv_core> $<TARGET_FILE:opencv_imgproc> /usr/lib/x86_64-linux-gnu/libX11.so /usr/lib/x86_64-linux-gnu/libXext.so
         DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
 endif ()
