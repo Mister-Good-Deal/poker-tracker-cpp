@@ -36,9 +36,8 @@ build_linux:
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /\/build\-windows\-only/m
       when: never
-    - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_BRANCH =~/^release/
-    - if: $CI_COMMIT_MESSAGE =~ /\/packaging\-only/m
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release)/
+    - if: $CI_COMMIT_MESSAGE =~ /\/packaging(\-only)?/m
   variables:
     BUILD_TYPE: Release
 
@@ -71,9 +70,9 @@ build_windows:
     paths:
       - $BUILD_PATH_WINDOWS
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release)/
     - if: $CI_COMMIT_MESSAGE =~ /\/build\-windows/m
-    - if: $CI_COMMIT_MESSAGE =~ /\/packaging\-only/m
+    - if: $CI_COMMIT_MESSAGE =~ /\/packaging(\-only)?/m
 
 # This job runs the clang-check tool to analyze the source code and generates a report in clang-check-report.plist
 clang_check:
@@ -91,10 +90,7 @@ clang_check:
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /\/(build|packaging)\-only/m
       when: never
-    - if: $CI_COMMIT_MESSAGE =~ /\/no\-lint/m && $CI_COMMIT_MESSAGE =~ /\/no\-code\-quality/m && $CI_COMMIT_MESSAGE =~ /\/no\-test/m
-      when: never
-    # Always run otherwise
-    - if: $CI
+    - if: $CI_COMMIT_MESSAGE !~ /\/no\-lint/m || $CI_COMMIT_MESSAGE !~ /\/no\-code\-quality/m || $CI_COMMIT_MESSAGE !~ /\/no\-test/m
 
 # This job is responsible for running clang-format on the project source files and checking if the code formatting
 # adheres to the project's code style. It uses the 'builder-linux-clang' image and checks the code formatting using the
@@ -132,8 +128,7 @@ code_quality:
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /\/(build|packaging)\-only/m
       when: never
-    - if: $CI_COMMIT_MESSAGE =~ /\/no\-code\-quality/m
-      when: never
+    - if: $CI_COMMIT_MESSAGE !~ /\/no\-code\-quality/m
   needs:
     - clang_check
 
@@ -152,8 +147,7 @@ test_game_handler:
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /\/(build|packaging)\-only/m
       when: never
-    - if: $CI_COMMIT_MESSAGE =~ /\/no\-test/m
-      when: never
+    - if: $CI_COMMIT_MESSAGE !~ /\/no\-test/m
   needs:
     - clang_check
 
@@ -169,8 +163,7 @@ test_ocr:
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /\/(build|packaging)\-only/m
       when: never
-    - if: $CI_COMMIT_MESSAGE =~ /\/no\-test/m
-      when: never
+    - if: $CI_COMMIT_MESSAGE !~ /\/no\-test/m
   needs:
     - clang_check
 
@@ -183,9 +176,8 @@ packaging_linux:
     paths:
       - $BUILD_PATH_LINUX/poker-bot*.tar.gz
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_BRANCH =~/^release/
-    - if: $CI_COMMIT_MESSAGE =~ /\/packaging\-only/m
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release)/
+    - if: $CI_COMMIT_MESSAGE =~ /\/packaging(\-only)?/m
   needs:
     - build_linux
 
@@ -198,9 +190,8 @@ packaging_windows:
     paths:
       - $BUILD_PATH_WINDOWS/poker-bot*.zip
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_BRANCH =~/^release/
-    - if: $CI_COMMIT_MESSAGE =~ /\/packaging\-only/m
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release)/
+    - if: $CI_COMMIT_MESSAGE =~ /\/packaging(\-only)?/m
   needs:
     - build_windows
 
@@ -224,10 +215,9 @@ deploy:
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /\/build\-only/m
       when: never
-    - if: $CI_COMMIT_MESSAGE =~ /\/packaging\-only/m
+    - if: $CI_COMMIT_MESSAGE =~ /\/packaging(\-only)?/m
       when: manual
-    - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_BRANCH =~/^release/
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release)/
   needs:
     - packaging_linux
     - packaging_windows
