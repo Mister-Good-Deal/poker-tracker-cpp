@@ -18,7 +18,7 @@ ARG U_WEB_SOCKETS_VERSION
 ARG GOOGLETEST_VERSION
 ARG MAX_CPU_CORES
 
-RUN apk add --no-cache bash make gcc=~${GCC_VERSION} g++=~${GCC_VERSION} mingw-w64-gcc=~${MINGW_VERSION} \
+RUN apk add --no-cache bash make gcc>${GCC_VERSION} g++>${GCC_VERSION} mingw-w64-gcc=~${MINGW_VERSION} \
     mingw-w64-binutils=~${BINUTILS_VERSION} mingw-w64-headers mingw-w64-winpthreads mingw-w64-crt cmake>${CMAKE_VERSION}
 
 ENV INSTALL_PREFIX=/usr/x86_64-w64-mingw32
