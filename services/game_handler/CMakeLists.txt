@@ -28,18 +28,6 @@ set(
     src/RoundAction.cpp
 )
 
-set(
-    HEADERS
-    include/Board.hpp
-    include/Card.hpp
-    include/CardFactory.hpp
-    include/Game.hpp
-    include/Hand.hpp
-    include/Player.hpp
-    include/Round.hpp
-    include/RoundAction.hpp
-)
-
 #-----------------------------------------------------------------------------------------------------------------------
 # Library target creation and setup
 #-----------------------------------------------------------------------------------------------------------------------
