@@ -9,13 +9,17 @@ services:
       args:
         - GCC_VERSION=${GCC_VERSION}
         - CMAKE_VERSION=${CMAKE_VERSION}
+        - OPENJPEG_VERSION=${OPENJPEG_VERSION}
+        - WEBP_VERSION=${WEBP_VERSION}
+        - TIFF_VERSION=${TIFF_VERSION}
+        - PNG_VERSION=${PNG_VERSION}
+        - ZLIB_VERSION=${ZLIB_VERSION}
         - LEPTONICA_VERSION=${LEPTONICA_VERSION}
         - TESSERACT_VERSION=${TESSERACT_VERSION}
         - OPENCV_VERSION=${OPENCV_VERSION}
         - NLOHMANN_JSON_VERSION=${NLOHMANN_JSON_VERSION}
         - QUILL_VERSION=${QUILL_VERSION}
         - LIBUV_VERSION=${LIBUV_VERSION}
-        - ZLIB_VERSION=${ZLIB_VERSION}
         - U_WEB_SOCKETS_VERSION=${U_WEB_SOCKETS_VERSION}
         - GOOGLETEST_VERSION=${GOOGLETEST_VERSION}
         - MAX_CPU_CORES=${MAX_CPU_CORES}
@@ -43,17 +47,17 @@ services:
         - MAX_CPU_CORES=${MAX_CPU_CORES}
     image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-clang-dev:latest
 
-  builder-linux-clang-ci:
+  linux-clang-ci:
     build:
       context: .
-      dockerfile: docker/Dockerfile-builder-linux-clang-ci
+      dockerfile: docker/Dockerfile-linux-clang-ci
       args:
-        - CI_REGISTRY=${REGISTRY_HOST}
-        - CI_REGISTRY_BUILDER_ROOT_IMAGE=${REGISTRY_REPO_PATH}/builder-linux-clang
+        - CMAKE_VERSION=${CMAKE_VERSION}
+        - CLANG_VERSION=${CLANG_VERSION}
         - CPP_CHECK_VERSION=${CPP_CHECK_VERSION}
         - CODE_CHECKER_VERSION=${CODE_CHECKER_VERSION}
         - MAX_CPU_CORES=${MAX_CPU_CORES}
-    image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-clang-ci:latest
+    image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/linux-clang-ci:latest
 
   builder-windows-mingw:
     build:
@@ -67,13 +71,13 @@ services:
         - OPENJPEG_VERSION=${OPENJPEG_VERSION}
         - WEBP_VERSION=${WEBP_VERSION}
         - TIFF_VERSION=${TIFF_VERSION}
+        - ZLIB_VERSION=${ZLIB_VERSION}
         - LEPTONICA_VERSION=${LEPTONICA_VERSION}
         - TESSERACT_VERSION=${TESSERACT_VERSION}
         - OPENCV_VERSION=${OPENCV_VERSION}
         - NLOHMANN_JSON_VERSION=${NLOHMANN_JSON_VERSION}
         - QUILL_VERSION=${QUILL_VERSION}
         - LIBUV_VERSION=${LIBUV_VERSION}
-        - ZLIB_VERSION=${ZLIB_VERSION}
         - U_WEB_SOCKETS_VERSION=${U_WEB_SOCKETS_VERSION}
         - GOOGLETEST_VERSION=${GOOGLETEST_VERSION}
         - MAX_CPU_CORES=${MAX_CPU_CORES}

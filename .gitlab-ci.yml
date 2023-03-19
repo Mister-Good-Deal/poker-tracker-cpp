@@ -44,6 +44,7 @@ build_linux:
 # This job builds the Linux version of the application with the Debug configuration
 build_linux_debug:
   stage: build
+  image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-gcc:latest
   script:
     - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1
       -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --log-context && cmake --build $BUILD_PATH_LINUX

@@ -7,7 +7,8 @@ ARG CLANG_VERSION
 ARG MAX_CPU_CORES
 
 # Install Clang with the given CLANG_VERSION version from https://github.com/llvm/llvm-project
-RUN git clone https://github.com/llvm/llvm-project.git && cd llvm-project && git checkout llvmorg-${CLANG_VERSION} && \
+RUN apk add --no-cache git python3 && \
+    git clone https://github.com/llvm/llvm-project.git && cd llvm-project && git checkout llvmorg-${CLANG_VERSION} && \
     cmake -S llvm -B build -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra" && \
     cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
     cd .. && rm -rf llvm-project
