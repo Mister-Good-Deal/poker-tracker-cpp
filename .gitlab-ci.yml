@@ -14,7 +14,7 @@ variables:
   MAX_CODE_QUALITY_ISSUE_PER_FILE: 20
 
 default:
-  image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-clang-ci:latest
+  image: registry.gitlab.laneuville.me/rom1/poker-bot/ci-linux-runner:latest
   tags:
     - host
     - runner
@@ -201,7 +201,7 @@ packaging_windows:
 # desired target.
 deploy:
   stage: deploy
-  image: registry.gitlab.laneuville.me/rom1/poker-bot/deploy:latest
+  image: registry.gitlab.laneuville.me/rom1/poker-bot/ci-deploy:latest
   script:
     # For fetching the tags with the following `git describe`
     - git fetch --unshallow && git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*" && git fetch origin
