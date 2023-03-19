@@ -11,12 +11,12 @@ class ServerTest : public ::testing::Test {};
 TEST(ServerTest, todo) {
     Server server;
 
-    server.run();
+    std::thread thread(&Server::run, &server);
+    thread.join();
 
-    while (true)
-    {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    server.publish("test", "test data");
 
-        server.publish("test", "test data");
-    }
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+    server.close();
 }

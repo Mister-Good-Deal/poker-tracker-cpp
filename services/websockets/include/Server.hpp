@@ -17,6 +17,7 @@ namespace Websockets {
             Server();
 
             auto run() -> void;
+            auto close() -> void;
             auto publish(std::string_view topic, std::string_view data, OpCode code = OpCode::TEXT, bool compress = false) -> bool;
 
         private:

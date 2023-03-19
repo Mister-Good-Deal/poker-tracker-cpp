@@ -41,4 +41,5 @@ namespace Websockets {
     }
 
     auto Server::run() -> void { _server.run(); }
+    auto Server::close() -> void { _server.close(); }
 }  // namespace Websockets
