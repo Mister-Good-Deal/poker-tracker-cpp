@@ -33,7 +33,6 @@ services:
         - CI_REGISTRY=${REGISTRY_HOST}
         - CI_REGISTRY_BUILDER_ROOT_IMAGE=${REGISTRY_REPO_PATH}/builder-linux-gcc
         - CLANG_VERSION=${CLANG_VERSION}
-        - MAX_CPU_CORES=${MAX_CPU_CORES}
     image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-clang:latest
 
   builder-linux-clang-dev:
@@ -44,7 +43,6 @@ services:
         - CI_REGISTRY=${REGISTRY_HOST}
         - CI_REGISTRY_BUILDER_ROOT_IMAGE=${REGISTRY_REPO_PATH}/builder-linux-clang
         - GDB_VERSION=${GDB_VERSION}
-        - MAX_CPU_CORES=${MAX_CPU_CORES}
     image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-clang-dev:latest
 
   linux-clang-ci:

@@ -4,7 +4,6 @@ ARG CI_REGISTRY_BUILDER_ROOT_IMAGE
 FROM ${CI_REGISTRY}/${CI_REGISTRY_BUILDER_ROOT_IMAGE}:latest
 
 ARG GDB_VERSION
-ARG MAX_CPU_CORES
 
 # Install GDB with the given GDB_VERSION version
 RUN apk add --no-cache bash make gdb=~${GDB_VERSION}
