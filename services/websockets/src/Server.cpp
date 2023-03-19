@@ -1,8 +1,11 @@
 #include "Server.hpp"
 
+#include <Logger.hpp>
+
 namespace Websockets {
     using uWS::WebSocket;
 
+    using Logger     = Logger::Quill;
     using wsResource = WebSocket<false, true, PerSocketData>*;
 
     // Configure the server at constructor level to get the resource in class param (_server);
@@ -22,16 +25,18 @@ namespace Websockets {
                                             }
 
                                        })
-                    .listen(9001, [](auto* listenSocket) {
+                    .listen(SERVER_LISTENING_PORT, [](auto* listenSocket) {
                         if (listenSocket)
                         {
-                            std::cout << "Listening on port " << 9001 << std::endl;
+                            LOG_INFO(Logger::getLogger(), "Websocket server listening on port {}", SERVER_LISTENING_PORT);
                         } else {
-                            std::cout << "Failed to bind to port" << std::endl;
+                            LOG_ERROR(Logger::getLogger(), "Websocket failed to bind to port {}", SERVER_LISTENING_PORT);
                         }
                     })) {}
 
     auto Server::publish(std::string_view topic, std::string_view data, OpCode code, bool compress) -> bool {
+        LOG_DEBUG(Logger::getLogger(), "Websocket server send `{}` on topic `{}`", topic, data);
+
         return _server.publish(topic, data, code, compress);
     }
 

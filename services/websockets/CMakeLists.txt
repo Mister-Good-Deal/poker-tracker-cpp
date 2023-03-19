@@ -10,7 +10,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Libs dependencies
 #-----------------------------------------------------------------------------------------------------------------------
 
-find_package(uWebSockets CONFIG REQUIRED)
+find_package(uwebsockets CONFIG REQUIRED)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Source files definition
@@ -19,11 +19,6 @@ find_package(uWebSockets CONFIG REQUIRED)
 set(
     SRC
     src/Server.cpp
-)
-
-set(
-    HEADERS
-    include/Server.hpp
 )
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -38,10 +33,10 @@ target_include_directories(
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
     PRIVATE
-    uwebsockets::uwebsockets
+    uws::uws
 )
 
-target_link_libraries(websockets PRIVATE logger uWebSockets)
+target_link_libraries(websockets PRIVATE logger uws::uws)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Tests
@@ -75,12 +70,12 @@ install(
 
 if (WIN32)
     install(
-        FILES $<TARGET_FILE:uwebsockets>
+        FILES $<TARGET_FILE:uws::uws>
         DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
 elseif (LINUX)
     install(
-        FILES $<TARGET_FILE:uwebsockets>
+        FILES $<TARGET_FILE:uws::uws>
         DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
 endif ()
