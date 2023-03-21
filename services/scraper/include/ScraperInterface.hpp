@@ -22,7 +22,7 @@ namespace Scraper {
     class ScraperInterface {
         public:
 #ifdef _WIN32
-            using windows_t = std::map<std::string, HWND>;
+            using windows_t = std::map<std::string_view, HWND>;
 #elif __linux__
             using windows_t = std::map<std::string, Window>;
 #endif
@@ -36,7 +36,7 @@ namespace Scraper {
             auto operator=(ScraperInterface&& other) noexcept -> ScraperInterface&;
 
             auto getWindowsName() -> std::vector<std::string_view>;
-            auto getScreenshot(const std::string& windowName) -> cv::Mat;
+            auto getScreenshot(std::string_view windowName) -> cv::Mat;
 
             auto getFirstCardImg(const cv::Mat& img) -> cv::Mat { return img(getFirstCardCoordinate()); };
             auto getSecondCardImg(const cv::Mat& img) -> cv::Mat { return img(getSecondCardCoordinate()); };

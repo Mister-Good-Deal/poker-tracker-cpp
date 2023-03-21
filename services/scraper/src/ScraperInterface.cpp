@@ -1,5 +1,6 @@
 #include "ScraperInterface.hpp"
 
+#include <fmt/core.h>
 #include <ranges>
 
 namespace Scraper {
@@ -66,10 +67,13 @@ namespace Scraper {
 #endif
     }
 
-    auto ScraperInterface::getScreenshot(const std::string& windowName) -> cv::Mat {
+    auto ScraperInterface::getScreenshot(std::string_view windowName) -> cv::Mat {
         _parseActiveWindows();
 
-        auto window = _activeWindows[windowName];
+        if (!_activeWindows.contains(windowName.data()))
+        { throw std::invalid_argument(fmt::format("The window's name {} is not found", windowName)); }
+
+        auto window = _activeWindows[windowName.data()];
 
 #ifdef _WIN32
         RECT rc;

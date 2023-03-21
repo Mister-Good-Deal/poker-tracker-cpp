@@ -70,7 +70,7 @@ add_subdirectory(services/websockets)
 
 add_executable(poker_bot main.cpp)
 
-target_link_libraries(poker_bot logger game_handler ocr scraper)
+target_link_libraries(poker_bot logger game_handler ocr scraper websockets opencv_imgcodecs)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Installation

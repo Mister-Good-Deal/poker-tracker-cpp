@@ -28,9 +28,7 @@ namespace Websockets {
             auto run() -> void;
             auto close() -> void;
             auto publish(std::string_view topic, std::string_view data, OpCode code = OpCode::TEXT, bool compress = false) -> bool;
-
-            // Endpoints proxy functions
-            auto addGetEndpoint(std::string_view endpoint, const ProxyDataFn& proxy) -> void;
+            auto getInstance() -> uWS::App& { return _server; }
 
         private:
             uWS::App _server;

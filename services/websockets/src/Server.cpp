@@ -35,11 +35,6 @@ namespace Websockets {
 
     auto Server::close() -> void { _server.close(); }
 
-    auto Server::addGetEndpoint(std::string_view endpoint, const ProxyDataFn& proxy) -> void {
-        LOG_DEBUG(Logger::getLogger(), "Call addGetEndpoint with endpoint {}", endpoint);
-        _server.get(endpoint.data(), [&](HttpResponse* response, HttpRequest* request) { proxy(response, request); });
-    }
-
     auto Server::configureWebsockets() -> void {
         _server.ws<PerSocketData>("/websockets",
                                   {.idleTimeout = SERVER_IDLE_TIMEOUT,
