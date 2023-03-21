@@ -9,30 +9,7 @@ namespace Websockets {
     using wsResource = WebSocket<false, true, PerSocketData>*;
 
     // Configure the server at constructor level to get the resource in class param (_server);
-    Server::Server() :
-        _server(uWS::App()
-                    .get("/info",
-                         [](auto* res, auto* req) {
-                             res->writeHeader("Content-Type", "text/html; charset=utf-8")->end("Websocket server info");
-                         })
-                    .ws<PerSocketData>("/*",
-                                       {.upgrade = [](auto* res, auto* req, auto* context) {},
-                                        .open    = [](wsResource ws) { ws->subscribe("oh_interesting_subject"); },
-                                        .message =
-                                            [](wsResource ws, std::string_view message, OpCode opCode) {
-                                                // @todo Parse the message and send the appropriate response
-                                                ws->send(message, opCode);
-                                            }
-
-                                       })
-                    .listen(SERVER_LISTENING_PORT, [](auto* listenSocket) {
-                        if (listenSocket)
-                        {
-                            LOG_INFO(Logger::getLogger(), "Websocket server listening on port {}", SERVER_LISTENING_PORT);
-                        } else {
-                            LOG_ERROR(Logger::getLogger(), "Websocket failed to bind to port {}", SERVER_LISTENING_PORT);
-                        }
-                    })) {}
+    Server::Server() : _server(uWS::App()) { configureWebsockets(); }
 
     auto Server::publish(std::string_view topic, std::string_view data, OpCode code, bool compress) -> bool {
         LOG_DEBUG(Logger::getLogger(), "Websocket server send `{}` on topic `{}`", topic, data);
@@ -40,6 +17,38 @@ namespace Websockets {
         return _server.publish(topic, data, code, compress);
     }
 
-    auto Server::run() -> void { _server.run(); }
+    auto Server::run() -> void {
+        _server
+            .listen(SERVER_LISTENING_PORT,
+                    [](auto* listenSocket) {
+                        if (listenSocket)
+                        {
+                            LOG_INFO(Logger::getLogger(), "Websocket server listening on port {} ...", SERVER_LISTENING_PORT);
+                        } else {
+                            LOG_ERROR(Logger::getLogger(), "Websocket server failed to bind to port {}", SERVER_LISTENING_PORT);
+                        }
+                    })
+            .run();
+
+        LOG_INFO(Logger::getLogger(), "Websocket server closed");
+    }
+
     auto Server::close() -> void { _server.close(); }
+
+    auto Server::addGetEndpoint(std::string_view endpoint, const ProxyDataFn& proxy) -> void {
+        LOG_DEBUG(Logger::getLogger(), "Call addGetEndpoint with endpoint {}", endpoint);
+        _server.get(endpoint.data(), [&](HttpResponse* response, HttpRequest* request) { proxy(response, request); });
+    }
+
+    auto Server::configureWebsockets() -> void {
+        _server.ws<PerSocketData>("/websockets",
+                                  {.idleTimeout = SERVER_IDLE_TIMEOUT,
+                                   .upgrade     = [](auto* res, auto* req, auto* context) {},
+                                   .open        = [](wsResource ws) { ws->subscribe("oh_interesting_subject"); },
+                                   .message =
+                                       [](wsResource ws, std::string_view message, OpCode opCode) {
+                                           // @todo Parse the message and send the appropriate response
+                                           ws->send(message, opCode);
+                                       }});
+    }
 }  // namespace Websockets

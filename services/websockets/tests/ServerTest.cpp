@@ -2,21 +2,33 @@
 
 #include <gtest/gtest.h>
 
+#include <Logger.hpp>
 #include <Server.hpp>
 
+using Websockets::HttpRequest;
+using Websockets::HttpResponse;
 using Websockets::Server;
 
 class ServerTest : public ::testing::Test {};
 
 TEST(ServerTest, todo) {
-    Server server;
+    Server* serverPtr = nullptr;
 
-    std::thread thread(&Server::run, &server);
-    thread.join();
+    std::thread wsServerThread([&]() {
+        Server server;
+
+        serverPtr = &server;
+
+        server.run();
+    });
+
+    wsServerThread.detach();
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    server.publish("test", "test data");
+    serverPtr->publish("test", "test data");
 
-    std::this_thread::sleep_for(std::chrono::seconds(3));
-    server.close();
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    serverPtr->close();
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    LOG_DEBUG(Logger::Quill::getLogger(), "Test end");
 }

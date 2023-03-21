@@ -36,7 +36,7 @@ target_include_directories(
     uws::uws
 )
 
-target_link_libraries(websockets PRIVATE logger uws::uws)
+target_link_libraries(websockets PUBLIC logger uws::uws)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Tests
