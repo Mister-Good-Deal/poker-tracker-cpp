@@ -12,6 +12,8 @@ variables:
   BUILD_PATH_LINUX: ${PROJECT_PATH}/build-linux
   BUILD_PATH_WINDOWS: ${PROJECT_PATH}/build-windows
   MAX_CODE_QUALITY_ISSUE_PER_FILE: 20
+  CC: /usr/bin/gcc
+  CXX: /usr/bin/g++
 
 default:
   image: registry.gitlab.laneuville.me/rom1/poker-bot/ci-linux-runner:latest
@@ -29,7 +31,8 @@ build_linux:
   stage: build
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-gcc:latest
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH_LINUX
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX
+    - cmake --build $BUILD_PATH_LINUX
   artifacts:
     paths:
       - $BUILD_PATH_LINUX
@@ -46,8 +49,9 @@ build_linux_debug:
   stage: build
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-gcc:latest
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1
-      -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --log-context && cmake --build $BUILD_PATH_LINUX
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1 -DCMAKE_C_COMPILER=$CC
+      -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --log-context
+    - cmake --build $BUILD_PATH_LINUX
   artifacts:
     paths:
       - $BUILD_PATH_LINUX
@@ -66,7 +70,8 @@ build_windows:
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-windows-mingw:latest
   script:
     - cmake -S $PROJECT_PATH -B $BUILD_PATH_WINDOWS -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_MAKE_PROGRAM=/usr/bin/make
-      -DCMAKE_TOOLCHAIN_FILE=cmake/mingw-w64-x86_64.cmake && cmake --build $BUILD_PATH_WINDOWS
+      -DCMAKE_TOOLCHAIN_FILE=cmake/mingw-w64-x86_64.cmake
+    - cmake --build $BUILD_PATH_WINDOWS
   artifacts:
     paths:
       - $BUILD_PATH_WINDOWS
