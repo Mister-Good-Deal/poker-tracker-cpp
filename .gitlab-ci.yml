@@ -31,7 +31,8 @@ build_linux:
   stage: build
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-gcc:latest
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_MAKE_PROGRAM=/usr/bin/make
+      -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX
     - cmake --build $BUILD_PATH_LINUX
   artifacts:
     paths:
@@ -49,8 +50,8 @@ build_linux_debug:
   stage: build
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-gcc:latest
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1 -DCMAKE_C_COMPILER=$CC
-      -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --log-context
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_MAKE_PROGRAM=/usr/bin/make -DCMAKE_C_COMPILER=$CC
+      -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTS=ON --log-context
     - cmake --build $BUILD_PATH_LINUX
   artifacts:
     paths:
