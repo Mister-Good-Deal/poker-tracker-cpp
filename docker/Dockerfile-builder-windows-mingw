@@ -15,6 +15,7 @@ ARG NLOHMANN_JSON_VERSION
 ARG QUILL_VERSION
 ARG LIBUV_VERSION
 ARG U_WEB_SOCKETS_VERSION
+ARG FMT_VERSION
 ARG GOOGLETEST_VERSION
 ARG MAX_CPU_CORES
 
@@ -129,6 +130,14 @@ RUN wget https://github.com/ZiperRom1/uWebSockets/releases/download/v${U_WEB_SOC
     cmake -S . -B build ${CMAKE_COMMON_OPTION} -DWITH_OPENSSL=OFF -DWITH_QUIC=OFF -DWITH_LIBUV=ON -DWITH_ZLIB=ON && \
     cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
     rm -rf /tmp/uWebSockets-${U_WEB_SOCKETS_VERSION}.tar.gz /tmp/uWebSockets-${U_WEB_SOCKETS_VERSION}
+
+# Install fmt with the given FMT_VERSION version from https://github.com/fmtlib/fmt
+RUN wget https://github.com/fmtlib/fmt/archive/refs/tags/${FMT_VERSION}.tar.gz \
+    -q -O /tmp/fmt-${FMT_VERSION}.tar.gz && \
+    cd /tmp && ls && tar -xvzf fmt-${FMT_VERSION}.tar.gz && cd fmt-${FMT_VERSION} && \
+    cmake -S . -B build ${CMAKE_COMMON_OPTION} && \
+    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
+    rm -rf /tmp/fmt-${FMT_VERSION}.tar.gz /tmp/fmt-${FMT_VERSION}
 
 # Install googleTest with the given GOOGLETEST_VERSION version from https://github.com/google/googletest
 RUN wget https://github.com/google/googletest/archive/refs/tags/v${GOOGLETEST_VERSION}.tar.gz \
