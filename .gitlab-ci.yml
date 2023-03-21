@@ -32,7 +32,7 @@ build_linux:
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-gcc:latest
   script:
     - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_MAKE_PROGRAM=/usr/bin/make
-      -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX
+      -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTS=ON --log-context
     - cmake --build $BUILD_PATH_LINUX
   artifacts:
     paths:
@@ -50,8 +50,8 @@ build_linux_debug:
   stage: build
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-gcc:latest
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_MAKE_PROGRAM=/usr/bin/make -DCMAKE_C_COMPILER=$CC
-      -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTS=ON --log-context
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_MAKE_PROGRAM=/usr/bin/make
+      -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTS=ON --log-context
     - cmake --build $BUILD_PATH_LINUX
   artifacts:
     paths:
@@ -87,7 +87,6 @@ clang_check:
   script:
     - CPP_SRC_FILES=$(find ${PROJECT_PATH}/services -regex '.*\.\(cpp\|hpp\)' | tr "\n" " ")
     - echo "CPP_SRC_FILES=${CPP_SRC_FILES}" >> vars.env
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     - clang-check -analyze -extra-arg=-std=c++20 -p $BUILD_PATH_LINUX --analyzer-output-path=${PROJECT_PATH}/clang-check-report.plist ${CPP_SRC_FILES}
   artifacts:
     reports:
@@ -118,7 +117,6 @@ code_quality:
   tags:
     - code-quality
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --log-context
     - CodeChecker analyze $BUILD_PATH_LINUX/compile_commands.json -o $BUILD_PATH_LINUX/code_checker_report -j 8 --ctu --tidy-config $PROJECT_PATH/.clang-tidy
       --skip $PROJECT_PATH/.code-checker-skip-files
     - set +e
@@ -145,7 +143,6 @@ code_quality:
 test_game_handler:
   stage: test
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DBUILD_TESTS=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH_LINUX
     # @fixme Need to required tests for all subproject with --test-dir
     - ctest --test-dir $BUILD_PATH_LINUX/services/game_handler --output-on-failure --extra-verbose -j $(nproc)
       --output-junit game_handler_ctest.xml --no-compress-output
@@ -162,7 +159,6 @@ test_game_handler:
 test_ocr:
   stage: test
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DBUILD_TESTS=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE && cmake --build $BUILD_PATH_LINUX
     # @fixme Need to required tests for all subproject with --test-dir
     - ctest --test-dir $BUILD_PATH_LINUX/services/ocr --output-on-failure --extra-verbose -j $(nproc) --output-junit ocr_ctest.xml --no-compress-output
   artifacts:
