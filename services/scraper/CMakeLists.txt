@@ -87,7 +87,7 @@ if (WIN32)
 elseif (LINUX)
     install(
         FILES $<TARGET_FILE:opencv_core> $<TARGET_FILE:opencv_imgproc> $<TARGET_FILE:opencv_imgcodecs>
-        /usr/lib/x86_64-linux-gnu/libX11.so /usr/lib/x86_64-linux-gnu/libXext.so
+        /usr/lib/libX11.so /usr/lib/libXext.so
         DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
 endif ()
