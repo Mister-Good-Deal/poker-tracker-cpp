@@ -30,6 +30,8 @@ default:
 build_linux:
   stage: build
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-gcc:latest
+  tags:
+    - build
   script:
     - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_MAKE_PROGRAM=/usr/bin/make
       -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTS=ON --log-context
@@ -49,6 +51,8 @@ build_linux:
 build_linux_debug:
   stage: build
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-gcc:latest
+  tags:
+    - build
   script:
     - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_MAKE_PROGRAM=/usr/bin/make
       -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTS=ON --log-context
@@ -69,6 +73,8 @@ build_linux_debug:
 build_windows:
   stage: build
   image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-windows-mingw:latest
+  tags:
+    - build
   script:
     - cmake -S $PROJECT_PATH -B $BUILD_PATH_WINDOWS -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_MAKE_PROGRAM=/usr/bin/make
       -DCMAKE_TOOLCHAIN_FILE=cmake/mingw-w64-x86_64.cmake
@@ -85,6 +91,7 @@ build_windows:
 clang_check:
   stage: check
   script:
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     - CPP_SRC_FILES=$(find ${PROJECT_PATH}/services -regex '.*\.\(cpp\|hpp\)' | tr "\n" " ")
     - echo "CPP_SRC_FILES=${CPP_SRC_FILES}" >> vars.env
     - clang-check -analyze -extra-arg=-std=c++20 -p $BUILD_PATH_LINUX --analyzer-output-path=${PROJECT_PATH}/clang-check-report.plist ${CPP_SRC_FILES}
@@ -142,6 +149,8 @@ code_quality:
 # tests and generates a JUnit-style report for GitLab to display the test results.
 test_game_handler:
   stage: test
+  tags:
+    - tests
   script:
     # @fixme Need to required tests for all subproject with --test-dir
     - ctest --test-dir $BUILD_PATH_LINUX/services/game_handler --output-on-failure --extra-verbose -j $(nproc)
@@ -158,6 +167,8 @@ test_game_handler:
 
 test_ocr:
   stage: test
+  tags:
+    - tests
   script:
     # @fixme Need to required tests for all subproject with --test-dir
     - ctest --test-dir $BUILD_PATH_LINUX/services/ocr --output-on-failure --extra-verbose -j $(nproc) --output-junit ocr_ctest.xml --no-compress-output
