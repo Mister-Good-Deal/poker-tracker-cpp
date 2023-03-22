@@ -38,7 +38,7 @@ target_include_directories(
     game_handler
 )
 
-set(COMMON_LIBS logger game_handler opencv_core opencv_imgproc)
+set(COMMON_LIBS logger game_handler opencv_core opencv_imgproc opencv_imgcodecs)
 
 if (WIN32)
     target_link_libraries(scraper PUBLIC user32 opencv_highgui ${COMMON_LIBS})
@@ -76,7 +76,7 @@ install(
 
 if (WIN32)
     install(
-        FILES $<TARGET_FILE:opencv_core> $<TARGET_FILE:opencv_imgproc> $<TARGET_FILE:opencv_highgui>
+        FILES $<TARGET_FILE:opencv_core> $<TARGET_FILE:opencv_imgproc> $<TARGET_FILE:opencv_imgcodecs> $<TARGET_FILE:opencv_highgui>
         DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
 
@@ -86,7 +86,8 @@ if (WIN32)
     )
 elseif (LINUX)
     install(
-        FILES $<TARGET_FILE:opencv_core> $<TARGET_FILE:opencv_imgproc> /usr/lib/x86_64-linux-gnu/libX11.so /usr/lib/x86_64-linux-gnu/libXext.so
+        FILES $<TARGET_FILE:opencv_core> $<TARGET_FILE:opencv_imgproc> $<TARGET_FILE:opencv_imgcodecs>
+        /usr/lib/x86_64-linux-gnu/libX11.so /usr/lib/x86_64-linux-gnu/libXext.so
         DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
 endif ()
