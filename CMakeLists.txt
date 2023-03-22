@@ -70,7 +70,7 @@ add_subdirectory(services/websockets)
 
 add_executable(poker_bot main.cpp)
 
-target_link_libraries(poker_bot logger game_handler ocr scraper websockets opencv_imgcodecs)
+target_link_libraries(poker_bot logger game_handler ocr scraper websockets)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Installation
@@ -90,6 +90,15 @@ install(
     FILE poker_bot_targets.cmake
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake
 )
+
+if (WIN32)
+    # Add necessary DLLs
+    install(
+        FILES /usr/x86_64-w64-mingw32/bin/libgcc_s_seh-1.dll /usr/x86_64-w64-mingw32/bin/libstdc++-6.dll
+        /usr/x86_64-w64-mingw32/bin/libwinpthread-1.dll /usr/x86_64-w64-mingw32/bin/libfmt.dll
+        DESTINATION ${CMAKE_INSTALL_BINDIR}
+    )
+endif ()
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Packaging

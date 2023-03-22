@@ -43,7 +43,7 @@ target_include_directories(
     logger
 )
 
-target_link_libraries(game_handler PRIVATE logger nlohmann_json::nlohmann_json)
+target_link_libraries(game_handler PUBLIC logger nlohmann_json::nlohmann_json)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Tests
