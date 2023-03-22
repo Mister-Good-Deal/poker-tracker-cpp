@@ -87,10 +87,36 @@ services:
       args:
         - CMAKE_VERSION=${CMAKE_VERSION}
         - CLANG_VERSION=${CLANG_VERSION}
+        - OPENJPEG_VERSION=${OPENJPEG_VERSION}
+        - WEBP_VERSION=${WEBP_VERSION}
+        - TIFF_VERSION=${TIFF_VERSION}
+        - PNG_VERSION=${PNG_VERSION}
+        - ZLIB_VERSION=${ZLIB_VERSION}
+        - LEPTONICA_VERSION=${LEPTONICA_VERSION}
+        - TESSERACT_VERSION=${TESSERACT_VERSION}
+        - OPENCV_VERSION=${OPENCV_VERSION}
+        - NLOHMANN_JSON_VERSION=${NLOHMANN_JSON_VERSION}
+        - FMT_VERSION=${FMT_VERSION}
+        - QUILL_VERSION=${QUILL_VERSION}
+        - LIBUV_VERSION=${LIBUV_VERSION}
+        - U_WEB_SOCKETS_VERSION=${U_WEB_SOCKETS_VERSION}
+        - GOOGLETEST_VERSION=${GOOGLETEST_VERSION}
         - CPP_CHECK_VERSION=${CPP_CHECK_VERSION}
         - CODE_CHECKER_VERSION=${CODE_CHECKER_VERSION}
         - MAX_CPU_CORES=${MAX_CPU_CORES}
     image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/ci-linux-runner:latest
+
+  ci-linux-alpine-runner:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile-ci-linux-alpine-runner
+      args:
+        - CI_REGISTRY=${REGISTRY_HOST}
+        - CI_REGISTRY_BUILDER_ROOT_IMAGE=${REGISTRY_REPO_PATH}/builder-linux-clang
+        - CPP_CHECK_VERSION=${CPP_CHECK_VERSION}
+        - CODE_CHECKER_VERSION=${CODE_CHECKER_VERSION}
+        - MAX_CPU_CORES=${MAX_CPU_CORES}
+    image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/ci-linux-alpine-runner:latest
 
   ci-deploy:
     build:

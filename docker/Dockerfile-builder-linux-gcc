@@ -103,7 +103,7 @@ RUN wget https://github.com/nlohmann/json/archive/refs/tags/v${NLOHMANN_JSON_VER
 RUN wget https://github.com/fmtlib/fmt/archive/refs/tags/${FMT_VERSION}.tar.gz \
     -q -O /tmp/fmt-${FMT_VERSION}.tar.gz && \
     cd /tmp && ls && tar -xvzf fmt-${FMT_VERSION}.tar.gz && cd fmt-${FMT_VERSION} && \
-    cmake -S . -B build ${CMAKE_COMMON_OPTION} && \
+    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DFMT_DOC=OFF -DFMT_TEST=OFF && \
     cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
     rm -rf /tmp/fmt-${FMT_VERSION}.tar.gz /tmp/fmt-${FMT_VERSION}
 
@@ -119,7 +119,7 @@ RUN wget https://github.com/odygrd/quill/archive/refs/tags/v${QUILL_VERSION}.tar
 RUN wget https://github.com/libuv/libuv/archive/refs/tags/v${LIBUV_VERSION}.tar.gz \
     -q -O /tmp/libuv-${LIBUV_VERSION}.tar.gz && \
     cd /tmp && ls && tar -xvzf libuv-${LIBUV_VERSION}.tar.gz && cd libuv-${LIBUV_VERSION} && \
-    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DWITH_OPENSSL=OFF -DWITH_LIBUV=ON && \
+    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DWITH_OPENSSL=OFF -DLIBUV_BUILD_TESTS=OFF && \
     cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
     rm -rf /tmp/libuv-${LIBUV_VERSION}.tar.gz /tmp/libuv-${LIBUV_VERSION}
 
