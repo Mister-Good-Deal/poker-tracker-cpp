@@ -16,7 +16,7 @@ variables:
   CXX: /usr/bin/g++
 
 default:
-  image: registry.gitlab.laneuville.me/rom1/poker-bot/ci-linux-runner:latest
+  image: registry.gitlab.laneuville.me/poker-bot/backend/ci-linux-runner:latest
   tags:
     - host
     - runner
@@ -29,7 +29,7 @@ default:
 # This job builds the Linux version of the application with the Release configuration
 build_linux:
   stage: build
-  image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-gcc:latest
+  image: registry.gitlab.laneuville.me/poker-bot/backend/builder-linux-gcc:latest
   tags:
     - build
   script:
@@ -50,7 +50,7 @@ build_linux:
 # This job builds the Linux version of the application with the Debug configuration
 build_linux_debug:
   stage: build
-  image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-gcc:latest
+  image: registry.gitlab.laneuville.me/poker-bot/backend/builder-linux-gcc:latest
   tags:
     - build
   script:
@@ -72,7 +72,7 @@ build_linux_debug:
 # 'BUILD_TYPE' to 'Release' and saves the artifacts generated in the build process.
 build_windows:
   stage: build
-  image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-windows-mingw:latest
+  image: registry.gitlab.laneuville.me/poker-bot/backend/builder-windows-mingw:latest
   tags:
     - build
   script:
@@ -187,7 +187,7 @@ test_ocr:
 
 packaging_linux:
   stage: packaging
-  image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-linux-gcc:latest
+  image: registry.gitlab.laneuville.me/poker-bot/backend/builder-linux-gcc:latest
   script:
     - cpack --config $BUILD_PATH_LINUX/CPackConfig.cmake
   artifacts:
@@ -201,7 +201,7 @@ packaging_linux:
 
 packaging_windows:
   stage: packaging
-  image: registry.gitlab.laneuville.me/rom1/poker-bot/builder-windows-mingw:latest
+  image: registry.gitlab.laneuville.me/poker-bot/backend/builder-windows-mingw:latest
   script:
     - cpack --config $BUILD_PATH_WINDOWS/CPackConfig.cmake
   artifacts:
@@ -217,7 +217,7 @@ packaging_windows:
 # desired target.
 deploy:
   stage: deploy
-  image: registry.gitlab.laneuville.me/rom1/poker-bot/ci-deploy:latest
+  image: registry.gitlab.laneuville.me/poker-bot/backend/ci-deploy:latest
   script:
     # For fetching the tags with the following `git describe`
     - git fetch --unshallow && git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*" && git fetch origin
