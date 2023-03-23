@@ -1,10 +1,14 @@
 #!/bin/bash
 
+CURRENT_DIR_PATH=$(readlink -f "$(dirname "$0")")
+
+echo "Docker runners configuration are saved in ${CURRENT_DIR_PATH}/config"
+
 # Register the runners
 for i in 1 2 3
 do
   docker run --rm -it \
-    -v /home/rom1/Projects/poker-bot/docker/gitlab-runner/config/host-${i}:/etc/gitlab-runner \
+    -v "${CURRENT_DIR_PATH}/config/host-${i}:/etc/gitlab-runner" \
     gitlab/gitlab-runner:latest register \
       --url "https://gitlab.laneuville.me/" \
       --executor "docker" \
