@@ -76,7 +76,8 @@ install(
 
 if (WIN32)
     install(
-        FILES $<TARGET_FILE:opencv_core> $<TARGET_FILE:opencv_imgproc> $<TARGET_FILE:opencv_imgcodecs> $<TARGET_FILE:opencv_highgui>
+        FILES $<TARGET_FILE:opencv_core> $<TARGET_FILE:opencv_imgproc> $<TARGET_FILE:opencv_imgcodecs>
+        $<TARGET_FILE:opencv_highgui>
         DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
 

@@ -18,11 +18,11 @@
             <mapping deploy="/app" local="$PROJECT_DIR$" />
           </mappings>
           <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/build_docker" />
+            <excludedPath local="true" path="$PROJECT_DIR$/build-clang" />
             <excludedPath local="true" path="$PROJECT_DIR$/build" />
             <excludedPath local="true" path="$PROJECT_DIR$/build-docker-gcc" />
             <excludedPath local="true" path="$PROJECT_DIR$/build-mingw" />
-            <excludedPath local="true" path="$PROJECT_DIR$/build_docker" />
-            <excludedPath local="true" path="$PROJECT_DIR$/build-clang" />
             <excludedPath local="true" path="$PROJECT_DIR$/build-gcc" />
           </excludedPaths>
         </serverdata>
@@ -33,11 +33,11 @@
             <mapping deploy="/app" local="$PROJECT_DIR$" />
           </mappings>
           <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/build_docker" />
+            <excludedPath local="true" path="$PROJECT_DIR$/build-clang" />
             <excludedPath local="true" path="$PROJECT_DIR$/build-docker-gcc" />
             <excludedPath local="true" path="$PROJECT_DIR$/build-mingw" />
-            <excludedPath local="true" path="$PROJECT_DIR$/build_docker" />
             <excludedPath local="true" path="$PROJECT_DIR$/build-gcc" />
-            <excludedPath local="true" path="$PROJECT_DIR$/build-clang" />
           </excludedPaths>
         </serverdata>
       </paths>

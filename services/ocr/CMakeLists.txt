@@ -73,11 +73,13 @@ install(
 if (WIN32)
     install(
         FILES $<TARGET_FILE:opencv_core> $<TARGET_FILE:opencv_imgproc> $<TARGET_FILE:opencv_text>
+        $<TARGET_FILE:opencv_ml> $<TARGET_FILE:opencv_dnn>
         DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
 elseif (LINUX)
     install(
         FILES $<TARGET_FILE:opencv_core> $<TARGET_FILE:opencv_imgproc> $<TARGET_FILE:opencv_text>
+        $<TARGET_FILE:opencv_ml> $<TARGET_FILE:opencv_dnn>
         DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
 endif ()

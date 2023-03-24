@@ -70,7 +70,7 @@ install(
 
 if (WIN32)
     install(
-        FILES $<TARGET_FILE:uws::uws>
+        FILES $<TARGET_FILE:uws::uws> /usr/x86_64-w64-mingw32/bin/libzlib1.dll /usr/x86_64-w64-mingw32/bin/libuv.dll
         DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
 elseif (LINUX)
