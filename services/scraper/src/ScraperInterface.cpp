@@ -17,13 +17,17 @@ namespace Scraper {
 
     auto ScraperInterface::_parseActiveWindows() -> void {
 #ifdef _WIN32
+        LOG_DEBUG(Logger::getLogger(), "Enter _parseActiveWindows");
         HWND hwnd = nullptr;
-
+        LOG_DEBUG(Logger::getLogger(), "Call FindWindowEx");
         while ((hwnd = FindWindowEx(nullptr, hwnd, nullptr, nullptr)) != nullptr)
         {
+            LOG_DEBUG(Logger::getLogger(), "Call GetWindowTextLength");
             auto titleLength = GetWindowTextLength(hwnd);
-            auto title       = static_cast<PSTR>(VirtualAlloc(nullptr, titleLength + 1, MEM_COMMIT, PAGE_READWRITE));
-            auto titleSize   = GetWindowText(hwnd, title, titleLength);
+            LOG_DEBUG(Logger::getLogger(), "Call VirtualAlloc");
+            auto title = static_cast<PSTR>(VirtualAlloc(nullptr, titleLength + 1, MEM_COMMIT, PAGE_READWRITE));
+            LOG_DEBUG(Logger::getLogger(), "Call GetWindowText");
+            auto titleSize = GetWindowText(hwnd, title, titleLength);
 
             if (titleSize == 0)
             {
