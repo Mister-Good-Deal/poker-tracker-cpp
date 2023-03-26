@@ -11,20 +11,21 @@
 using Scraper::WinamaxScraper;
 using Websockets::HttpRequest;
 using Websockets::HttpResponse;
+using Websockets::OpCode;
+using Websockets::opCodeToString;
+using Websockets::PerSocketData;
 using Websockets::Server;
+using Websockets::WsResource;
 
 using json = nlohmann::json;
 
-auto run(uWS::App& server) -> void {
-    server
-        .listen(9001,
-                [](auto* listen_socket) {
-                    if (listen_socket) { std::cout << "Listening on port " << 9001 << std::endl; }
-                })
-        .run();
-}
-
 auto main() -> int {
+#if defined(_WIN32)
+    quill::init_signal_handler();
+#endif
+
+    quill::detail::set_thread_name("MainThread");
+
     WinamaxScraper scraper;
 
     LOG_DEBUG(Logger::Quill::getLogger(), "Main application");
@@ -56,11 +57,28 @@ auto main() -> int {
         { response->writeHeader("Content-Type", "text/plain")->writeStatus("500 Error")->end(error.what()); }
     };
 
+    auto echoHandler = [&](WsResource ws, std::string_view message, OpCode opCode) {
+        LOG_DEBUG(Logger::Quill::getLogger(), "[WS] request from {} with opCode = {}", ws->getRemoteAddress(), opCodeToString(opCode));
+
+        json echoJson = {{"message", message}};
+
+        ws->send(echoJson.dump(), opCode, true);
+    };
+
     std::thread wsServerThread([&]() {
+#if defined(_WIN32)
+        quill::init_signal_handler();
+#endif
+
+        quill::detail::set_thread_name("ServerThread");
+
         Server server;
 
-        // Define server endpoint
-        server.getInstance().get("/windows", getWindowsNameHandler).get("/screenshot", getScreenshotHandler);
+        // Define server endpoints
+        server.getInstance()
+            .get("/windows", getWindowsNameHandler)
+            .get("/screenshot", getScreenshotHandler)
+            .ws<PerSocketData>("/echo", {.message = echoHandler});
 
         server.run();
     });

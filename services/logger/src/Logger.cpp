@@ -1,6 +1,8 @@
 #include "Logger.hpp"
 
 namespace Logger {
+    using quill::FilenameAppend::Date;
+
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables) => https://github.com/llvm/llvm-project/issues/47384
     quill::Logger* Quill::_instance = nullptr;
 
@@ -8,25 +10,32 @@ namespace Logger {
         if (_instance == nullptr)
         {
             _initLogger();
-            _instance = quill::get_root_logger();
+            _instance = quill::get_logger("custom");
         }
 
         return _instance;
     }
 
     auto Quill::_initLogger() -> void {
-        quill::Config cfg;
+        quill::Config config;
 
-        cfg.enable_console_colours = true;
-        cfg.backend_thread_yield   = true;
+        config.enable_console_colours = true;
+        config.backend_thread_yield   = true;
 
-        quill::configure(cfg);
-        quill::start();
+        quill::configure(config);
+        quill::start(true);
+
+        quill::Handler* fileHandler    = quill::file_handler(LOGGER_FILE_NAME, "a", Date);
+        quill::Handler* consoleHandler = quill::stdout_handler();
+
+        fileHandler->set_pattern(LOG_PATTERN.data(), "%D %H:%M:%S");
+        consoleHandler->set_pattern(LOG_PATTERN.data(), "%D %H:%M:%S");
+
+        quill::Logger* logger = quill::create_logger("custom", {fileHandler, consoleHandler});
 
         // enable a backtrace that will get flushed when we log CRITICAL
-        quill::get_root_logger()->init_backtrace(2, quill::LogLevel::Critical);
-
-        quill::get_root_logger()->set_log_level(quill::LogLevel::TraceL3);
+        logger->init_backtrace(2, quill::LogLevel::Critical);
+        logger->set_log_level(quill::LogLevel::TraceL3);
     }
 
 }  // namespace Logger

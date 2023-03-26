@@ -5,8 +5,7 @@
 namespace Websockets {
     using uWS::WebSocket;
 
-    using Logger     = Logger::Quill;
-    using wsResource = WebSocket<false, true, PerSocketData>*;
+    using Logger = Logger::Quill;
 
     // Configure the server at constructor level to get the resource in class param (_server);
     Server::Server() : _server(uWS::App()) { configureWebsockets(); }
@@ -39,9 +38,9 @@ namespace Websockets {
         _server.ws<PerSocketData>("/websockets",
                                   {.idleTimeout = SERVER_IDLE_TIMEOUT,
                                    .upgrade     = [](auto* res, auto* req, auto* context) {},
-                                   .open        = [](wsResource ws) { ws->subscribe("oh_interesting_subject"); },
+                                   .open        = [](WsResource ws) { ws->subscribe("oh_interesting_subject"); },
                                    .message =
-                                       [](wsResource ws, std::string_view message, OpCode opCode) {
+                                       [](WsResource ws, std::string_view message, OpCode opCode) {
                                            // @todo Parse the message and send the appropriate response
                                            ws->send(message, opCode);
                                        }});
