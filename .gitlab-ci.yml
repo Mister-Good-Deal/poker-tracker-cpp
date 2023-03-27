@@ -8,7 +8,6 @@ stages:
 
 variables:
   PROJECT_PATH: $CI_PROJECT_DIR
-  BUILD_TYPE: Release
   BUILD_PATH_LINUX: ${PROJECT_PATH}/build-linux
   BUILD_PATH_WINDOWS: ${PROJECT_PATH}/build-windows
   MAX_CODE_QUALITY_ISSUE_PER_FILE: 20
@@ -26,78 +25,75 @@ default:
     paths:
       - $BUILD_PATH_LINUX
 
-# This job builds the Linux version of the application with the Release configuration
 build_linux:
   stage: build
   image: registry.gitlab.laneuville.me/poker-bot/backend/builder-linux-gcc:latest
   tags:
     - build
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_MAKE_PROGRAM=/usr/bin/make
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX-release -DCMAKE_BUILD_TYPE=Release -DCMAKE_MAKE_PROGRAM=/usr/bin/make
       -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTS=ON --log-context
-    - cmake --build $BUILD_PATH_LINUX
+    - cmake --build $BUILD_PATH_LINUX-release
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX-debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/usr/bin/make
+      -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTS=ON --log-context
+    - cmake --build $BUILD_PATH_LINUX-debug
   artifacts:
     paths:
-      - $BUILD_PATH_LINUX
+      - $BUILD_PATH_LINUX-release
+      - $BUILD_PATH_LINUX-debug
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /\/build\-windows\-only/m
       when: never
     - if: $CI_COMMIT_BRANCH =~ /^(main|release)/
     - if: $CI_COMMIT_MESSAGE =~ /\/packaging(\-only)?/m
-  variables:
-    BUILD_TYPE: Release
 
-# This job builds the Linux version of the application with the Debug configuration
 build_linux_debug:
   stage: build
   image: registry.gitlab.laneuville.me/poker-bot/backend/builder-linux-gcc:latest
   tags:
     - build
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_MAKE_PROGRAM=/usr/bin/make
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX-debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/usr/bin/make
       -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTS=ON --log-context
-    - cmake --build $BUILD_PATH_LINUX
+    - cmake --build $BUILD_PATH_LINUX-debug
   artifacts:
     paths:
-      - $BUILD_PATH_LINUX
+      - $BUILD_PATH_LINUX-debug
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /\/(build|packaging)\-only/m
       when: never
     - if: $CI_COMMIT_BRANCH =~/^(feature|hotfix)/
-  variables:
-    BUILD_TYPE: Debug
 
-# This job is responsible for building the project for the Windows platform using MinGW Makefiles. It uses the
-# 'builder-windows-mingw' image and sets the 'CMAKE_SYSTEM_NAME' to 'Windows' during configuration. It also sets the
-# 'BUILD_TYPE' to 'Release' and saves the artifacts generated in the build process.
 build_windows:
   stage: build
   image: registry.gitlab.laneuville.me/poker-bot/backend/builder-windows-mingw:latest
   tags:
     - build
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH_WINDOWS -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_MAKE_PROGRAM=/usr/bin/make
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH_WINDOWS-release -DCMAKE_BUILD_TYPE=Release -DCMAKE_MAKE_PROGRAM=/usr/bin/make
       -DCMAKE_TOOLCHAIN_FILE=cmake/mingw-w64-x86_64.cmake
-    - cmake --build $BUILD_PATH_WINDOWS
+    - cmake --build $BUILD_PATH_WINDOWS-release
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH_WINDOWS-debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/usr/bin/make
+      -DCMAKE_TOOLCHAIN_FILE=cmake/mingw-w64-x86_64.cmake
+    - cmake --build $BUILD_PATH_WINDOWS-debug
   artifacts:
     paths:
-      - $BUILD_PATH_WINDOWS
+      - $BUILD_PATH_WINDOWS-release
+      - $BUILD_PATH_WINDOWS-debug
   rules:
     - if: $CI_COMMIT_BRANCH =~ /^(main|release)/
     - if: $CI_COMMIT_MESSAGE =~ /\/build\-windows/m
     - if: $CI_COMMIT_MESSAGE =~ /\/packaging(\-only)?/m
 
-# This job runs the clang-check tool to analyze the source code and generates a report in clang-check-report.plist
 clang_check:
   stage: check
+  image: registry.gitlab.laneuville.me/poker-bot/backend/ci-linux-runner:latest
   script:
-    - export CC="/usr/local/bin/clang" && export CXX="/usr/local/bin/clang++"
-    - CC="/usr/local/bin/clang" CXX="/usr/local/bin/clang++" cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX -DCMAKE_BUILD_TYPE=$BUILD_TYPE
-      -DCMAKE_C_COMPILER="/usr/local/bin/clang" -DCMAKE_CXX_COMPILER="/usr/local/bin/clang++" -DBUILD_TESTS=ON
-      -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --log-context
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX-debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER="/usr/local/bin/clang"
+      -DCMAKE_CXX_COMPILER="/usr/local/bin/clang++" -DBUILD_TESTS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --log-context
     - CPP_SRC_FILES=$(find ${PROJECT_PATH}/services -regex '.*\.\(cpp\|hpp\)' | tr "\n" " ")
     - echo "CPP_SRC_FILES=${CPP_SRC_FILES}" >> vars.env
-    - clang-check -analyze -extra-arg=-std=c++20 -p $BUILD_PATH_LINUX --analyzer-output-path=${PROJECT_PATH}/clang-check-report.plist ${CPP_SRC_FILES}
+    - clang-check -analyze -extra-arg=-std=c++20 -p $BUILD_PATH_LINUX-debug --analyzer-output-path=${PROJECT_PATH}/clang-check-report.plist ${CPP_SRC_FILES}
   artifacts:
     reports:
       dotenv: vars.env
@@ -108,9 +104,6 @@ clang_check:
       when: never
     - if: $CI_COMMIT_MESSAGE !~ /\/no\-lint/m || $CI_COMMIT_MESSAGE !~ /\/no\-code\-quality/m || $CI_COMMIT_MESSAGE !~ /\/no\-test/m
 
-# This job is responsible for running clang-format on the project source files and checking if the code formatting
-# adheres to the project's code style. It uses the 'builder-linux-clang' image and checks the code formatting using the
-# '--Werror' and '--Wclang-format-violations' options.
 clang_format:
   stage: lint
   script:
@@ -127,20 +120,20 @@ code_quality:
   tags:
     - code-quality
   script:
-    - CodeChecker analyze $BUILD_PATH_LINUX/compile_commands.json -o $BUILD_PATH_LINUX/code_checker_report -j 8 --ctu --tidy-config $PROJECT_PATH/.clang-tidy
-      --skip $PROJECT_PATH/.code-checker-skip-files
+    - CodeChecker analyze $BUILD_PATH_LINUX-debug/compile_commands.json -o $BUILD_PATH_LINUX-debug/code_checker_report
+      -j 8 --ctu --tidy-config $PROJECT_PATH/.clang-tidy --skip $PROJECT_PATH/.code-checker-skip-files
     - set +e
-    - CodeChecker parse $BUILD_PATH_LINUX/code_checker_report -e html -o $BUILD_PATH_LINUX/code_checker_html_report --trim-path-prefix $PROJECT_PATH
-    - CodeChecker parse $BUILD_PATH_LINUX/code_checker_report -e codeclimate -o $BUILD_PATH_LINUX/gl-code-quality-report.json --trim-path-prefix $PROJECT_PATH
+    - CodeChecker parse $BUILD_PATH_LINUX-debug/code_checker_report -e html -o $BUILD_PATH_LINUX-debug/code_checker_html_report --trim-path-prefix $PROJECT_PATH
+    - CodeChecker parse $BUILD_PATH_LINUX-debug/code_checker_report -e codeclimate -o $BUILD_PATH_LINUX-debug/gl-code-quality-report.json --trim-path-prefix $PROJECT_PATH
     - exit 0
   artifacts:
     name: code_quality_${CI_COMMIT_TIMESTAMP}
     paths:
-      - $BUILD_PATH_LINUX/gl-code-quality-report.json
-      - $BUILD_PATH_LINUX/code_checker_html_report/
+      - $BUILD_PATH_LINUX-debug/gl-code-quality-report.json
+      - $BUILD_PATH_LINUX-debug/code_checker_html_report/
     expose_as: 'Code quality HTML and json reports'
     reports:
-      codequality: $BUILD_PATH_LINUX/gl-code-quality-report.json
+      codequality: $BUILD_PATH_LINUX-debug/gl-code-quality-report.json
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /\/(build|packaging)\-only/m
       when: never
@@ -148,19 +141,17 @@ code_quality:
   needs:
     - clang_check
 
-# This job is responsible for building and running all game_handler tests. It uses the CTest framework to run the
-# tests and generates a JUnit-style report for GitLab to display the test results.
 test_game_handler:
   stage: test
   tags:
     - tests
   script:
     # @fixme Need to required tests for all subproject with --test-dir
-    - ctest --test-dir $BUILD_PATH_LINUX/services/game_handler --output-on-failure --extra-verbose -j $(nproc)
+    - ctest --test-dir $BUILD_PATH_LINUX-debug/services/game_handler --output-on-failure --extra-verbose -j $(nproc)
       --output-junit game_handler_ctest.xml --no-compress-output
   artifacts:
     reports:
-      junit: $BUILD_PATH_LINUX/services/game_handler/game_handler_ctest.xml
+      junit: $BUILD_PATH_LINUX-debug/services/game_handler/game_handler_ctest.xml
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /\/(build|packaging)\-only/m
       when: never
@@ -174,10 +165,11 @@ test_ocr:
     - tests
   script:
     # @fixme Need to required tests for all subproject with --test-dir
-    - ctest --test-dir $BUILD_PATH_LINUX/services/ocr --output-on-failure --extra-verbose -j $(nproc) --output-junit ocr_ctest.xml --no-compress-output
+    - ctest --test-dir $BUILD_PATH_LINUX-debug/services/ocr --output-on-failure --extra-verbose -j $(nproc)
+      --output-junit ocr_ctest.xml --no-compress-output
   artifacts:
     reports:
-      junit: $BUILD_PATH_LINUX/services/ocr/ocr_ctest.xml
+      junit: $BUILD_PATH_LINUX-debug/services/ocr/ocr_ctest.xml
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /\/(build|packaging)\-only/m
       when: never
@@ -189,10 +181,10 @@ packaging_linux:
   stage: packaging
   image: registry.gitlab.laneuville.me/poker-bot/backend/builder-linux-gcc:latest
   script:
-    - cpack --config $BUILD_PATH_LINUX/CPackConfig.cmake
+    - cpack --config $PROJECT_PATH/MultiCPackConfig.cmake
   artifacts:
     paths:
-      - $BUILD_PATH_LINUX/poker-bot*.tar.gz
+      - $PROJECT_PATH/poker-bot*.tar.gz
   rules:
     - if: $CI_COMMIT_BRANCH =~ /^(main|release)/
     - if: $CI_COMMIT_MESSAGE =~ /\/packaging(\-only)?/m
@@ -203,18 +195,16 @@ packaging_windows:
   stage: packaging
   image: registry.gitlab.laneuville.me/poker-bot/backend/builder-windows-mingw:latest
   script:
-    - cpack --config $BUILD_PATH_WINDOWS/CPackConfig.cmake
+    - cpack --config $PROJECT_PATH/MultiCPackConfig.cmake
   artifacts:
     paths:
-      - $BUILD_PATH_WINDOWS/poker-bot*.zip
+      - $PROJECT_PATH/poker-bot*.zip
   rules:
     - if: $CI_COMMIT_BRANCH =~ /^(main|release)/
     - if: $CI_COMMIT_MESSAGE =~ /\/packaging(\-only)?/m
   needs:
     - build_windows
 
-# This job is responsible for packaging the built artifacts from the previous build jobs and deploying them to the
-# desired target.
 deploy:
   stage: deploy
   image: registry.gitlab.laneuville.me/poker-bot/backend/ci-deploy:latest

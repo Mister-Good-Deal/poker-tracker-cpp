@@ -9,8 +9,13 @@ function(add_class_test class_name)
     target_link_libraries(${target_name} websockets logger uws::uws GTest::Main GTest::gtest GTest::gmock)
     target_include_directories(${target_name} PRIVATE ../include)
     gtest_add_tests(TARGET ${target_name} SOURCES ${test_src_file})
-endfunction()
 
-message(STATUS "The unit tests for websockets are stored in ${CMAKE_BINARY_DIR}")
+    include(GNUInstallDirs)
+
+    install(
+        TARGETS ${target_name}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/websockets
+    )
+endfunction()
 
 add_class_test(Server)

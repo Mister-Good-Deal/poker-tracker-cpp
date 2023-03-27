@@ -70,6 +70,8 @@ add_subdirectory(services/websockets)
 
 add_executable(poker_bot main.cpp)
 
+set_target_properties(poker_bot PROPERTIES DEBUG_POSTFIX _debug)
+
 target_link_libraries(poker_bot logger game_handler ocr scraper websockets)
 
 #-----------------------------------------------------------------------------------------------------------------------

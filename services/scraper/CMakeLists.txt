@@ -58,6 +58,8 @@ endif ()
 # Installation
 #-----------------------------------------------------------------------------------------------------------------------
 
+include(GNUInstallDirs)
+
 install(
     TARGETS scraper
     EXPORT scraper_targets
