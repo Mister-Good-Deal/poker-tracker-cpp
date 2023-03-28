@@ -70,8 +70,12 @@ clang_check:
   stage: check
   image: registry.gitlab.laneuville.me/poker-bot/backend/ci-linux-runner:latest
   script:
-    - CXX="/usr/local/bin/clang++" cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX-debug -DCMAKE_BUILD_TYPE=Debug
-      -DCMAKE_CXX_COMPILER=/usr/local/bin/clang++ -DBUILD_TESTS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --log-context
+    - echo $CC
+    - echo $CXX
+    - export CXX="/usr/local/bin/clang++"
+    - echo $CXX
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX-debug -DCMAKE_CXX_COMPILER=/usr/local/bin/clang++
+      -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --log-context
     - CPP_SRC_FILES=$(find ${PROJECT_PATH}/services -regex '.*\.\(cpp\|hpp\)' | tr "\n" " ")
     - echo "CPP_SRC_FILES=${CPP_SRC_FILES}" >> vars.env
     - clang-check -analyze -extra-arg=-std=c++20 -p $BUILD_PATH_LINUX-debug --analyzer-output-path=${PROJECT_PATH}/clang-check-report.plist ${CPP_SRC_FILES}
@@ -163,10 +167,10 @@ packaging_linux:
   stage: packaging
   image: registry.gitlab.laneuville.me/poker-bot/backend/builder-linux-gcc:latest
   script:
-    - cpack --config $PROJECT_PATH/MultiCPackConfig.cmake
+    - cpack -D WINDOWS=ON --config $PROJECT_PATH/MultiCPackConfig.cmake
   artifacts:
     paths:
-      - $BUILD_PATH-release/poker-bot*.tar.gz
+      - $BUILD_PATH_LINUX-release/poker-bot*.tar.gz
   rules:
     - if: $CI_COMMIT_BRANCH =~ /^(main|release)/
     - if: $CI_COMMIT_MESSAGE =~ /\/packaging(\-only)?/m
@@ -177,10 +181,10 @@ packaging_windows:
   stage: packaging
   image: registry.gitlab.laneuville.me/poker-bot/backend/builder-windows-mingw:latest
   script:
-    - cpack --config $PROJECT_PATH/MultiCPackConfig.cmake
+    - cpack -D LINUX=ON --config $PROJECT_PATH/MultiCPackConfig.cmake
   artifacts:
     paths:
-      - $BUILD_PATH-release/poker-bot*.zip
+      - $BUILD_PATH_WINDOWS-release/poker-bot*.zip
   rules:
     - if: $CI_COMMIT_BRANCH =~ /^(main|release)/
     - if: $CI_COMMIT_MESSAGE =~ /\/packaging(\-only)?/m

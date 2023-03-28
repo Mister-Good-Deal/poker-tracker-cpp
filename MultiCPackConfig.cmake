@@ -1,4 +1,4 @@
-if (WIN32 OR MINGW)
+if (WINDOWS)
     include("build-windows-release/CPackConfig.cmake")
 
     set(CPACK_INSTALL_CMAKE_PROJECTS
