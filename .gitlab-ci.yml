@@ -166,7 +166,7 @@ packaging_linux:
   stage: packaging
   image: registry.gitlab.laneuville.me/poker-bot/backend/builder-linux-gcc:latest
   script:
-    - cpack -DCPACK_LINUX=ON --config $PROJECT_PATH/MultiCPackConfig.cmake
+    - cpack --config $PROJECT_PATH/MultiCPackConfigLinux.cmake
   artifacts:
     paths:
       - $BUILD_PATH_LINUX-release/poker-bot*.tar.gz
@@ -180,7 +180,7 @@ packaging_windows:
   stage: packaging
   image: registry.gitlab.laneuville.me/poker-bot/backend/builder-windows-mingw:latest
   script:
-    - cpack -DCPACK_WINDOWS=ON --config $PROJECT_PATH/MultiCPackConfig.cmake
+    - cpack --config $PROJECT_PATH/MultiCPackConfigWindows.cmake
   artifacts:
     paths:
       - $BUILD_PATH_WINDOWS-release/poker-bot*.zip
