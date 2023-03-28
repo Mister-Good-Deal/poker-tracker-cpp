@@ -21,7 +21,7 @@ default:
     # Enable per-branch caching
     key: $CI_COMMIT_REF_SLUG
     paths:
-      - $BUILD_PATH_LINUX
+      - $BUILD_PATH_LINUX-debug
 
 build_linux:
   stage: build
@@ -69,13 +69,12 @@ build_windows:
 clang_check:
   stage: check
   image: registry.gitlab.laneuville.me/poker-bot/backend/ci-linux-runner:latest
+  cache: [ ] # Needed to make a new CMake build without cache about CXX compiler
+  dependencies: [ ] # Needed to make a new CMake build without cache about CXX compiler
   script:
-    - echo $CC
-    - echo $CXX
-    - export CXX="/usr/local/bin/clang++"
-    - echo $CXX
     - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX-debug -DCMAKE_CXX_COMPILER=/usr/local/bin/clang++
       -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --log-context
+    - cmake --build $BUILD_PATH_LINUX-debug
     - CPP_SRC_FILES=$(find ${PROJECT_PATH}/services -regex '.*\.\(cpp\|hpp\)' | tr "\n" " ")
     - echo "CPP_SRC_FILES=${CPP_SRC_FILES}" >> vars.env
     - clang-check -analyze -extra-arg=-std=c++20 -p $BUILD_PATH_LINUX-debug --analyzer-output-path=${PROJECT_PATH}/clang-check-report.plist ${CPP_SRC_FILES}
@@ -167,7 +166,7 @@ packaging_linux:
   stage: packaging
   image: registry.gitlab.laneuville.me/poker-bot/backend/builder-linux-gcc:latest
   script:
-    - cpack -D WINDOWS=ON --config $PROJECT_PATH/MultiCPackConfig.cmake
+    - cpack -DCPACK_LINUX=ON --config $PROJECT_PATH/MultiCPackConfig.cmake
   artifacts:
     paths:
       - $BUILD_PATH_LINUX-release/poker-bot*.tar.gz
@@ -181,7 +180,7 @@ packaging_windows:
   stage: packaging
   image: registry.gitlab.laneuville.me/poker-bot/backend/builder-windows-mingw:latest
   script:
-    - cpack -D LINUX=ON --config $PROJECT_PATH/MultiCPackConfig.cmake
+    - cpack -DCPACK_WINDOWS=ON --config $PROJECT_PATH/MultiCPackConfig.cmake
   artifacts:
     paths:
       - $BUILD_PATH_WINDOWS-release/poker-bot*.zip
