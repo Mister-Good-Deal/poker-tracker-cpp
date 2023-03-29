@@ -71,6 +71,14 @@ RUN wget http://download.osgeo.org/libtiff/tiff-${TIFF_VERSION}.tar.gz \
     cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
     rm -rf /tmp/tiff-${TIFF_VERSION}.tar.gz /tmp/tiff-${TIFF_VERSION}
 
+# Install PNG with the given PNG_VERSION from https://github.com/glennrp/libpng
+RUN wget https://github.com/glennrp/libpng/archive/refs/tags/v${PNG_VERSION}.tar.gz \
+    -q -O /tmp/libpng-${PNG_VERSION}.tar.gz && \
+    cd /tmp && tar -xvzf libpng-${PNG_VERSION}.tar.gz && cd libpng-${PNG_VERSION} && \
+    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DPNG_TESTS=OFF && \
+    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
+    rm -rf /tmp/libpng-${PNG_VERSION}.tar.gz /tmp/libpng-${PNG_VERSION}
+
 # Install leptonica with the given LEPTONICA_VERSION from https://github.com/DanBloomberg/leptonica
 RUN wget https://github.com/DanBloomberg/leptonica/archive/refs/tags/${LEPTONICA_VERSION}.tar.gz \
     -q -O /tmp/leptonica-${LEPTONICA_VERSION}.tar.gz && \
