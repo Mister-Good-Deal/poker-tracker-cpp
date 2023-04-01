@@ -12,6 +12,10 @@ project(poker_bot VERSION ${POKER_BOT_VERSION} LANGUAGES CXX)
 
 message(STATUS "POKER_BOT_VERSION ${POKER_BOT_VERSION}")
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 #-----------------------------------------------------------------------------------------------------------------------
 # Enable tests compilation on demand
 #-----------------------------------------------------------------------------------------------------------------------

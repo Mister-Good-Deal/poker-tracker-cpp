@@ -26,6 +26,8 @@ namespace Scraper {
 #elif __linux__
             using windows_t = std::map<std::string, Window>;
 #endif
+            using windows_name_with_id_t = std::vector<std::tuple<std::string_view, std::size_t> >;
+
             ScraperInterface()                              = default;
             ScraperInterface(const ScraperInterface& other) = default;
             ScraperInterface(ScraperInterface&& other) noexcept { *this = std::move(other); };
@@ -35,7 +37,7 @@ namespace Scraper {
             auto operator=(const ScraperInterface& other) -> ScraperInterface& = default;
             auto operator=(ScraperInterface&& other) noexcept -> ScraperInterface&;
 
-            auto getWindowsName() -> std::vector<std::string_view>;
+            auto getWindowsName() -> windows_name_with_id_t;
             auto getScreenshot(std::string_view windowName) -> cv::Mat;
 
             auto getFirstCardImg(const cv::Mat& img) -> cv::Mat { return img(getFirstCardCoordinate()); };

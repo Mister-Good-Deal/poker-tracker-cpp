@@ -7,8 +7,10 @@
 #include <Logger.hpp>
 #include <Server.hpp>
 #include <WinamaxScraper.hpp>
+#include <ranges>
 
 using Scraper::WinamaxScraper;
+using std::ranges::for_each;
 using Websockets::HttpRequest;
 using Websockets::HttpResponse;
 using Websockets::OpCode;
@@ -33,9 +35,19 @@ auto main() -> int {
     auto getWindowsNameHandler = [&](HttpResponse* response, HttpRequest* request) {
         LOG_DEBUG(Logger::Quill::getLogger(), "[{}] {}", request->getCaseSensitiveMethod(), request->getFullUrl());
 
-        json windowsJson = {{"windows", scraper.getWindowsName()}};
+        auto windows = json::array();
 
-        response->writeHeader("Content-Type", "application/json")->end(windowsJson.dump());
+        for_each(scraper.getWindowsName(), [&](const auto& window) {
+            json windowObject = {{"title", std::get<0>(window)}, {"ID", std::get<1>(window)}};
+
+            windows.emplace_back(windowObject);
+        });
+
+        json windowsJson = {{"windows", windows}};
+
+        response->writeHeader("Content-Type", "application/json")
+            ->writeHeader("Access-Control-Allow-Origin", "*")
+            ->end(windowsJson.dump());
     };
 
     auto getScreenshotHandler = [&](HttpResponse* response, HttpRequest* request) {
@@ -52,7 +64,7 @@ auto main() -> int {
 
             std::copy(buffer.cbegin(), buffer.cend(), std::back_inserter(data));
 
-            response->writeHeader("Content-Type", "image/jpeg")->end(data);
+            response->writeHeader("Content-Type", "image/jpeg")->writeHeader("Access-Control-Allow-Origin", "*")->end(data);
         } catch (std::invalid_argument error)
         { response->writeHeader("Content-Type", "text/plain")->writeStatus("500 Error")->end(error.what()); }
     };

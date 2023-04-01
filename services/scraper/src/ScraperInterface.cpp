@@ -1,5 +1,7 @@
 #include "ScraperInterface.hpp"
 
+#include <functional>
+
 #include <fmt/core.h>
 #include <ranges>
 
@@ -125,14 +127,14 @@ namespace Scraper {
         return screenshot;
     }
 
-    auto ScraperInterface::getWindowsName() -> std::vector<std::string_view> {
+    auto ScraperInterface::getWindowsName() -> windows_name_with_id_t {
         _parseActiveWindows();
 
-        std::vector<std::string_view> windowsName{};
+        windows_name_with_id_t windowsNameWithId{};
 
         for (const auto& windowName : _activeWindows | keys)
-        { windowsName.emplace_back(windowName); }
+        { windowsNameWithId.emplace_back(windowName, std::hash<std::string_view>{}(windowName)); }
 
-        return windowsName;
+        return windowsNameWithId;
     }
 }  // namespace Scraper
