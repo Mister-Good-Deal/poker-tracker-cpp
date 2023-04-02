@@ -10,6 +10,7 @@
 #include <ranges>
 
 using Scraper::WinamaxScraper;
+using Scraper::WindowInfo;
 using std::ranges::for_each;
 using Websockets::HttpRequest;
 using Websockets::HttpResponse;
@@ -32,16 +33,17 @@ auto main() -> int {
 
     LOG_DEBUG(Logger::Quill::getLogger(), "Main application");
 
-    auto getWindowsNameHandler = [&](HttpResponse* response, HttpRequest* request) {
+    auto getWindowsTitleHandler = [&](HttpResponse* response, HttpRequest* request) {
         LOG_DEBUG(Logger::Quill::getLogger(), "[{}] {}", request->getCaseSensitiveMethod(), request->getFullUrl());
 
         auto windows = json::array();
 
-        for_each(scraper.getWindowsName(), [&](const auto& window) {
-            json windowObject = {{"title", std::get<0>(window)}, {"ID", std::get<1>(window)}};
+        for (const auto& [id, window] : scraper.getActiveWindows())
+        {
+            json windowObject = {{"title", window.title}, {"id", std::to_string(window.id)}};
 
             windows.emplace_back(windowObject);
-        });
+        }
 
         json windowsJson = {{"windows", windows}};
 
@@ -54,9 +56,11 @@ auto main() -> int {
         try
         {
             LOG_DEBUG(Logger::Quill::getLogger(), "[{}] {}", request->getCaseSensitiveMethod(), request->getFullUrl());
-            LOG_DEBUG(Logger::Quill::getLogger(), "windows_name = {}", request->getQuery("windows_name"));
+            LOG_DEBUG(Logger::Quill::getLogger(), "window_id = {}", request->getQuery("window_id"));
 
-            auto                 image = scraper.getScreenshot(request->getQuery("windows_name"));
+            if (request->getQuery("window_id").empty()) { throw std::invalid_argument("window_id param is empty"); }
+
+            auto                 image = scraper.getScreenshot(std::stoul(request->getQuery("window_id").data()));
             std::vector<uint8_t> buffer;
             std::string          data;
 
@@ -66,7 +70,12 @@ auto main() -> int {
 
             response->writeHeader("Content-Type", "image/jpeg")->writeHeader("Access-Control-Allow-Origin", "*")->end(data);
         } catch (std::invalid_argument error)
-        { response->writeHeader("Content-Type", "text/plain")->writeStatus("500 Error")->end(error.what()); }
+        {
+            response->writeStatus("500 Error")
+                ->writeHeader("Content-Type", "text/plain")
+                ->writeHeader("Access-Control-Allow-Origin", "*")
+                ->end(error.what());
+        }
     };
 
     auto echoHandler = [&](WsResource ws, std::string_view message, OpCode opCode) {
@@ -88,7 +97,7 @@ auto main() -> int {
 
         // Define server endpoints
         server.getInstance()
-            .get("/windows", getWindowsNameHandler)
+            .get("/windows", getWindowsTitleHandler)
             .get("/screenshot", getScreenshotHandler)
             .ws<PerSocketData>("/echo", {.message = echoHandler});
 

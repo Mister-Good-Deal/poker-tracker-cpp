@@ -35,7 +35,9 @@ namespace Scraper {
             {
                 LOG_DEBUG(Logger::getLogger(), "The windows's title could not be retrieved\n\n{}", GetLastError());
             } else {
-                _activeWindows[title] = hwnd;
+                WindowInfo window(title, hwnd);
+
+                _activeWindows.emplace(window.id, window);
             }
 
             VirtualFree(title, 0, MEM_RELEASE);
@@ -60,7 +62,10 @@ namespace Scraper {
 
                     if (XFetchName(display, childrenArray[i], &title))
                     {
-                        _activeWindows[title] = childrenArray[i];
+                        WindowInfo window(title, childrenArray[i]);
+
+                        _activeWindows.emplace(window.id, window);
+
                         XFree(title);
                     }
                 }
@@ -73,21 +78,21 @@ namespace Scraper {
 #endif
     }
 
-    auto ScraperInterface::getScreenshot(std::string_view windowName) -> cv::Mat {
+    auto ScraperInterface::getScreenshot(uint64_t windowId) -> cv::Mat {
         _parseActiveWindows();
 
-        if (!_activeWindows.contains(windowName.data()))
-        { throw std::invalid_argument(fmt::format("The window's name {} is not found", windowName)); }
+        if (!_activeWindows.contains(windowId))
+        { throw std::invalid_argument(fmt::format("The window's ID {} is not found", windowId)); }
 
-        auto window = _activeWindows[windowName.data()];
+        auto window = _activeWindows.at(windowId);
 
 #ifdef _WIN32
         RECT rc;
 
-        GetClientRect(window, &rc);
+        GetClientRect(window.ref, &rc);
 
         HDC hdcScreen = GetDC(nullptr);
-        HDC hdcWindow = GetDC(window);
+        HDC hdcWindow = GetDC(window.ref);
 
         int width  = rc.right - rc.left;
         int height = rc.bottom - rc.top;
@@ -107,14 +112,14 @@ namespace Scraper {
         SelectObject(hdcMemDC, oldObj);
         DeleteDC(hdcMemDC);
         ReleaseDC(nullptr, hdcScreen);
-        ReleaseDC(window, hdcWindow);
+        ReleaseDC(window.ref, hdcWindow);
         DeleteObject(hbmScreen);
 
 #elif __linux__
         Display*          display = XOpenDisplay(nullptr);
         XWindowAttributes attributes;
-        XGetWindowAttributes(display, window, &attributes);
-        XImage* img = XGetImage(display, window, 0, 0, attributes.width, attributes.height, AllPlanes, ZPixmap);
+        XGetWindowAttributes(display, window.ref, &attributes);
+        XImage* img = XGetImage(display, window.ref, 0, 0, attributes.width, attributes.height, AllPlanes, ZPixmap);
 
         cv::Mat screenshot(attributes.height, attributes.width, CV_8UC4, img->data);
 
@@ -127,14 +132,11 @@ namespace Scraper {
         return screenshot;
     }
 
-    auto ScraperInterface::getWindowsName() -> windows_name_with_id_t {
+    auto ScraperInterface::getActiveWindows() -> windows_t {
+        _activeWindows.clear();
+
         _parseActiveWindows();
 
-        windows_name_with_id_t windowsNameWithId{};
-
-        for (const auto& windowName : _activeWindows | keys)
-        { windowsNameWithId.emplace_back(windowName, std::hash<std::string_view>{}(windowName)); }
-
-        return windowsNameWithId;
+        return _activeWindows;
     }
 }  // namespace Scraper

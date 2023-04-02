@@ -1,7 +1,7 @@
 #pragma once
 
-#include <map>
 #include <string>
+#include <unordered_map>
 
 #include <opencv4/opencv2/opencv.hpp>
 
@@ -19,14 +19,23 @@
 
 #endif
 namespace Scraper {
+    struct WindowInfo {
+            std::string title;
+            uint64_t    id;
+#ifdef _WIN32
+            HWND ref;
+
+            WindowInfo(std::string_view title, HWND ref) : title(title), ref(ref), id(std::hash<std::string_view>{}(title)) {}
+#elif __linux__
+            Window ref;
+
+            WindowInfo(std::string_view title, Window ref) : title(title), ref(ref), id(std::hash<std::string_view>{}(title)) {}
+#endif
+    };
+
     class ScraperInterface {
         public:
-#ifdef _WIN32
-            using windows_t = std::map<std::string_view, HWND>;
-#elif __linux__
-            using windows_t = std::map<std::string, Window>;
-#endif
-            using windows_name_with_id_t = std::vector<std::tuple<std::string_view, std::size_t> >;
+            using windows_t = std::unordered_map<uint64_t, WindowInfo>;
 
             ScraperInterface()                              = default;
             ScraperInterface(const ScraperInterface& other) = default;
@@ -37,8 +46,8 @@ namespace Scraper {
             auto operator=(const ScraperInterface& other) -> ScraperInterface& = default;
             auto operator=(ScraperInterface&& other) noexcept -> ScraperInterface&;
 
-            auto getWindowsName() -> windows_name_with_id_t;
-            auto getScreenshot(std::string_view windowName) -> cv::Mat;
+            auto getActiveWindows() -> windows_t;
+            auto getScreenshot(uint64_t windowId) -> cv::Mat;
 
             auto getFirstCardImg(const cv::Mat& img) -> cv::Mat { return img(getFirstCardCoordinate()); };
             auto getSecondCardImg(const cv::Mat& img) -> cv::Mat { return img(getSecondCardCoordinate()); };
