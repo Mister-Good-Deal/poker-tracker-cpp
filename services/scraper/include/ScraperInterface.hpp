@@ -48,6 +48,7 @@ namespace Scraper {
 
             auto getActiveWindows() -> windows_t;
             auto getScreenshot(uint64_t windowId) -> cv::Mat;
+            auto getWindowElementsView(const cv::Mat& img) -> cv::Mat;
 
             auto getFirstCardImg(const cv::Mat& img) -> cv::Mat { return img(getFirstCardCoordinate()); };
             auto getSecondCardImg(const cv::Mat& img) -> cv::Mat { return img(getSecondCardCoordinate()); };

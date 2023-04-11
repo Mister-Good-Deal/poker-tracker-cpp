@@ -139,4 +139,21 @@ namespace Scraper {
 
         return _activeWindows;
     }
+
+    auto ScraperInterface::getWindowElementsView(const cv::Mat& img) -> cv::Mat {
+        cv::Mat               elementsView = img;
+        std::vector<cv::Rect> elements     = {
+            getFirstCardCoordinate(),     getSecondCardCoordinate(),    getPotCoordinate(),           getPrizePoolCoordinate(),
+            getBoardCard1Coordinate(),    getBoardCard2Coordinate(),    getBoardCard3Coordinate(),    getBoardCard4Coordinate(),
+            getBoardCard5Coordinate(),    getPlayer1NameCoordinate(),   getPlayer2NameCoordinate(),   getPlayer3NameCoordinate(),
+            getPlayer1ButtonCoordinate(), getPlayer2ButtonCoordinate(), getPlayer3ButtonCoordinate(), getPlayer1StackCoordinate(),
+            getPlayer2StackCoordinate(),  getPlayer3StackCoordinate(),  getPlayer1BetCoordinate(),    getPlayer2BetCoordinate(),
+            getPlayer3BetCoordinate(),    getPlayer2HandCoordinate(),   getPlayer3HandCoordinate()};
+
+        for (const auto& element : elements) {
+            cv::rectangle(img, element, cv::Scalar(0, 255, 0), 2);
+        }
+
+        return elementsView;
+    }
 }  // namespace Scraper
