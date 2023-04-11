@@ -21,7 +21,8 @@ ARG MAX_CPU_CORES
 ENV CMAKE_COMMON_OPTION="-DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON"
 
 # Install from APK
-RUN apk add --no-cache bash make gcc=~${GCC_VERSION} g++=~${GCC_VERSION} cmake=~${CMAKE_VERSION} libx11-dev libxext-dev
+RUN apk add --no-cache bash make gcc=~${GCC_VERSION} g++=~${GCC_VERSION} cmake=~${CMAKE_VERSION} libx11-dev libxext-dev \
+    gtk+3.0-dev
 
 # Install zlib with the given ZLIB_VERSION version from https://github.com/madler/zlib
 RUN wget https://github.com/madler/zlib/archive/refs/tags/v${ZLIB_VERSION}.tar.gz \
