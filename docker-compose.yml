@@ -135,11 +135,14 @@ services:
       - "9001:9001" # WS server
     tty: true
     stdin_open: true
+    security_opt:
+      - apparmor:unconfined
     environment:
       - DISPLAY=${DISPLAY}
     volumes:
       - .:/app
       - /tmp/.X11-unix:/tmp/.X11-unix
+      - /run/user/1000:/run/user/1000
     entrypoint: docker/docker-entrypoint-dev.sh
 
   dev-windows:
@@ -149,11 +152,14 @@ services:
       - "3023:22"
     tty: true
     stdin_open: true
+    security_opt:
+      - apparmor:unconfined
     environment:
       - DISPLAY=${DISPLAY}
     volumes:
       - .:/app
       - /tmp/.X11-unix:/tmp/.X11-unix
+      - /run/user/1000:/run/user/1000
     entrypoint: docker/docker-entrypoint-dev.sh
 
   ci:
