@@ -29,7 +29,7 @@ namespace Scraper {
 #elif __linux__
             Window ref;
 
-            WindowInfo(std::string_view title, Window ref) : title(title), ref(ref), id(std::hash<std::string_view>{}(title)) {}
+            WindowInfo(std::string_view title, Window ref) : title(title), ref(ref), id(ref) {}
 #endif
     };
 

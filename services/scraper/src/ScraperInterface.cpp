@@ -58,15 +58,27 @@ namespace Scraper {
             {
                 if (XGetWindowAttributes(display, childrenArray[i], &attributes) && attributes.map_state == IsViewable)
                 {
-                    char* title = nullptr;
+                    char*         title = nullptr;
+                    XTextProperty windowName;
 
                     if (XFetchName(display, childrenArray[i], &title))
                     {
                         WindowInfo window(title, childrenArray[i]);
 
-                        _activeWindows.emplace(window.id, window);
+                        // Core dump on mutter guard window manager when trying to get the screenshot
+                        if (window.title != "mutter guard window") { _activeWindows.emplace(window.id, window); }
 
                         XFree(title);
+                    } else if (XGetWMName(display, childrenArray[i], &windowName)) {
+                        WindowInfo window(reinterpret_cast<char*>(windowName.value), childrenArray[i]);
+
+                        _activeWindows.emplace(window.id, window);
+
+                        XFree(windowName.value);
+                    } else {
+                        WindowInfo window("undefined", childrenArray[i]);
+
+                        _activeWindows.emplace(window.id, window);
                     }
                 }
             }
@@ -150,9 +162,8 @@ namespace Scraper {
             getPlayer2StackCoordinate(),  getPlayer3StackCoordinate(),  getPlayer1BetCoordinate(),    getPlayer2BetCoordinate(),
             getPlayer3BetCoordinate(),    getPlayer2HandCoordinate(),   getPlayer3HandCoordinate()};
 
-        for (const auto& element : elements) {
-            cv::rectangle(img, element, cv::Scalar(0, 255, 0), 2);
-        }
+        for (const auto& element : elements)
+        { cv::rectangle(img, element, cv::Scalar(0, 255, 0), 2); }
 
         return elementsView;
     }
