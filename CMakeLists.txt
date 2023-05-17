@@ -67,6 +67,7 @@ add_subdirectory(services/game_handler)
 add_subdirectory(services/ocr)
 add_subdirectory(services/scraper)
 add_subdirectory(services/websockets)
+add_subdirectory(services/game_session)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Add and link the program
@@ -83,26 +84,26 @@ target_link_libraries(poker_bot logger game_handler ocr scraper websockets)
 #-----------------------------------------------------------------------------------------------------------------------
 
 install(
-    TARGETS poker_bot
-    EXPORT poker_bot_targets
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        TARGETS poker_bot
+        EXPORT poker_bot_targets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 install(
-    EXPORT poker_bot_targets
-    FILE poker_bot_targets.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake
+        EXPORT poker_bot_targets
+        FILE poker_bot_targets.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake
 )
 
 if (WIN32)
     # Add necessary DLLs
     install(
-        FILES /usr/x86_64-w64-mingw32/bin/libgcc_s_seh-1.dll /usr/x86_64-w64-mingw32/bin/libstdc++-6.dll
-        /usr/x86_64-w64-mingw32/bin/libwinpthread-1.dll /usr/x86_64-w64-mingw32/bin/libfmt.dll
-        DESTINATION ${CMAKE_INSTALL_BINDIR}
+            FILES /usr/x86_64-w64-mingw32/bin/libgcc_s_seh-1.dll /usr/x86_64-w64-mingw32/bin/libstdc++-6.dll
+            /usr/x86_64-w64-mingw32/bin/libwinpthread-1.dll /usr/x86_64-w64-mingw32/bin/libfmt.dll
+            DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
 endif ()
 
