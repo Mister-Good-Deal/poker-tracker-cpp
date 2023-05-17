@@ -30,6 +30,7 @@ auto main() -> int {
     quill::detail::set_thread_name("MainThread");
 
     WinamaxScraper scraper;
+    Server*        serverPtr = nullptr;
 
     LOG_DEBUG(Logger::Quill::getLogger(), "Main application");
 
@@ -78,10 +79,44 @@ auto main() -> int {
         }
     };
 
-    auto echoHandler = [&](WsResource ws, std::string_view message, OpCode opCode) {
-        LOG_DEBUG(Logger::Quill::getLogger(), "[WS] request from {} with opCode = {}", ws->getRemoteAddress(), opCodeToString(opCode));
+    auto getGameInfoHandler = [&](HttpResponse* response, HttpRequest* request) {
+        try
+        {
+            LOG_DEBUG(Logger::Quill::getLogger(), "[{}] {}", request->getCaseSensitiveMethod(), request->getFullUrl());
+            LOG_DEBUG(Logger::Quill::getLogger(), "window_id = {}", request->getQuery("window_id"));
 
-        json echoJson = {{"message", message}};
+            if (request->getQuery("window_id").empty()) { throw std::invalid_argument("window_id param is empty"); }
+
+            auto image = scraper.getScreenshot(std::stoul(request->getQuery("window_id").data()));
+
+            json windowInfo = {{"window", {{"width", image.cols}, {"height", image.rows}}}};
+
+            response->writeHeader("Content-Type", "application/json")
+                ->writeHeader("Access-Control-Allow-Origin", "*")
+                ->end(windowInfo.dump());
+        } catch (std::invalid_argument error)
+        {
+            response->writeStatus("500 Error")
+                ->writeHeader("Content-Type", "text/plain")
+                ->writeHeader("Access-Control-Allow-Origin", "*")
+                ->end(error.what());
+        }
+    };
+
+    auto gameStart = [&](WsResource ws) {
+        LOG_DEBUG(Logger::Quill::getLogger(), "[WS] open socket");
+
+        ws->subscribe("test");
+    };
+
+    auto gameAction = [&](WsResource ws, std::string_view message, OpCode opCode) {
+        LOG_DEBUG(Logger::Quill::getLogger(), "[WS] message with message = {}", message);
+
+        auto jsonMessage = json::parse(message);
+
+        ws->subscribe(fmt::format("game_{}", jsonMessage["window_id"].get<std::string>()));
+
+        json echoJson = {{"message", jsonMessage}};
 
         ws->send(echoJson.dump(), opCode, true);
     };
@@ -90,21 +125,33 @@ auto main() -> int {
 #if defined(_WIN32)
         quill::init_signal_handler();
 #endif
-
         quill::detail::set_thread_name("ServerThread");
 
         Server server;
+
+        serverPtr = &server;
 
         // Define server endpoints
         server.getInstance()
             .get("/windows", getWindowsTitleHandler)
             .get("/screenshot", getScreenshotHandler)
-            .ws<PerSocketData>("/echo", {.message = echoHandler});
+            .get("/game", getGameInfoHandler)
+            .ws<PerSocketData>("/run", {.open = gameStart, .message = gameAction});
 
         server.run();
     });
 
-    wsServerThread.join();
+    wsServerThread.detach();
+
+    int i = 0;
+
+    while (true)
+    {
+        std::this_thread::sleep_for(std::chrono::seconds(10));
+
+        json test = {{"message", fmt::format("test data {}", ++i)}};
+        serverPtr->publish("test", test.dump());
+    }
 
     return EXIT_SUCCESS;
 }

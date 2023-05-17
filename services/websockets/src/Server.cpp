@@ -11,7 +11,7 @@ namespace Websockets {
     Server::Server() : _server(uWS::App()) { configureWebsockets(); }
 
     auto Server::publish(std::string_view topic, std::string_view data, OpCode code, bool compress) -> bool {
-        LOG_DEBUG(Logger::getLogger(), "Websocket server send `{}` on topic `{}`", topic, data);
+        LOG_DEBUG(Logger::getLogger(), "Websocket server send `{}` on topic `{}`", data, topic);
 
         return _server.publish(topic, data, code, compress);
     }

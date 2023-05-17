@@ -25,8 +25,8 @@ namespace Logger {
         quill::configure(config);
         quill::start(true);
 
-        quill::Handler* fileHandler    = quill::file_handler(LOGGER_FILE_NAME, "a", Date);
-        quill::Handler* consoleHandler = quill::stdout_handler();
+        auto fileHandler    = quill::file_handler(LOGGER_FILE_NAME, "a", Date);
+        auto consoleHandler = quill::stdout_handler();
 
         fileHandler->set_pattern(LOG_PATTERN.data(), "%D %H:%M:%S");
         consoleHandler->set_pattern(LOG_PATTERN.data(), "%D %H:%M:%S");

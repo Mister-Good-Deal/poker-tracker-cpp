@@ -23,14 +23,12 @@ namespace Websockets {
 
     struct PerSocketData {
         public:
-            int something;
+            std::string jsonString;
     };
 
     // Force SSL = false on HttpResponse type
     using HttpResponse = uWS::HttpResponse<false>;
     using WsResource   = uWS::WebSocket<false, true, PerSocketData>*;
-    // Proxy function signature to pass data (std::string_view) to return to the given endpoint
-    using ProxyDataFn = std::function<void(HttpResponse*, HttpRequest*)>;
 
     constexpr int32_t SERVER_LISTENING_PORT = 9001;
     constexpr int32_t SERVER_IDLE_TIMEOUT   = 60 * 10;
