@@ -3,7 +3,7 @@
 #include <opencv4/opencv2/opencv.hpp>
 #include <opencv4/opencv2/text.hpp>
 
-#include "Card.hpp"
+#include <Card.hpp>
 
 namespace OCR {
     using cv::text::OCRTesseract;
