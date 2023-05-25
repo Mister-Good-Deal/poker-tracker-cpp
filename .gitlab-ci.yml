@@ -195,6 +195,7 @@ deploy:
   image: registry.gitlab.laneuville.me/poker-bot/backend/ci-deploy:latest
   script:
     # For fetching the tags with the following `git describe`
+    # @todo test GIT_FETCH_EXTRA_FLAGS: --force --prune --prune-tags --tags as gitlab vars
     - git fetch --unshallow && git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*" && git fetch origin
     - NEW_VERSION=$(cat VERSION.txt)
     - GIT_VERSION=$(git describe --tags | grep -P '\d+\.\d+\.\d+' -o)

@@ -111,56 +111,55 @@ determining game outcomes.
 Here the dependencies graph of the services with libraries.
 
 ```plantuml
-@startuml
 !define AWSPUML https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/v16.0/dist
 
 package "Logger Service" {
     component Logger
     folder "Libraries (Logger)" {
-        component Quill
+        component Quill_Logger
     }
 }
 
 package "Game Handler Service" {
     component GameHandler
     folder "Libraries (Game Handler)" {
-        component NlohmannJson
+        component NlohmannJson_GameHandler
     }
 }
 
 package "Websockets Service" {
     component Websockets
     folder "Libraries (Websockets)" {
-        component UWebsockets
-    }
+        component UWebsockets_Websockets
+    } 
 }
 
 package "OCR Service" {
     component OCR
     folder "Libraries (OCR)" {
-        component OpenCV
-        component opencv_core
-        component opencv_imgproc
-        component opencv_text
+        component OpenCV_OCR
+        component opencv_core_OCR
+        component opencv_imgproc_OCR
+        component opencv_text_OCR
     }
 }
 
 package "Scrapper Service" {
     component Scrapper
     folder "Libraries (Scrapper)" {
-        component OpenCV
-        component opencv_core
-        component opencv_imgproc
-        component opencv_imgcodecs
-        component X11
-        component Xext
+        component OpenCV_Scrapper
+        component opencv_core_Scrapper
+        component opencv_imgproc_Scrapper
+        component opencv_imgcodecs_Scrapper
+        component X11_Scrapper
+        component Xext_Scrapper
     }
 }
 
 package "Game Session Service" {
     component GameSession
     folder "Libraries (Game Session)" {
-        component NlohmannJson
+        component NlohmannJson_GameSession
     }
 }
 
@@ -170,14 +169,6 @@ Logger --> OCR
 GameHandler --> OCR
 GameHandler --> Scrapper
 GameHandler --> GameSession
-GameHandler --> NlohmannJson
-Websockets --> UWebsockets
-OCR --> OpenCV
-Scrapper --> OpenCV
-Scrapper --> X11
-Scrapper --> Xext
-GameSession --> NlohmannJson
-@enduml
 ```
 
 ## Coding
