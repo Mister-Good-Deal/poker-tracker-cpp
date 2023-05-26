@@ -19,21 +19,6 @@ namespace GameHandler {
         return *this;
     }
 
-    auto Game::operator=(const Game& other) -> Game& {
-        if (this != &other)
-        {
-            _rounds      = other._rounds;
-            _players     = other._players;
-            _startTime   = other._startTime;
-            _endTime     = other._endTime;
-            _winner      = other._winner;
-            _buyIn       = other._buyIn;
-            _multipliers = other._multipliers;
-        }
-
-        return *this;
-    }
-
     auto Game::init(const Player& player1, const Player& player2, const Player& player3) -> void {
         _players[player1.getName()] = player1;
         _players[player2.getName()] = player2;

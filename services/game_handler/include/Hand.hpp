@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Card.hpp"
+#include <Card.hpp>
 
 namespace GameHandler {
     using enum Card::Rank;
 
-    constexpr int8_t PREMIUM_NUMBER    = 5;
-    constexpr int8_t HAND_CARDS_NUMBER = 2;
+    static const int8_t PREMIUM_NUMBER    = 5;
+    static const int8_t HAND_CARDS_NUMBER = 2;
 
     static constexpr std::array<std::array<Card::Rank, HAND_CARDS_NUMBER>, PREMIUM_NUMBER> PREMIUM = {
         {{{QUEEN, QUEEN}}, {{KING, ACE}}, {{ACE, KING}}, {{KING, KING}}, {{ACE, ACE}}}};

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Round.hpp"
+#include <Round.hpp>
 
 namespace GameHandler {
     using std::chrono::system_clock;
@@ -14,7 +14,7 @@ namespace GameHandler {
 
             virtual ~Game() = default;
 
-            auto operator=(const Game& other) -> Game&;
+            auto operator=(const Game& other) -> Game& = default;
             auto operator=(Game&& other) noexcept -> Game&;
 
             auto getCurrentRound() -> Round& { return _rounds.back(); };

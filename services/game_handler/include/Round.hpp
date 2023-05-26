@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Board.hpp"
-#include "RoundAction.hpp"
+#include <Board.hpp>
+#include <RoundAction.hpp>
 
 namespace GameHandler {
     using std::chrono::system_clock;
     using std::chrono::time_point;
 
-    constexpr int8_t STREET_NUMBER = 5;
+    static const int8_t STREET_NUMBER = 5;
 
     class UnknownPlayerException : public std::runtime_error {
         public:
@@ -26,7 +26,7 @@ namespace GameHandler {
 
             virtual ~Round() = default;
 
-            auto operator=(const Round& other) -> Round&;
+            auto operator=(const Round& other) -> Round& = default;
             auto operator=(Round&& other) noexcept -> Round&;
 
             [[nodiscard]] auto getBoard() -> Board& { return _board; }

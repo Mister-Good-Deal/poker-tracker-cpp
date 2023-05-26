@@ -8,22 +8,6 @@ namespace GameHandler {
     using enum RoundAction::ActionType;
     using enum Round::Street;
 
-    auto Round::operator=(const Round& other) -> Round& {
-        if (this != &other)
-        {
-            _actions        = other._actions;
-            _board          = other._board;
-            _hand           = other._hand;
-            _pot            = other._pot;
-            _bet            = other._bet;
-            _currentStreet  = other._currentStreet;
-            _lastActionTime = other._lastActionTime;
-            _winner         = other._winner;
-        }
-
-        return *this;
-    }
-
     auto Round::operator=(Round&& other) noexcept -> Round& {
         if (this != &other)
         {
