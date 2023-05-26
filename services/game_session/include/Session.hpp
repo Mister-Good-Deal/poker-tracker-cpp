@@ -26,10 +26,10 @@ namespace GameSession {
             auto newGameEvent() -> void;
 
         private:
-            Game                              _game;
-            std::unique_ptr<ScraperInterface> _scraper;
             milliseconds                      _tickRate = milliseconds(TICK_RATE);
-            uint64_t                          _windowId = 0;
             std::string                       _roomName;
+            uint64_t                          _windowId = 0;
+            std::unique_ptr<ScraperInterface> _scraper;
+            Game                              _game;
     };
 }  // namespace GameSession

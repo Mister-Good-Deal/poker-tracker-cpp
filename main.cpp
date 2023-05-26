@@ -70,7 +70,7 @@ auto main() -> int {
             std::copy(buffer.cbegin(), buffer.cend(), std::back_inserter(data));
 
             response->writeHeader("Content-Type", "image/jpeg")->writeHeader("Access-Control-Allow-Origin", "*")->end(data);
-        } catch (std::invalid_argument error)
+        } catch (const std::invalid_argument& error)
         {
             response->writeStatus("500 Error")
                 ->writeHeader("Content-Type", "text/plain")
@@ -94,7 +94,7 @@ auto main() -> int {
             response->writeHeader("Content-Type", "application/json")
                 ->writeHeader("Access-Control-Allow-Origin", "*")
                 ->end(windowInfo.dump());
-        } catch (std::invalid_argument error)
+        } catch (const std::invalid_argument& error)
         {
             response->writeStatus("500 Error")
                 ->writeHeader("Content-Type", "text/plain")
