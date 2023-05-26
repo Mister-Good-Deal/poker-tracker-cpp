@@ -163,10 +163,8 @@ test_ocr:
   needs:
     - clang_check
 
-graph_depedencies:
+graph_dependencies:
   stage: documentation
-  tags:
-    - build
   script:
     - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX-debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/usr/bin/make
       -DCMAKE_CXX_COMPILER=/usr/bin/g++ --graphviz=dependencies_graph.dot
@@ -177,7 +175,7 @@ graph_depedencies:
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /\/graph/m
   needs:
-    - build_linux
+    - clang_check
 
 packaging_linux:
   stage: packaging
