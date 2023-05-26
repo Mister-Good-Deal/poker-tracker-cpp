@@ -167,7 +167,7 @@ graph_dependencies:
   stage: documentation
   script:
     - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX-debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=/usr/local/bin/clang++
-      --graphviz=dependencies_graph.dot
+      --graphviz=$BUILD_PATH_LINUX-debug/dependencies_graph.dot
     - dot -Tpng -o $BUILD_PATH_LINUX-debug/dependencies_graph.png $BUILD_PATH_LINUX-debug/dependencies_graph.dot
   artifacts:
     paths:
