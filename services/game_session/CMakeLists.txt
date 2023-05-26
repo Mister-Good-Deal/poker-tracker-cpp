@@ -11,6 +11,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 #-----------------------------------------------------------------------------------------------------------------------
 
 find_package(nlohmann_json CONFIG REQUIRED)
+find_package(OpenCV REQUIRED)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Source files definition
@@ -34,9 +35,12 @@ target_include_directories(
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
         PRIVATE
         logger
+        game_handler
+        scraper
+        ocr
 )
 
-target_link_libraries(game_session PUBLIC logger nlohmann_json::nlohmann_json)
+target_link_libraries(game_session PUBLIC logger game_handler scraper ocr nlohmann_json::nlohmann_json)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Tests
