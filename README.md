@@ -52,8 +52,8 @@ This service represents the game status and history. It logs all the game's even
 
 ### Websockets
 
-This service handles communication with the poker room via websockets. It enables real-time data exchange between the bot and the poker
-room.
+This service handles communication between the poker bot via websockets and the frontend app. It enables real-time data exchange between the
+bot and the frontend VueJs application.
 
 *Services used*
 
@@ -94,17 +94,20 @@ This service scrapes data from the poker room's user interface to gather informa
 
 ### Game Session
 
-This service manages the game session and handles game-related functionalities such as starting new games, managing player actions, and
+This service manages the game session and handles game-related functionalities such as starting new games, monitoring a whole game, and
 determining game outcomes.
 
 *Services used*
 
 - Logger
 - Game Handler
+- Scrapper
+- OCR
 
 *Libraries used*
 
 - nlohmann-json
+- OpenCV
 
 ### Dependencies graph
 
@@ -160,15 +163,19 @@ package "Game Session Service" {
     component GameSession
     folder "Libraries (Game Session)" {
         component NlohmannJson_GameSession
+        component OpenCV_GameSession
     }
 }
 
 Logger --> GameHandler
 Logger --> Websockets
 Logger --> OCR
+Logger --> GameSession
 GameHandler --> OCR
 GameHandler --> Scrapper
 GameHandler --> GameSession
+Scrapper --> GameSession
+OCR --> GameSession
 ```
 
 ## Coding

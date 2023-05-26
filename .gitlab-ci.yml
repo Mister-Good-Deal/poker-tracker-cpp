@@ -3,6 +3,7 @@ stages:
   - check
   - lint
   - test
+  - documentation
   - packaging
   - deploy
 
@@ -161,6 +162,22 @@ test_ocr:
     - if: $CI_COMMIT_MESSAGE !~ /\/no\-test/m
   needs:
     - clang_check
+
+graph_depedencies:
+  stage: documentation
+  tags:
+    - build
+  script:
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX-debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/usr/bin/make
+      -DCMAKE_CXX_COMPILER=/usr/bin/g++ --graphviz=dependencies_graph.dot
+    - dot -Tpng -o $BUILD_PATH_LINUX-debug/dependencies_graph.png $BUILD_PATH_LINUX-debug/dependencies_graph.dot
+  artifacts:
+    paths:
+      - $BUILD_PATH_LINUX-debug/dependencies_graph.png
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /\/graph/m
+  needs:
+    - build_linux
 
 packaging_linux:
   stage: packaging

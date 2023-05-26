@@ -178,6 +178,10 @@ RUN wget https://github.com/Ericsson/codechecker/archive/refs/tags/v${CODE_CHECK
     BUILD_LOGGER_64_BIT_ONLY=YES BUILD_UI_DIST=NO make standalone_package && \
     rm -rf /opt/codechecker-${CODE_CHECKER_VERSION}.tar.gz
 
+# Install graphviz with the package manager
+RUN apt-get install -y graphviz && \
+    rm -rf /var/lib/apt/lists/*
+
 RUN export CC="/usr/local/bin/clang" && export CXX="/usr/local/bin/clang++"
 
 ENV PATH="${PATH}:/opt/codechecker-${CODE_CHECKER_VERSION}/build/CodeChecker/bin"
