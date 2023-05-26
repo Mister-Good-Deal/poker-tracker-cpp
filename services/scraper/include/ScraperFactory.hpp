@@ -1,8 +1,6 @@
 #pragma once
 
-#include <unordered_set>
-
-#include <WinamaxScraper.hpp>
+#include <ScraperInterface.hpp>
 
 namespace Scraper::Factory {
 
@@ -10,8 +8,6 @@ namespace Scraper::Factory {
         public:
             explicit invalid_scraper(const std::string& arg) : runtime_error(arg){};
     };
-
-    static const std::unordered_set<std::string> SCRAPERS_NAMES = {"Winamax"};
 
     class ScraperFactory {
         public:

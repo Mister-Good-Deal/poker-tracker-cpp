@@ -1,13 +1,11 @@
 #include "ScraperFactory.hpp"
 
+#include <WinamaxScraper.hpp>
+
 namespace Scraper::Factory {
     auto ScraperFactory::create(const std::string& scraperName) -> std::unique_ptr<ScraperInterface> {
-        if (!SCRAPERS_NAMES.contains(scraperName)) { throw invalid_scraper("Invalid scraper name (" + scraperName + ")"); }
+        if (scraperName == "Winamax") { return std::make_unique<WinamaxScraper>(); }
 
-        std::unique_ptr<ScraperInterface> scraper;
-
-        if (scraperName == "Winamax") { scraper = std::make_unique<WinamaxScraper>(); }
-
-        return scraper;
+        throw invalid_scraper("Invalid scraper name: " + scraperName);
     }
 }  // namespace Scraper::Factory
