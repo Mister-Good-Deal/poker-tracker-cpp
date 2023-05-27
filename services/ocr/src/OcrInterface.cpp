@@ -17,6 +17,10 @@ namespace OCR {
             s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) { return !std::isspace(ch); }).base(), s.end());
         }
 
+        static inline void fullTrim(std::string& s) {
+            s.erase(std::remove_if(s.begin(), s.end(), [](unsigned char ch) { return std::isspace(ch); }), s.end());
+        }
+
         static inline void trim(std::string& s) {
             rtrim(s);
             ltrim(s);
@@ -25,8 +29,9 @@ namespace OCR {
 
     OcrInterface::OcrInterface() {
         // DEFAULT datapath = "/usr/local/share/tessdata"
-        _tesseractCard = cv::text::OCRTesseract::create(nullptr, "eng", "23456789TJQKA", OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
-        _tesseractWord = cv::text::OCRTesseract::create(nullptr, "eng", nullptr, OEM_CUBE_ONLY, PSM_SINGLE_WORD);
+        _tesseractCard    = cv::text::OCRTesseract::create(nullptr, "eng", "23456789TJQKA", OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
+        _tesseractWord    = cv::text::OCRTesseract::create(nullptr, "eng", nullptr, OEM_CUBE_ONLY, PSM_SINGLE_WORD);
+        _tesseractNumbers = cv::text::OCRTesseract::create(nullptr, "eng", "0123456789", OEM_CUBE_ONLY, PSM_SINGLE_WORD);
     }
 
     auto OCR::OcrInterface::readCard(cv::Mat& cardImage) const -> Card {
@@ -44,6 +49,16 @@ namespace OCR {
         trim(word);
 
         return word;
+    }
+
+    auto OcrInterface::readPrizePool(cv::Mat& prizePoolImage) const -> int32_t {
+        std::string word;
+
+        _tesseractNumbers->run(prizePoolImage, word);
+
+        fullTrim(word);
+
+        return std::atoi(word.c_str());
     }
 
     auto OcrInterface::similarityScore(const cv::Mat& firstImage, const cv::Mat& secondImage) const -> double {

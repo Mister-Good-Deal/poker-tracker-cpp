@@ -1,6 +1,6 @@
 #include "WinamaxOcr.hpp"
 
-#include "Logger.hpp"
+#include <Logger.hpp>
 
 namespace OCR {
     using Logger = Logger::Quill;

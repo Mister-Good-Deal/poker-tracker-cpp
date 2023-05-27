@@ -50,6 +50,15 @@ namespace Scraper {
             auto getScreenshot(uint64_t windowId) -> cv::Mat;
             auto getWindowElementsView(const cv::Mat& img) -> cv::Mat;
 
+            /**
+             *              Players positions on the table
+             *
+             *          Player 2  __________________  Player 3
+             *                   |                  |
+             *                   |                  |
+             *                   |__________________|
+             *                         Player 1
+             */
             auto getFirstCardImg(const cv::Mat& img) -> cv::Mat { return img(getFirstCardCoordinate()); };
             auto getSecondCardImg(const cv::Mat& img) -> cv::Mat { return img(getSecondCardCoordinate()); };
             auto getPotImg(const cv::Mat& img) -> cv::Mat { return img(getPotCoordinate()); };

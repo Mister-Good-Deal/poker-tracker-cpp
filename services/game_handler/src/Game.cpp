@@ -2,7 +2,6 @@
 
 namespace GameHandler {
     using std::ranges::for_each;
-    using std::views::keys;
 
     auto Game::operator=(Game&& other) noexcept -> Game& {
         if (this != &other)
@@ -19,10 +18,10 @@ namespace GameHandler {
         return *this;
     }
 
-    auto Game::init(const Player& player1, const Player& player2, const Player& player3) -> void {
-        _players[player1.getName()] = player1;
-        _players[player2.getName()] = player2;
-        _players[player3.getName()] = player3;
+    auto Game::init(const std::string& player1Name, const std::string& player2Name, const std::string& player3Name) -> void {
+        _players[0] = Player(player1Name, true);
+        _players[1] = Player(player2Name);
+        _players[2] = Player(player3Name);
 
         newRound();
 
@@ -32,11 +31,13 @@ namespace GameHandler {
     auto Game::end() -> void { _endTime = system_clock::now(); }
     auto Game::newRound() -> void { _rounds.emplace_back(); }
 
-    auto Game::getPlayer(const std::string& playerName) -> Player {
-        if (_players.find(playerName) == _players.end())
-        { throw UnknownPlayerException("The player " + playerName + " is unknown in this game"); }
+    auto Game::getPlayer(const std::string& playerName) -> Player& {
+        for (auto& player : _players)
+        {
+            if (player.getName() == playerName) { return player; }
+        }
 
-        return _players.at(playerName);
+        throw UnknownPlayerException("The player " + playerName + " is unknown in this game");
     }
 
     auto Game::toJson() const -> json {
@@ -46,7 +47,7 @@ namespace GameHandler {
         auto playersNameArray = json::array();
 
         for_each(_rounds, [&roundsArray](const Round& round) { roundsArray.emplace_back(round.toJson()); });
-        for_each(_players | keys, [&playersNameArray](const auto& playerName) { playersNameArray.emplace_back(playerName); });
+        for_each(_players, [&playersNameArray](const Player& player) { playersNameArray.emplace_back(player.getName()); });
 
         return {{"rounds", roundsArray},
                 {"players", playersNameArray},

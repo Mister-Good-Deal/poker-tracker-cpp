@@ -1,6 +1,6 @@
 #pragma once
 
-#include "OcrInterface.hpp"
+#include <OcrInterface.hpp>
 
 namespace OCR {
     class WinamaxOcr final : public OcrInterface {
