@@ -51,7 +51,7 @@ namespace OCR {
         return word;
     }
 
-    auto OcrInterface::readPrizePool(cv::Mat& prizePoolImage) const -> int32_t {
+    auto OcrInterface::readNumbers(cv::Mat& prizePoolImage) const -> int32_t {
         std::string word;
 
         _tesseractNumbers->run(prizePoolImage, word);
@@ -61,7 +61,12 @@ namespace OCR {
         return std::atoi(word.c_str());
     }
 
-    auto OcrInterface::similarityScore(const cv::Mat& firstImage, const cv::Mat& secondImage) const -> double {
+    auto OcrInterface::isSimilar(const cv::Mat& firstImage, const cv::Mat& secondImage, double threshold, cv::InputArray& mask) const
+        -> bool {
+        return _similarityScore(firstImage, secondImage, mask) >= threshold;
+    }
+
+    auto OcrInterface::_similarityScore(const cv::Mat& firstImage, const cv::Mat& secondImage, cv::InputArray& mask) const -> double {
         double similarity = 0;
 
         if (firstImage.rows != secondImage.rows)
@@ -72,7 +77,7 @@ namespace OCR {
             LOG_ERROR(Logger::getLogger(), "The images cols are not equal in similarity images computation ({} != {})",
                       firstImage.cols, secondImage.cols);
         } else {
-            double errorL2 = cv::norm(firstImage, secondImage, cv::NORM_L2);
+            double errorL2 = cv::norm(firstImage, secondImage, cv::NORM_L2, mask);
 
             similarity = errorL2 / static_cast<double>(firstImage.rows * firstImage.cols);
         }

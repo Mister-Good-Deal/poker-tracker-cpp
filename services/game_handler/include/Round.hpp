@@ -33,6 +33,7 @@ namespace GameHandler {
             [[nodiscard]] auto getPot() const -> int32_t { return _pot; }
 
             auto setHand(const Hand& hand) -> void { _hand = hand; }
+            auto setPot(int32_t pot) -> void { _pot = pot; }
 
             auto start() -> void;
             auto endStreet() -> void;

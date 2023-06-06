@@ -42,6 +42,15 @@ target_include_directories(
 target_link_libraries(ocr PUBLIC logger game_handler opencv_core opencv_imgproc opencv_text)
 
 #-----------------------------------------------------------------------------------------------------------------------
+# Resources and constants
+#-----------------------------------------------------------------------------------------------------------------------
+
+# Add the image file as a resource
+set(WINAMAX_IMAGES_DIR "${PROJECT_SOURCE_DIR}/resources/winamax")
+
+add_definitions(-DWINAMAX_IMAGES_DIR="${WINAMAX_IMAGES_DIR}")
+
+#-----------------------------------------------------------------------------------------------------------------------
 # Tests
 #-----------------------------------------------------------------------------------------------------------------------
 

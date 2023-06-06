@@ -52,9 +52,16 @@ namespace OCR {
         return suit;
     }
 
-    auto WinamaxOcr::hasFolded(cv::Mat& cardsSkinImage) const -> bool {
-        return similarityScore(cardsSkinImage, _cardsSkin) >= SIMILARITY_THRESHOLD;
+    auto WinamaxOcr::getButtonMask() const -> cv::Mat {
+        auto buttonImg = getButtonImg();
+        auto mask      = cv::Mat(buttonImg.rows, buttonImg.cols, CV_8UC1, cv::Scalar(0));
+
+        cv::circle(mask, {buttonImg.rows / 2, buttonImg.cols / 2}, buttonImg.cols / 2, 1, -1);
+
+        return mask;
     }
+
+    auto WinamaxOcr::hasFolded(cv::Mat& cardsSkinImage) const -> bool { return isSimilar(cardsSkinImage, _cardsSkin); }
 
     auto WinamaxOcr::_cvColorToString(const cv::Vec3b& color) const -> std::string {
         return "(" + std::to_string(color[0]) + ", " + std::to_string(color[1]) + ", " + std::to_string(color[2]) + ")";

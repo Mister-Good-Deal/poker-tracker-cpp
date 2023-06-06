@@ -5,8 +5,6 @@
 namespace OCR {
     class WinamaxOcr final : public OcrInterface {
         public:
-            static constexpr double SIMILARITY_THRESHOLD = 0.99;
-
             WinamaxOcr()                        = default;
             WinamaxOcr(const WinamaxOcr& other) = default;
             WinamaxOcr(WinamaxOcr&& other) noexcept { *this = std::move(other); };
@@ -17,6 +15,11 @@ namespace OCR {
             auto operator=(WinamaxOcr&& other) noexcept -> WinamaxOcr&;
 
             auto setCardsSkin(const cv::Mat& cardsSkin) -> void { _cardsSkin = cardsSkin; }
+
+            [[nodiscard]] auto getButtonMask() const -> cv::Mat override;
+            [[nodiscard]] auto getButtonImg() const -> cv::Mat override {
+                return cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/dealer_btn.png");
+            }
 
             // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
             [[nodiscard]] auto getRankCardArea() const -> cv::Rect override { return {0, 0, 20, 23}; }

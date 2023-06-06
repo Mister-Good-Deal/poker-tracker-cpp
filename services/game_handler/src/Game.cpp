@@ -1,6 +1,7 @@
 #include "Game.hpp"
 
 namespace GameHandler {
+    using std::ranges::any_of;
     using std::ranges::for_each;
 
     auto Game::operator=(Game&& other) noexcept -> Game& {
@@ -19,13 +20,22 @@ namespace GameHandler {
     }
 
     auto Game::init(const std::string& player1Name, const std::string& player2Name, const std::string& player3Name) -> void {
+        auto nameList = {player1Name, player2Name, player3Name};
+
+        if (any_of(nameList, [](const auto& name) { return name.empty(); }))
+        {
+            throw invalid_player_name(fmt::format("A player's name is empty, player_1 `{}`, player_2 `{}`, player_3 `{}`", player1Name,
+                                                  player2Name, player3Name));
+        }
+
         _players[0] = Player(player1Name, true);
         _players[1] = Player(player2Name);
         _players[2] = Player(player3Name);
 
         newRound();
 
-        _startTime = system_clock::now();
+        _startTime   = system_clock::now();
+        _initialized = true;
     }
 
     auto Game::end() -> void { _endTime = system_clock::now(); }

@@ -8,6 +8,11 @@ namespace GameHandler {
     using std::chrono::system_clock;
     using std::chrono::time_point;
 
+    class invalid_player_name : public std::runtime_error {
+        public:
+            explicit invalid_player_name(const std::string& arg) : runtime_error(arg){};
+    };
+
     class Game {
         public:
             Game()                  = default;
@@ -25,6 +30,7 @@ namespace GameHandler {
             auto getPlayer3() -> Player& { return _players[2]; };
             auto getPlayer(const std::string& playerName) -> Player&;
 
+            [[nodiscard]] auto isInitialized() const -> bool { return _initialized; };
             [[nodiscard]] auto getBuyIn() const -> int32_t { return _buyIn; };
 
             auto setBuyIn(int32_t buyIn) -> void { _buyIn = buyIn; }
@@ -49,6 +55,7 @@ namespace GameHandler {
             const Player*            _button         = nullptr;
             int32_t                  _buyIn          = 0;
             int32_t                  _multipliers    = 2;
+            bool                     _initialized    = false;
 
             [[nodiscard]] auto _computeBalance() const -> int32_t;
     };

@@ -47,5 +47,6 @@ namespace GameSession {
             auto _evaluatePlayerAction() -> RoundAction;
             auto _processPlayerAction(const RoundAction& action) -> void;
             auto _determineGameEvent() -> GameEvent;
+            auto _harvestGameInfo() -> void;
     };
 }  // namespace GameSession

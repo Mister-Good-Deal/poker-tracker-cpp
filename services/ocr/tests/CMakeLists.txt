@@ -13,14 +13,9 @@ function(add_class_test class_name)
     include(GNUInstallDirs)
 
     install(
-        TARGETS ${target_name}
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/ocr
+            TARGETS ${target_name}
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/ocr
     )
 endfunction()
-
-# Add the image file as a resource
-set(WINAMAX_IMAGES_DIR "${PROJECT_SOURCE_DIR}/resources/winamax")
-
-add_definitions(-DWINAMAX_IMAGES_DIR="${WINAMAX_IMAGES_DIR}")
 
 add_class_test(WinamaxOcr)
