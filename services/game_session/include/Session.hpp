@@ -12,6 +12,7 @@ namespace GameSession {
     using Scraper::ScraperInterface;
     using Scraper::Factory::ScraperFactory;
     using std::chrono::milliseconds;
+    using std::chrono::seconds;
 
     static const uint32_t TICK_RATE = 500;
 
@@ -30,7 +31,12 @@ namespace GameSession {
             auto operator=(const Session& other) -> Session& = delete;
             auto operator=(Session&& other) noexcept -> Session&;
 
+            auto getGame() -> Game& { return _game; }
+
             auto run() -> void;
+
+        protected:
+            auto _harvestGameInfo(const cv::Mat& screenshot) -> void;
 
         private:
             milliseconds                      _tickRate = milliseconds(TICK_RATE);
@@ -40,13 +46,10 @@ namespace GameSession {
             std::unique_ptr<OcrInterface>     _ocr;
             Game                              _game;
             GamePhases                        _gamePhase = GamePhases::STARTING;
-            cv::Mat                           _lastScreenshot;
             cv::Mat                           _currentScreenshot;
 
-            auto _evaluateGamePhase() -> void;
             auto _evaluatePlayerAction() -> RoundAction;
             auto _processPlayerAction(const RoundAction& action) -> void;
             auto _determineGameEvent() -> GameEvent;
-            auto _harvestGameInfo() -> void;
     };
 }  // namespace GameSession

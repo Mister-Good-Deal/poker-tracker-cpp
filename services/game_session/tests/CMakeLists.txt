@@ -18,5 +18,4 @@ function(add_class_test class_name)
     )
 endfunction()
 
-#add_class_test(Board)
-
+add_class_test(Session)
