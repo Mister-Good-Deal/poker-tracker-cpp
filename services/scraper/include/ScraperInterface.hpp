@@ -82,6 +82,9 @@ namespace Scraper {
             auto getPlayer3BetImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer3BetCoordinate()); };
             auto getPlayer2CardsImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer2HandCoordinate()); };
             auto getPlayer3CardsImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer3HandCoordinate()); };
+            auto getBlindLevelImg(const cv::Mat& img) -> cv::Mat { return img(getBlindLevelCoordinate()); };
+            auto getBlindAmountImg(const cv::Mat& img) -> cv::Mat { return img(getBlindAmountCoordinate()); };
+            auto getGameTimeImg(const cv::Mat& img) -> cv::Mat { return img(getGameTimeCoordinate()); };
 
             // All screen elements coordinates from top left corner (0, 0) in top left(x, y) cv::Rect(x, y, width, eight)
             virtual auto getFirstCardCoordinate() -> cv::Rect     = 0;
@@ -107,6 +110,9 @@ namespace Scraper {
             virtual auto getPlayer3BetCoordinate() -> cv::Rect    = 0;
             virtual auto getPlayer2HandCoordinate() -> cv::Rect   = 0;
             virtual auto getPlayer3HandCoordinate() -> cv::Rect   = 0;
+            virtual auto getBlindLevelCoordinate() -> cv::Rect    = 0;
+            virtual auto getBlindAmountCoordinate() -> cv::Rect   = 0;
+            virtual auto getGameTimeCoordinate() -> cv::Rect      = 0;
 
         private:
             windows_t _activeWindows;

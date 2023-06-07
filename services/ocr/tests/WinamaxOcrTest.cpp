@@ -2,8 +2,8 @@
 
 #include <opencv4/opencv2/imgcodecs.hpp>
 
-#include "CardFactory.hpp"
-#include "WinamaxOcr.hpp"
+#include <CardFactory.hpp>
+#include <WinamaxOcr.hpp>
 
 using GameHandler::Factory::card;
 using OCR::WinamaxOcr;

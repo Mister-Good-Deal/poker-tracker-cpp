@@ -160,7 +160,8 @@ namespace Scraper {
             getBoardCard5Coordinate(),    getPlayer1NameCoordinate(),   getPlayer2NameCoordinate(),   getPlayer3NameCoordinate(),
             getPlayer1ButtonCoordinate(), getPlayer2ButtonCoordinate(), getPlayer3ButtonCoordinate(), getPlayer1StackCoordinate(),
             getPlayer2StackCoordinate(),  getPlayer3StackCoordinate(),  getPlayer1BetCoordinate(),    getPlayer2BetCoordinate(),
-            getPlayer3BetCoordinate(),    getPlayer2HandCoordinate(),   getPlayer3HandCoordinate()};
+            getPlayer3BetCoordinate(),    getPlayer2HandCoordinate(),   getPlayer3HandCoordinate(),   getBlindLevelCoordinate(),
+            getBlindAmountCoordinate(),   getGameTimeCoordinate()};
 
         for (const auto& element : elements)
         { cv::rectangle(img, element, cv::Scalar(0, 255, 0), 2); }
