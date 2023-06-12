@@ -41,9 +41,9 @@ namespace Scraper {
             auto getBoardCard3Coordinate() -> cv::Rect override;
             auto getBoardCard4Coordinate() -> cv::Rect override;
             auto getBoardCard5Coordinate() -> cv::Rect override;
-            auto getPlayer1NameCoordinate() -> cv::Rect override { return {263, 390 + PADDING_TOP, NAME_WIDTH, NAME_HEIGHT}; }
-            auto getPlayer2NameCoordinate() -> cv::Rect override { return {40, 136 + PADDING_TOP, NAME_WIDTH, NAME_HEIGHT}; }
-            auto getPlayer3NameCoordinate() -> cv::Rect override { return {490, 136 + PADDING_TOP, NAME_WIDTH, NAME_HEIGHT}; }
+            auto getPlayer1NameCoordinate() -> cv::Rect override { return {263, 392 + PADDING_TOP, NAME_WIDTH, NAME_HEIGHT}; }
+            auto getPlayer2NameCoordinate() -> cv::Rect override { return {40, 138 + PADDING_TOP, NAME_WIDTH, NAME_HEIGHT}; }
+            auto getPlayer3NameCoordinate() -> cv::Rect override { return {490, 138 + PADDING_TOP, NAME_WIDTH, NAME_HEIGHT}; }
             auto getPlayer1ButtonCoordinate() -> cv::Rect override { return {255, 333 + PADDING_TOP, BUTTON_WIDTH, BUTTON_HEIGHT}; }
             auto getPlayer2ButtonCoordinate() -> cv::Rect override { return {170, 134 + PADDING_TOP, BUTTON_WIDTH, BUTTON_HEIGHT}; }
             auto getPlayer3ButtonCoordinate() -> cv::Rect override { return {528, 206 + PADDING_TOP, BUTTON_WIDTH, BUTTON_HEIGHT}; }

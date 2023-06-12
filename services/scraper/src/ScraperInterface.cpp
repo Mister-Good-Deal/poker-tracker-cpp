@@ -153,7 +153,7 @@ namespace Scraper {
     }
 
     auto ScraperInterface::getWindowElementsView(const cv::Mat& img) -> cv::Mat {
-        cv::Mat               elementsView = img;
+        cv::Mat               elementsView = img.clone();
         std::vector<cv::Rect> elements     = {
             getFirstCardCoordinate(),     getSecondCardCoordinate(),    getPotCoordinate(),           getPrizePoolCoordinate(),
             getBoardCard1Coordinate(),    getBoardCard2Coordinate(),    getBoardCard3Coordinate(),    getBoardCard4Coordinate(),
@@ -164,7 +164,7 @@ namespace Scraper {
             getBlindAmountCoordinate(),   getGameTimeCoordinate()};
 
         for (const auto& element : elements)
-        { cv::rectangle(img, element, cv::Scalar(0, 255, 0), 2); }
+        { cv::rectangle(elementsView, element, cv::Scalar(0, 255, 0), 2); }
 
         return elementsView;
     }
