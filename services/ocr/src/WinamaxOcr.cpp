@@ -52,6 +52,18 @@ namespace OCR {
         return suit;
     }
 
+    auto WinamaxOcr::readPlayerName(cv::Mat& playerNameImage) const -> std::string {
+        _processImageBeforeWhiteTextOcr(playerNameImage);
+
+        return readWordByChar(playerNameImage);
+    }
+
+    auto WinamaxOcr::readGameAction(cv::Mat& gameActionImage) const -> std::string {
+        _processImageBeforeYellowTextOcr(gameActionImage);
+
+        return readWord(gameActionImage);
+    }
+
     auto WinamaxOcr::getButtonMask() const -> cv::Mat {
         auto buttonImg = getButtonImg();
         auto mask      = cv::Mat(buttonImg.rows, buttonImg.cols, CV_8UC1, cv::Scalar(0));
@@ -61,9 +73,25 @@ namespace OCR {
         return mask;
     }
 
-    auto WinamaxOcr::hasFolded(cv::Mat& cardsSkinImage) const -> bool { return isSimilar(cardsSkinImage, _cardsSkin); }
+    auto WinamaxOcr::hasFolded(cv::Mat& handImage) const -> bool { return !isSimilar(handImage, _cardsSkin); }
 
     auto WinamaxOcr::_cvColorToString(const cv::Vec3b& color) const -> std::string {
         return "(" + std::to_string(color[0]) + ", " + std::to_string(color[1]) + ", " + std::to_string(color[2]) + ")";
+    }
+
+    auto WinamaxOcr::_processImageBeforeWhiteTextOcr(cv::Mat& image) const -> void {
+        cv::cvtColor(image, image, cv::COLOR_BGR2GRAY);
+        cv::threshold(image, image, 205, 255, cv::THRESH_BINARY);
+    }
+
+    auto WinamaxOcr::_processImageBeforeYellowTextOcr(cv::Mat& image) const -> void {
+        _colorRangeThreshold(image, {22, 0, 0}, {42, 255, 255});
+    }
+
+    auto WinamaxOcr::_colorRangeThreshold(cv::Mat& image, const cv::Scalar& colorLower, const cv::Scalar& colorUpper) const -> void {
+        cv::Mat hsvImage, colorMask;
+
+        cv::cvtColor(image, hsvImage, cv::COLOR_BGR2HSV);
+        cv::inRange(hsvImage, colorLower, colorUpper, image);
     }
 }  // namespace OCR

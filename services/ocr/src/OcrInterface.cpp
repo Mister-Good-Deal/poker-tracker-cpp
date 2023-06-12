@@ -30,7 +30,8 @@ namespace OCR {
     OcrInterface::OcrInterface() {
         // DEFAULT datapath = "/usr/local/share/tessdata"
         _tesseractCard    = cv::text::OCRTesseract::create(nullptr, "eng", "23456789TJQKA", OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
-        _tesseractWord    = cv::text::OCRTesseract::create(nullptr, "eng", nullptr, OEM_CUBE_ONLY, PSM_SINGLE_WORD);
+        _tesseractWord    = cv::text::OCRTesseract::create(nullptr, "eng", ALL_CHARACTERS, OEM_CUBE_ONLY, PSM_SINGLE_WORD);
+        _tesseractChar    = cv::text::OCRTesseract::create(nullptr, "eng", ALL_CHARACTERS, OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
         _tesseractNumbers = cv::text::OCRTesseract::create(nullptr, "eng", "0123456789", OEM_CUBE_ONLY, PSM_SINGLE_WORD);
     }
 
@@ -51,14 +52,24 @@ namespace OCR {
         return word;
     }
 
-    auto OcrInterface::readNumbers(cv::Mat& prizePoolImage) const -> int32_t {
+    auto OcrInterface::readWordByChar(cv::Mat& wordImage) const -> std::string {
         std::string word;
 
-        _tesseractNumbers->run(prizePoolImage, word);
+        _tesseractChar->run(wordImage, word);
 
-        fullTrim(word);
+        trim(word);
 
-        return std::atoi(word.c_str());
+        return word;
+    }
+
+    auto OcrInterface::readNumbers(cv::Mat& numberImage) const -> int32_t {
+        std::string number;
+
+        _tesseractNumbers->run(numberImage, number);
+
+        fullTrim(number);
+
+        return std::atoi(number.c_str());
     }
 
     auto OcrInterface::isSimilar(const cv::Mat& firstImage, const cv::Mat& secondImage, double threshold, cv::InputArray& mask) const

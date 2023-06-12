@@ -27,11 +27,17 @@ namespace OCR {
             // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
             auto readCardRank(cv::Mat& rankImage) const -> Card::Rank override;
             auto readCardSuit(cv::Mat& suitImage) const -> Card::Suit override;
-            auto hasFolded(cv::Mat& cardsSkinImage) const -> bool;
+            auto readPlayerName(cv::Mat& playerNameImage) const -> std::string override;
+            auto readGameAction(cv::Mat& playerNameImage) const -> std::string;
+            auto hasFolded(cv::Mat& handImage) const -> bool;
 
         private:
             cv::Mat _cardsSkin;
 
             [[nodiscard]] auto _cvColorToString(const cv::Vec3b& color) const -> std::string;
+
+            auto _processImageBeforeWhiteTextOcr(cv::Mat& image) const -> void;
+            auto _processImageBeforeYellowTextOcr(cv::Mat& image) const -> void;
+            auto _colorRangeThreshold(cv::Mat& image, const cv::Scalar& colorLower, const cv::Scalar& colorUpper) const -> void;
     };
 }  // namespace OCR
