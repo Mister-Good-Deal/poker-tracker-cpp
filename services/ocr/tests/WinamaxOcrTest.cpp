@@ -97,17 +97,22 @@ TEST(WinamaxOcrTest, readActionShouldWork) {
     EXPECT_STREQ(Env::winamaxOcr().readGameAction(raisesTxt).c_str(), "RAISES TO 3 BB");
 }
 
-TEST(WinamaxOcrTest, playerHasFoldedShouldWork) {
-    // @fixme cannot set class cv::Mat attribute when using Env::winamaxOcr() ...
-    WinamaxOcr ocr;
+TEST(WinamaxOcrTest, readPlayerNameShouldWork) {
+    auto player1NameImg = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/player_name/name_1.png");
+    auto player2NameImg = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/player_name/name_2.png");
+    auto player3NameImg = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/player_name/name_3.png");
 
+    EXPECT_STREQ(Env::winamaxOcr().readPlayerName(player1NameImg).c_str(), "_Mister_");
+    //    EXPECT_STREQ(Env::winamaxOcr().readPlayerName(player2NameImg).c_str(), "G00dspeed"); // @todo fixme
+    EXPECT_STREQ(Env::winamaxOcr().readPlayerName(player3NameImg).c_str(), "sucre_461406");
+}
+
+TEST(WinamaxOcrTest, playerHasFoldedShouldWork) {
     auto cardsSkin = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards_skins/skin_1.png");
     auto hands     = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards_skins/hand.png");
 
-    ocr.setCardsSkin(cardsSkin);
-
-    EXPECT_FALSE(ocr.hasFolded(hands));
-    EXPECT_TRUE(ocr.hasFolded(cardsSkin));
+    EXPECT_FALSE(Env::winamaxOcr().hasFolded(hands));
+    EXPECT_TRUE(Env::winamaxOcr().hasFolded(cardsSkin));
 }
 
 auto main(int argc, char* argv[]) -> int {

@@ -5,9 +5,12 @@
 namespace OCR {
     class WinamaxOcr final : public OcrInterface {
         public:
-            WinamaxOcr()                        = default;
+            static constexpr std::string DEFAULT_CARD_SKIN = "skin_1.png";
+
+            WinamaxOcr();
             WinamaxOcr(const WinamaxOcr& other) = default;
             WinamaxOcr(WinamaxOcr&& other) noexcept { *this = std::move(other); };
+            explicit WinamaxOcr(cv::Mat cardsSkin) : _cardsSkin(std::move(cardsSkin)){};
 
             ~WinamaxOcr() final = default;
 
@@ -17,14 +20,10 @@ namespace OCR {
             auto setCardsSkin(const cv::Mat& cardsSkin) -> void { _cardsSkin = cardsSkin; }
 
             [[nodiscard]] auto getButtonMask() const -> cv::Mat override;
-            [[nodiscard]] auto getButtonImg() const -> cv::Mat override {
-                return cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/dealer_btn.png");
-            }
+            [[nodiscard]] auto getButtonImg() const -> cv::Mat override;
+            [[nodiscard]] auto getRankCardArea() const -> cv::Rect override;
+            [[nodiscard]] auto getSuitCardArea() const -> cv::Rect override;
 
-            // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
-            [[nodiscard]] auto getRankCardArea() const -> cv::Rect override { return {0, 0, 20, 23}; }
-            [[nodiscard]] auto getSuitCardArea() const -> cv::Rect override { return {2, 25, 14, 16}; }
-            // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
             auto readCardRank(cv::Mat& rankImage) const -> Card::Rank override;
             auto readCardSuit(cv::Mat& suitImage) const -> Card::Suit override;
             auto readPlayerName(cv::Mat& playerNameImage) const -> std::string override;
@@ -36,8 +35,8 @@ namespace OCR {
 
             [[nodiscard]] auto _cvColorToString(const cv::Vec3b& color) const -> std::string;
 
-            auto _processImageBeforeWhiteTextOcr(cv::Mat& image) const -> void;
-            auto _processImageBeforeYellowTextOcr(cv::Mat& image) const -> void;
+            auto _extractWhiteText(cv::Mat& image) const -> void;
+            auto _extractYellowText(cv::Mat& image) const -> void;
             auto _colorRangeThreshold(cv::Mat& image, const cv::Scalar& colorLower, const cv::Scalar& colorUpper) const -> void;
     };
 }  // namespace OCR

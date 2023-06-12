@@ -7,6 +7,8 @@ namespace OCR {
 
     using enum GameHandler::Card::Suit;
 
+    WinamaxOcr::WinamaxOcr() : _cardsSkin(cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards_skins/" + DEFAULT_CARD_SKIN)){};
+
     auto WinamaxOcr::operator=(WinamaxOcr&& other) noexcept -> WinamaxOcr& {
         if (this != &other) { _cardsSkin = std::move(other._cardsSkin); }
 
@@ -53,13 +55,13 @@ namespace OCR {
     }
 
     auto WinamaxOcr::readPlayerName(cv::Mat& playerNameImage) const -> std::string {
-        _processImageBeforeWhiteTextOcr(playerNameImage);
+        _extractWhiteText(playerNameImage);
 
         return readWordByChar(playerNameImage);
     }
 
     auto WinamaxOcr::readGameAction(cv::Mat& gameActionImage) const -> std::string {
-        _processImageBeforeYellowTextOcr(gameActionImage);
+        _extractYellowText(gameActionImage);
 
         return readWord(gameActionImage);
     }
@@ -73,19 +75,17 @@ namespace OCR {
         return mask;
     }
 
+    auto WinamaxOcr::getButtonImg() const -> cv::Mat { return cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/dealer_btn.png"); }
     auto WinamaxOcr::hasFolded(cv::Mat& handImage) const -> bool { return !isSimilar(handImage, _cardsSkin); }
+    // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
+    auto WinamaxOcr::getRankCardArea() const -> cv::Rect { return {0, 0, 20, 23}; }
+    auto WinamaxOcr::getSuitCardArea() const -> cv::Rect { return {2, 25, 14, 16}; }
+    auto WinamaxOcr::_extractWhiteText(cv::Mat& image) const -> void { _colorRangeThreshold(image, {0, 0, 200}, {255, 55, 255}); }
+    auto WinamaxOcr::_extractYellowText(cv::Mat& image) const -> void { _colorRangeThreshold(image, {22, 0, 0}, {42, 255, 255}); }
+    // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
 
     auto WinamaxOcr::_cvColorToString(const cv::Vec3b& color) const -> std::string {
         return "(" + std::to_string(color[0]) + ", " + std::to_string(color[1]) + ", " + std::to_string(color[2]) + ")";
-    }
-
-    auto WinamaxOcr::_processImageBeforeWhiteTextOcr(cv::Mat& image) const -> void {
-        cv::cvtColor(image, image, cv::COLOR_BGR2GRAY);
-        cv::threshold(image, image, 205, 255, cv::THRESH_BINARY);
-    }
-
-    auto WinamaxOcr::_processImageBeforeYellowTextOcr(cv::Mat& image) const -> void {
-        _colorRangeThreshold(image, {22, 0, 0}, {42, 255, 255});
     }
 
     auto WinamaxOcr::_colorRangeThreshold(cv::Mat& image, const cv::Scalar& colorLower, const cv::Scalar& colorUpper) const -> void {
