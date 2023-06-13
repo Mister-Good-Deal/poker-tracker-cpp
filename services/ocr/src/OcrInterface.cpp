@@ -81,6 +81,9 @@ namespace OCR {
         // Determine smaller image, then crop the bigger one to the size of the smaller one. First image is the bigger one.
         if (secondImage.cols > firstImage.cols || secondImage.rows > firstImage.rows) { std::swap(firstImage, secondImage); }
 
+        if (firstImage.cols < secondImage.cols || firstImage.rows < secondImage.rows)
+        { throw std::runtime_error("The first image must be bigger than the second one."); }
+
         auto colsBorder = (firstImage.cols - secondImage.cols) / 2;
         auto rowsBorder = (firstImage.rows - secondImage.rows) / 2;
 
@@ -89,6 +92,8 @@ namespace OCR {
 
     /**
      * The lower the score, the more similar the images are.
+     *
+     * @todo Use a better crop method (shape detection matching to center the crop).
      *
      * @param firstImage The first image to compare.
      * @param secondImage The second image to compare.

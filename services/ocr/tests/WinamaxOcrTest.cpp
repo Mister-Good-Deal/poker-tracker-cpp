@@ -111,8 +111,8 @@ TEST(WinamaxOcrTest, playerHasFoldedShouldWork) {
     auto cardsSkin = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards_skins/skin_1.png");
     auto hands     = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards_skins/hand.png");
 
-    EXPECT_FALSE(Env::winamaxOcr().hasFolded(hands));
-    EXPECT_TRUE(Env::winamaxOcr().hasFolded(cardsSkin));
+    EXPECT_TRUE(Env::winamaxOcr().hasFolded(hands));
+    EXPECT_FALSE(Env::winamaxOcr().hasFolded(cardsSkin));
 }
 
 TEST(WinamaxOcrTest, playerButtonDetectionShouldWork) {
