@@ -11,7 +11,7 @@ namespace OCR {
 
     class OcrInterface {
         public:
-            static constexpr double      SIMILARITY_THRESHOLD = 0.99;
+            static constexpr double      SIMILARITY_THRESHOLD = 0.05;
             static constexpr const char* ALL_CHARACTERS       = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ";
 
             OcrInterface();
@@ -40,6 +40,8 @@ namespace OCR {
                                          double threshold = SIMILARITY_THRESHOLD, cv::InputArray& mask = cv::noArray()) const -> bool;
 
         protected:
+            auto _cropCentered(cv::Mat& firstImage, cv::Mat& secondImage) const -> void;
+
             [[nodiscard]] auto _cardOcr() const -> const cv::Ptr<OCRTesseract>& { return _tesseractCard; }
             [[nodiscard]] auto _charOcr() const -> const cv::Ptr<OCRTesseract>& { return _tesseractChar; }
             [[nodiscard]] auto _wordOcr() const -> const cv::Ptr<OCRTesseract>& { return _tesseractWord; }

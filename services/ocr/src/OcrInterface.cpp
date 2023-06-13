@@ -74,24 +74,46 @@ namespace OCR {
 
     auto OcrInterface::isSimilar(const cv::Mat& firstImage, const cv::Mat& secondImage, double threshold, cv::InputArray& mask) const
         -> bool {
-        return _similarityScore(firstImage, secondImage, mask) >= threshold;
+        return _similarityScore(firstImage, secondImage, mask) <= threshold;
     }
 
+    auto OcrInterface::_cropCentered(cv::Mat& firstImage, cv::Mat& secondImage) const -> void {
+        // Determine smaller image, then crop the bigger one to the size of the smaller one. First image is the bigger one.
+        if (secondImage.cols > firstImage.cols || secondImage.rows > firstImage.rows) { std::swap(firstImage, secondImage); }
+
+        auto colsBorder = (firstImage.cols - secondImage.cols) / 2;
+        auto rowsBorder = (firstImage.rows - secondImage.rows) / 2;
+
+        firstImage(cv::Rect(colsBorder, rowsBorder, secondImage.cols, secondImage.rows)).copyTo(firstImage);
+    }
+
+    /**
+     * The lower the score, the more similar the images are.
+     *
+     * @param firstImage The first image to compare.
+     * @param secondImage The second image to compare.
+     * @param mask The mask to apply to the images.
+     *
+     * @return The similarity score.
+     */
     auto OcrInterface::_similarityScore(const cv::Mat& firstImage, const cv::Mat& secondImage, cv::InputArray& mask) const -> double {
-        double similarity = 0;
+        cv::Mat firstImageCopy  = firstImage;
+        cv::Mat secondImageCopy = secondImage;
 
-        if (firstImage.rows != secondImage.rows)
+        if (firstImage.rows != secondImage.rows || firstImage.cols != secondImage.cols)
         {
-            LOG_ERROR(Logger::getLogger(), "The images rows are not equal in similarity images computation ({} != {})",
-                      firstImage.rows, secondImage.rows);
-        } else if (firstImage.cols != secondImage.cols) {
-            LOG_ERROR(Logger::getLogger(), "The images cols are not equal in similarity images computation ({} != {})",
-                      firstImage.cols, secondImage.cols);
-        } else {
-            double errorL2 = cv::norm(firstImage, secondImage, cv::NORM_L2, mask);
+            LOG_DEBUG(Logger::getLogger(),
+                      "The images size are not equals in similarity images computation ({}x{} != {}x{}), cropping the bigger one.",
+                      firstImage.rows, firstImage.cols, secondImage.rows, secondImage.cols);
 
-            similarity = errorL2 / static_cast<double>(firstImage.rows * firstImage.cols);
+            firstImageCopy  = firstImage.clone();
+            secondImageCopy = secondImage.clone();
+            _cropCentered(firstImageCopy, secondImageCopy);
         }
+
+        double similarity = cv::norm(firstImageCopy, secondImageCopy, cv::NORM_RELATIVE | cv::NORM_L2SQR, mask);
+
+        LOG_DEBUG(Logger::getLogger(), "Similarity score: {}", similarity);
 
         return similarity;
     }

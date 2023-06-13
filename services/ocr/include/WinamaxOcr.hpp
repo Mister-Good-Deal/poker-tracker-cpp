@@ -5,7 +5,8 @@
 namespace OCR {
     class WinamaxOcr final : public OcrInterface {
         public:
-            static constexpr std::string DEFAULT_CARD_SKIN = "skin_1.png";
+            static constexpr std::string DEFAULT_CARD_SKIN  = "skin_1.png";
+            static constexpr std::string DEFAULT_BUTTON_IMG = "dealer_btn.png";
 
             WinamaxOcr();
             WinamaxOcr(const WinamaxOcr& other) = default;
@@ -32,6 +33,7 @@ namespace OCR {
 
         private:
             cv::Mat _cardsSkin;
+            cv::Mat _buttonImg;
 
             [[nodiscard]] auto _cvColorToString(const cv::Vec3b& color) const -> std::string;
 

@@ -115,6 +115,12 @@ TEST(WinamaxOcrTest, playerHasFoldedShouldWork) {
     EXPECT_TRUE(Env::winamaxOcr().hasFolded(cardsSkin));
 }
 
+TEST(WinamaxOcrTest, playerButtonDetectionShouldWork) {
+    auto button = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/screen_btn.png");
+
+    EXPECT_TRUE(Env::winamaxOcr().isSimilar(button, Env::winamaxOcr().getButtonImg(), 0.05, Env::winamaxOcr().getButtonMask()));
+}
+
 auto main(int argc, char* argv[]) -> int {
     ::testing::InitGoogleTest(&argc, argv);
     // gtest takes ownership of the TestEnvironment ptr - we don't delete it.

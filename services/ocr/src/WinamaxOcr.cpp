@@ -7,7 +7,8 @@ namespace OCR {
 
     using enum GameHandler::Card::Suit;
 
-    WinamaxOcr::WinamaxOcr() : _cardsSkin(cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards_skins/" + DEFAULT_CARD_SKIN)){};
+    WinamaxOcr::WinamaxOcr() :
+        _cardsSkin(cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards_skins/" + DEFAULT_CARD_SKIN)), _buttonImg(getButtonImg()){};
 
     auto WinamaxOcr::operator=(WinamaxOcr&& other) noexcept -> WinamaxOcr& {
         if (this != &other) { _cardsSkin = std::move(other._cardsSkin); }
@@ -70,12 +71,12 @@ namespace OCR {
         auto buttonImg = getButtonImg();
         auto mask      = cv::Mat(buttonImg.rows, buttonImg.cols, CV_8UC1, cv::Scalar(0));
 
-        cv::circle(mask, {buttonImg.rows / 2, buttonImg.cols / 2}, buttonImg.cols / 2, 1, -1);
+        cv::circle(mask, {buttonImg.rows / 2, buttonImg.cols / 2}, buttonImg.cols / 2, 255, -1);
 
         return mask;
     }
 
-    auto WinamaxOcr::getButtonImg() const -> cv::Mat { return cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/dealer_btn.png"); }
+    auto WinamaxOcr::getButtonImg() const -> cv::Mat { return cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/" + DEFAULT_BUTTON_IMG); }
     auto WinamaxOcr::hasFolded(cv::Mat& handImage) const -> bool { return !isSimilar(handImage, _cardsSkin); }
     // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
     auto WinamaxOcr::getRankCardArea() const -> cv::Rect { return {0, 0, 20, 23}; }
