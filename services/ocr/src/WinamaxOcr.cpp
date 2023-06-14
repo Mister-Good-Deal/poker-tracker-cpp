@@ -61,6 +61,14 @@ namespace OCR {
         return readWord(_extractYellowText(gameActionImage));
     }
 
+    auto WinamaxOcr::readPlayerBet(const cv::Mat& playerBetImage) const -> double {
+        return readNumbers(_extractYellowText(playerBetImage));
+    }
+
+    auto WinamaxOcr::readPlayerBetInBB(const cv::Mat& playerBetInBBImage) const -> double {
+        return readNumbersInBB(_extractYellowText(playerBetInBBImage));
+    }
+
     auto WinamaxOcr::getButtonMask() const -> cv::Mat {
         auto buttonImg = getButtonImg();
         auto mask      = cv::Mat(buttonImg.rows, buttonImg.cols, CV_8UC1, cv::Scalar(0));

@@ -12,7 +12,7 @@ namespace OCR {
     class OcrInterface {
         public:
             static constexpr double      SIMILARITY_THRESHOLD = 0.05;
-            static constexpr int32_t     OCR_MIN_CONFIDENCE   = 50;
+            static constexpr int32_t     OCR_MIN_CONFIDENCE   = 30;  // @todo confidence on 1 / 7 detection is really low
             static constexpr const char* ALL_CHARACTERS       = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ";
 
             OcrInterface();
@@ -34,7 +34,8 @@ namespace OCR {
             [[nodiscard]] virtual auto readCard(const cv::Mat& cardImage) const -> Card;
             [[nodiscard]] virtual auto readWord(const cv::Mat& wordImage) const -> std::string;
             [[nodiscard]] virtual auto readWordByChar(const cv::Mat& wordImage) const -> std::string;
-            [[nodiscard]] virtual auto readNumbers(const cv::Mat& numberImage) const -> int32_t;
+            [[nodiscard]] virtual auto readNumbers(const cv::Mat& numberImage) const -> double;
+            [[nodiscard]] virtual auto readNumbersInBB(const cv::Mat& numberInBBImage) const -> double;
             [[nodiscard]] auto         isSimilar(const cv::Mat& firstImage, const cv::Mat& secondImage,
                                                  double threshold = SIMILARITY_THRESHOLD, cv::InputArray& mask = cv::noArray()) const -> bool;
 
@@ -50,6 +51,7 @@ namespace OCR {
             cv::Ptr<OCRTesseract> _tesseractWord;
             cv::Ptr<OCRTesseract> _tesseractChar;
             cv::Ptr<OCRTesseract> _tesseractNumbers;
+            cv::Ptr<OCRTesseract> _tesseractNumbersInBB;
     };
 
 }  // namespace OCR

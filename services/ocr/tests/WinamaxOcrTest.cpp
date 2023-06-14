@@ -105,6 +105,16 @@ TEST(WinamaxOcrTest, readPlayerNameShouldWork) {
     EXPECT_STREQ(Env::winamaxOcr().readPlayerName(player3NameImg).c_str(), "sucre_461406");
 }
 
+TEST(WinamaxOcrTest, readBetAmountShouldWork) {
+    auto zeroDotFiftyBBImg         = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/bets/0_dot_50_BB.png");
+    auto oneBBImg                  = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/bets/1_BB.png");
+    auto threeHundredAndFifteenImg = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/bets/315.png");
+
+    EXPECT_EQ(Env::winamaxOcr().readPlayerBetInBB(zeroDotFiftyBBImg), 0.5);
+    EXPECT_EQ(Env::winamaxOcr().readPlayerBetInBB(oneBBImg), 1);
+    EXPECT_EQ(Env::winamaxOcr().readPlayerBet(threeHundredAndFifteenImg), 315);
+}
+
 TEST(WinamaxOcrTest, playerHasFoldedShouldWork) {
     auto cardsSkin = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards_skins/skin_1.png");
     auto hands     = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards_skins/hand.png");

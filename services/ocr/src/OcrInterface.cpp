@@ -1,5 +1,7 @@
 #include "OcrInterface.hpp"
 
+#include <charconv>
+
 #include <Logger.hpp>
 
 namespace OCR {
@@ -9,30 +11,49 @@ namespace OCR {
     using enum cv::text::page_seg_mode;
 
     namespace {
-        static inline void ltrim(std::string& s) {
+        static inline auto constexpr ltrim(std::string& s) -> void {
             s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) { return !std::isspace(ch); }));
         }
 
-        static inline void rtrim(std::string& s) {
+        static inline auto constexpr rtrim(std::string& s) -> void {
             s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) { return !std::isspace(ch); }).base(), s.end());
         }
 
-        static inline void fullTrim(std::string& s) {
+        static inline auto constexpr fullTrim(std::string& s) -> void {
             s.erase(std::remove_if(s.begin(), s.end(), [](unsigned char ch) { return std::isspace(ch); }), s.end());
         }
 
-        static inline void trim(std::string& s) {
+        static inline auto constexpr removeChar(std::string& s, char toRemove) -> void {
+            s.erase(std::remove(s.begin(), s.end(), toRemove), s.end());
+        }
+
+        static inline auto constexpr replaceChar(std::string& s, char find, char replace) -> void {
+            std::replace(s.begin(), s.end(), find, replace);
+        }
+
+        static inline auto constexpr trim(std::string& s) -> void {
             rtrim(s);
             ltrim(s);
+        }
+
+        static inline auto constexpr toFloat(std::string_view s) -> double {
+            double value = 0.0;
+
+            auto error = std::from_chars(s.begin(), s.end(), value);
+
+            if (error.ec != std::errc()) { throw std::runtime_error("Could not convert string to float"); }
+
+            return value;
         }
     }  // namespace
 
     OcrInterface::OcrInterface() {
         // DEFAULT datapath = "/usr/local/share/tessdata"
-        _tesseractCard    = cv::text::OCRTesseract::create(nullptr, "eng", "23456789TJQKA", OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
-        _tesseractWord    = cv::text::OCRTesseract::create(nullptr, "eng", ALL_CHARACTERS, OEM_CUBE_ONLY, PSM_SINGLE_BLOCK);
-        _tesseractChar    = cv::text::OCRTesseract::create(nullptr, "eng", ALL_CHARACTERS, OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
-        _tesseractNumbers = cv::text::OCRTesseract::create(nullptr, "eng", "0123456789", OEM_CUBE_ONLY, PSM_SINGLE_WORD);
+        _tesseractCard        = cv::text::OCRTesseract::create(nullptr, "eng", "23456789TJQKA", OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
+        _tesseractWord        = cv::text::OCRTesseract::create(nullptr, "eng", ALL_CHARACTERS, OEM_CUBE_ONLY, PSM_SINGLE_BLOCK);
+        _tesseractChar        = cv::text::OCRTesseract::create(nullptr, "eng", ALL_CHARACTERS, OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
+        _tesseractNumbers     = cv::text::OCRTesseract::create(nullptr, "eng", "0123456789, ", OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
+        _tesseractNumbersInBB = cv::text::OCRTesseract::create(nullptr, "eng", "0123456789,B ", OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
     }
 
     auto OCR::OcrInterface::readCard(const cv::Mat& cardImage) const -> Card {
@@ -58,12 +79,23 @@ namespace OCR {
         return word;
     }
 
-    auto OcrInterface::readNumbers(const cv::Mat& numberImage) const -> int32_t {
+    auto OcrInterface::readNumbersInBB(const cv::Mat& numberInBBImage) const -> double {
+        auto numberInBB = _tesseractNumbersInBB->run(numberInBBImage, OCR_MIN_CONFIDENCE);
+
+        fullTrim(numberInBB);
+        removeChar(numberInBB, 'B');
+        replaceChar(numberInBB, ',', '.');
+
+        return toFloat(numberInBB);
+    }
+
+    auto OcrInterface::readNumbers(const cv::Mat& numberImage) const -> double {
         auto number = _tesseractNumbers->run(numberImage, OCR_MIN_CONFIDENCE);
 
         fullTrim(number);
+        replaceChar(number, ',', '.');
 
-        return std::atoi(number.c_str());
+        return toFloat(number);
     }
 
     auto OcrInterface::isSimilar(const cv::Mat& firstImage, const cv::Mat& secondImage, double threshold, cv::InputArray& mask) const
