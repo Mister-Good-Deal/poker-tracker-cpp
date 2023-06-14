@@ -30,42 +30,36 @@ namespace OCR {
     OcrInterface::OcrInterface() {
         // DEFAULT datapath = "/usr/local/share/tessdata"
         _tesseractCard    = cv::text::OCRTesseract::create(nullptr, "eng", "23456789TJQKA", OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
-        _tesseractWord    = cv::text::OCRTesseract::create(nullptr, "eng", ALL_CHARACTERS, OEM_CUBE_ONLY, PSM_SINGLE_WORD);
+        _tesseractWord    = cv::text::OCRTesseract::create(nullptr, "eng", ALL_CHARACTERS, OEM_CUBE_ONLY, PSM_SINGLE_BLOCK);
         _tesseractChar    = cv::text::OCRTesseract::create(nullptr, "eng", ALL_CHARACTERS, OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
         _tesseractNumbers = cv::text::OCRTesseract::create(nullptr, "eng", "0123456789", OEM_CUBE_ONLY, PSM_SINGLE_WORD);
     }
 
-    auto OCR::OcrInterface::readCard(cv::Mat& cardImage) const -> Card {
+    auto OCR::OcrInterface::readCard(const cv::Mat& cardImage) const -> Card {
         cv::Mat rankImage = cardImage(getRankCardArea());
         cv::Mat suitImage = cardImage(getSuitCardArea());
 
         return {readCardRank(rankImage), readCardSuit(suitImage)};
     }
 
-    auto OcrInterface::readWord(cv::Mat& wordImage) const -> std::string {
-        std::string word;
-
-        _tesseractWord->run(wordImage, word);
+    auto OcrInterface::readWord(const cv::Mat& wordImage) const -> std::string {
+        auto word = _tesseractWord->run(wordImage, OCR_MIN_CONFIDENCE, cv::text::OCR_LEVEL_TEXTLINE);
 
         trim(word);
 
         return word;
     }
 
-    auto OcrInterface::readWordByChar(cv::Mat& wordImage) const -> std::string {
-        std::string word;
-
-        _tesseractChar->run(wordImage, word);
+    auto OcrInterface::readWordByChar(const cv::Mat& wordImage) const -> std::string {
+        auto word = _tesseractChar->run(wordImage, OCR_MIN_CONFIDENCE);
 
         trim(word);
 
         return word;
     }
 
-    auto OcrInterface::readNumbers(cv::Mat& numberImage) const -> int32_t {
-        std::string number;
-
-        _tesseractNumbers->run(numberImage, number);
+    auto OcrInterface::readNumbers(const cv::Mat& numberImage) const -> int32_t {
+        auto number = _tesseractNumbers->run(numberImage, OCR_MIN_CONFIDENCE);
 
         fullTrim(number);
 

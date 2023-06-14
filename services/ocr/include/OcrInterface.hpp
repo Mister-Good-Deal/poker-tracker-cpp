@@ -12,6 +12,7 @@ namespace OCR {
     class OcrInterface {
         public:
             static constexpr double      SIMILARITY_THRESHOLD = 0.05;
+            static constexpr int32_t     OCR_MIN_CONFIDENCE   = 50;
             static constexpr const char* ALL_CHARACTERS       = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ";
 
             OcrInterface();
@@ -23,28 +24,24 @@ namespace OCR {
             auto operator=(const OcrInterface&) -> OcrInterface& = default;
             auto operator=(OcrInterface&&) -> OcrInterface&      = default;
 
-            [[nodiscard]] virtual auto getRankCardArea() const -> cv::Rect = 0;
-            [[nodiscard]] virtual auto getSuitCardArea() const -> cv::Rect = 0;
-            [[nodiscard]] virtual auto getButtonImg() const -> cv::Mat     = 0;
-            [[nodiscard]] virtual auto getButtonMask() const -> cv::Mat    = 0;
-
-            virtual auto readCardRank(cv::Mat& rankImage) const -> Card::Rank          = 0;
-            virtual auto readCardSuit(cv::Mat& suitImage) const -> Card::Suit          = 0;
-            virtual auto readPlayerName(cv::Mat& playerNameImage) const -> std::string = 0;
-            virtual auto readCard(cv::Mat& cardImage) const -> Card;
-            virtual auto readWord(cv::Mat& wordImage) const -> std::string;
-            virtual auto readWordByChar(cv::Mat& wordImage) const -> std::string;
-            virtual auto readNumbers(cv::Mat& numberImage) const -> int32_t;
-
-            [[nodiscard]] auto isSimilar(const cv::Mat& firstImage, const cv::Mat& secondImage,
-                                         double threshold = SIMILARITY_THRESHOLD, cv::InputArray& mask = cv::noArray()) const -> bool;
+            [[nodiscard]] virtual auto getRankCardArea() const -> cv::Rect                                 = 0;
+            [[nodiscard]] virtual auto getSuitCardArea() const -> cv::Rect                                 = 0;
+            [[nodiscard]] virtual auto getButtonImg() const -> cv::Mat                                     = 0;
+            [[nodiscard]] virtual auto getButtonMask() const -> cv::Mat                                    = 0;
+            [[nodiscard]] virtual auto readCardRank(const cv::Mat& rankImage) const -> Card::Rank          = 0;
+            [[nodiscard]] virtual auto readCardSuit(const cv::Mat& suitImage) const -> Card::Suit          = 0;
+            [[nodiscard]] virtual auto readPlayerName(const cv::Mat& playerNameImage) const -> std::string = 0;
+            [[nodiscard]] virtual auto readCard(const cv::Mat& cardImage) const -> Card;
+            [[nodiscard]] virtual auto readWord(const cv::Mat& wordImage) const -> std::string;
+            [[nodiscard]] virtual auto readWordByChar(const cv::Mat& wordImage) const -> std::string;
+            [[nodiscard]] virtual auto readNumbers(const cv::Mat& numberImage) const -> int32_t;
+            [[nodiscard]] auto         isSimilar(const cv::Mat& firstImage, const cv::Mat& secondImage,
+                                                 double threshold = SIMILARITY_THRESHOLD, cv::InputArray& mask = cv::noArray()) const -> bool;
 
         protected:
             auto _cropCentered(cv::Mat& firstImage, cv::Mat& secondImage) const -> void;
 
             [[nodiscard]] auto _cardOcr() const -> const cv::Ptr<OCRTesseract>& { return _tesseractCard; }
-            [[nodiscard]] auto _charOcr() const -> const cv::Ptr<OCRTesseract>& { return _tesseractChar; }
-            [[nodiscard]] auto _wordOcr() const -> const cv::Ptr<OCRTesseract>& { return _tesseractWord; }
             [[nodiscard]] auto _similarityScore(const cv::Mat& firstImage, const cv::Mat& secondImage,
                                                 cv::InputArray& mask = cv::noArray()) const -> double;
 

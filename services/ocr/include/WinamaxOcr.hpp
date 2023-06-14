@@ -24,21 +24,21 @@ namespace OCR {
             [[nodiscard]] auto getButtonImg() const -> cv::Mat override;
             [[nodiscard]] auto getRankCardArea() const -> cv::Rect override;
             [[nodiscard]] auto getSuitCardArea() const -> cv::Rect override;
-
-            auto readCardRank(cv::Mat& rankImage) const -> Card::Rank override;
-            auto readCardSuit(cv::Mat& suitImage) const -> Card::Suit override;
-            auto readPlayerName(cv::Mat& playerNameImage) const -> std::string override;
-            auto readGameAction(cv::Mat& playerNameImage) const -> std::string;
-            auto hasFolded(cv::Mat& handImage) const -> bool;
+            [[nodiscard]] auto readCardRank(const cv::Mat& rankImage) const -> Card::Rank override;
+            [[nodiscard]] auto readCardSuit(const cv::Mat& suitImage) const -> Card::Suit override;
+            [[nodiscard]] auto readPlayerName(const cv::Mat& playerNameImage) const -> std::string override;
+            [[nodiscard]] auto readGameAction(const cv::Mat& actionImage) const -> std::string;
+            [[nodiscard]] auto hasFolded(const cv::Mat& handImage) const -> bool;
+            [[nodiscard]] auto hasButton(const cv::Mat& buttonImage) const -> bool;
 
         private:
             cv::Mat _cardsSkin;
             cv::Mat _buttonImg;
 
             [[nodiscard]] auto _cvColorToString(const cv::Vec3b& color) const -> std::string;
-
-            auto _extractWhiteText(cv::Mat& image) const -> void;
-            auto _extractYellowText(cv::Mat& image) const -> void;
-            auto _colorRangeThreshold(cv::Mat& image, const cv::Scalar& colorLower, const cv::Scalar& colorUpper) const -> void;
+            [[nodiscard]] auto _extractWhiteText(const cv::Mat& image) const -> cv::Mat;
+            [[nodiscard]] auto _extractYellowText(const cv::Mat& image) const -> cv::Mat;
+            [[nodiscard]] auto _colorRangeThreshold(const cv::Mat& image, const cv::Scalar& colorLower,
+                                                    const cv::Scalar& colorUpper) const -> cv::Mat;
     };
 }  // namespace OCR

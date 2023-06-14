@@ -92,8 +92,6 @@ TEST(WinamaxOcrTest, readCardShouldWork) {
 TEST(WinamaxOcrTest, readActionShouldWork) {
     auto raisesTxt = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/raises_text.png");
 
-    cv::imshow("raisesTxt", raisesTxt);
-
     EXPECT_STREQ(Env::winamaxOcr().readGameAction(raisesTxt).c_str(), "RAISES TO 3 BB");
 }
 
@@ -116,9 +114,11 @@ TEST(WinamaxOcrTest, playerHasFoldedShouldWork) {
 }
 
 TEST(WinamaxOcrTest, playerButtonDetectionShouldWork) {
-    auto button = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/screen_btn.png");
+    auto button   = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/screen_btn.png");
+    auto noButton = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/screen_no_btn.png");
 
-    EXPECT_TRUE(Env::winamaxOcr().isSimilar(button, Env::winamaxOcr().getButtonImg(), 0.05, Env::winamaxOcr().getButtonMask()));
+    EXPECT_TRUE(Env::winamaxOcr().hasButton(button));
+    EXPECT_FALSE(Env::winamaxOcr().hasButton(noButton));
 }
 
 auto main(int argc, char* argv[]) -> int {
