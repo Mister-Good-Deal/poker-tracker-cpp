@@ -34,14 +34,14 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build" FORCE)
 endif ()
 
+string(TOLOWER ${CMAKE_BUILD_TYPE} build_type)
+
 #-----------------------------------------------------------------------------------------------------------------------
 # Configure the logger
 #-----------------------------------------------------------------------------------------------------------------------
 
 if (NOT DEFINED QUILL_ACTIVE_LOG_LEVEL)
     message(STATUS "QUILL_ACTIVE_LOG_LEVEL is not set, getting default value based on CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE}")
-
-    string(TOLOWER ${CMAKE_BUILD_TYPE} build_type)
 
     if (${build_type} STREQUAL debug)
         message(STATUS "LOG_LEVEL is set to QUILL_LOG_LEVEL_DEBUG")
@@ -56,6 +56,16 @@ else ()
     message(STATUS "LOG_LEVEL is set to ${QUILL_ACTIVE_LOG_LEVEL}")
 
     add_compile_definitions(QUILL_ACTIVE_LOG_LEVEL=${QUILL_ACTIVE_LOG_LEVEL})
+endif ()
+
+#-----------------------------------------------------------------------------------------------------------------------
+# Configure the debug mode
+#-----------------------------------------------------------------------------------------------------------------------
+
+if (${build_type} STREQUAL debug)
+    message(STATUS "DISPLAY_OPENCV_IMG is set to 1 in DEBUG mode")
+
+    add_compile_definitions(DISPLAY_OPENCV_IMG=1)
 endif ()
 
 #-----------------------------------------------------------------------------------------------------------------------

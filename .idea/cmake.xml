@@ -2,21 +2,36 @@
 <project version="4">
   <component name="CMakeSharedSettings">
     <configurations>
-      <configuration PROFILE_NAME="Debug - Docker poker-bot - gcc" ENABLED="false" GENERATION_DIR="build-gcc" CONFIG_NAME="Debug" TOOLCHAIN_NAME="Docker poker-bot gcc" GENERATION_OPTIONS="-DCMAKE_CXX_COMPILER=/usr/bin/g++ -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON">
+      <configuration PROFILE_NAME="Release - Docker poker-bot - gcc" ENABLED="false" GENERATION_DIR="build-gcc-release" CONFIG_NAME="Release" TOOLCHAIN_NAME="Docker poker-bot gcc" GENERATION_OPTIONS="-DCMAKE_CXX_COMPILER=/usr/bin/g++ -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON">
         <ADDITIONAL_GENERATION_ENVIRONMENT>
           <envs>
             <env name="CXX" value="/usr/bin/g++ CC=/usr/bin/gcc" />
           </envs>
         </ADDITIONAL_GENERATION_ENVIRONMENT>
       </configuration>
-      <configuration PROFILE_NAME="Debug - Docker poker-bot - clang" ENABLED="true" GENERATION_DIR="build-clang" CONFIG_NAME="Debug" TOOLCHAIN_NAME="Docker poker-bot clang" GENERATION_OPTIONS="-DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON">
+      <configuration PROFILE_NAME="Debug - Docker poker-bot - gcc" ENABLED="false" GENERATION_DIR="build-gcc-debug" CONFIG_NAME="Debug" TOOLCHAIN_NAME="Docker poker-bot gcc" GENERATION_OPTIONS="-DCMAKE_CXX_COMPILER=/usr/bin/g++ -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON">
+        <ADDITIONAL_GENERATION_ENVIRONMENT>
+          <envs>
+            <env name="CXX" value="/usr/bin/g++ CC=/usr/bin/gcc" />
+          </envs>
+        </ADDITIONAL_GENERATION_ENVIRONMENT>
+      </configuration>
+      <configuration PROFILE_NAME="Release - Docker poker-bot - clang" ENABLED="true" GENERATION_DIR="build-clang-release" CONFIG_NAME="Release" TOOLCHAIN_NAME="Docker poker-bot clang" GENERATION_OPTIONS="-DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON">
         <ADDITIONAL_GENERATION_ENVIRONMENT>
           <envs>
             <env name="CXX" value="/usr/bin/clang++ CC=/usr/bin/clang" />
           </envs>
         </ADDITIONAL_GENERATION_ENVIRONMENT>
       </configuration>
-      <configuration PROFILE_NAME="Debug - Docker poker-bot - mingw" ENABLED="false" GENERATION_DIR="build-mingw" CONFIG_NAME="Debug" TOOLCHAIN_NAME="Docker poker-bot mingw" GENERATION_OPTIONS="-DCMAKE_MAKE_PROGRAM=/usr/bin/make -DCMAKE_TOOLCHAIN_FILE=/app/cmake/mingw-w64-x86_64.cmake -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON" />
+      <configuration PROFILE_NAME="Debug - Docker poker-bot - clang" ENABLED="true" GENERATION_DIR="build-clang-debug" CONFIG_NAME="Debug" TOOLCHAIN_NAME="Docker poker-bot clang" GENERATION_OPTIONS="-DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON">
+        <ADDITIONAL_GENERATION_ENVIRONMENT>
+          <envs>
+            <env name="CXX" value="/usr/bin/clang++ CC=/usr/bin/clang" />
+          </envs>
+        </ADDITIONAL_GENERATION_ENVIRONMENT>
+      </configuration>
+      <configuration PROFILE_NAME="Release - Docker poker-bot - mingw" ENABLED="false" GENERATION_DIR="build-mingw-release" CONFIG_NAME="Release" TOOLCHAIN_NAME="Docker poker-bot mingw" GENERATION_OPTIONS="-DCMAKE_MAKE_PROGRAM=/usr/bin/make -DCMAKE_TOOLCHAIN_FILE=/app/cmake/mingw-w64-x86_64.cmake -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON" />
+      <configuration PROFILE_NAME="Debug - Docker poker-bot - mingw" ENABLED="false" GENERATION_DIR="build-mingw-debug" CONFIG_NAME="Debug" TOOLCHAIN_NAME="Docker poker-bot mingw" GENERATION_OPTIONS="-DCMAKE_MAKE_PROGRAM=/usr/bin/make -DCMAKE_TOOLCHAIN_FILE=/app/cmake/mingw-w64-x86_64.cmake -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON" />
     </configurations>
   </component>
 </project>
