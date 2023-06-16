@@ -115,6 +115,22 @@ TEST(WinamaxOcrTest, readBetAmountShouldWork) {
     EXPECT_EQ(Env::winamaxOcr().readPlayerBet(threeHundredAndFifteenImg), 315);
 }
 
+TEST(WinamaxOcrTest, readPotAmountShouldWork) {
+    auto oneDotFiftyBBImg       = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/pot/1_dot_50_BB.png");
+    auto fourBBImg              = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/pot/4_BB.png");
+    auto sixHundredAndThirtyImg = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/pot/630.png");
+
+    EXPECT_EQ(Env::winamaxOcr().readPotInBB(oneDotFiftyBBImg), 1.5);
+    EXPECT_EQ(Env::winamaxOcr().readPotInBB(fourBBImg), 4);
+    EXPECT_EQ(Env::winamaxOcr().readPot(sixHundredAndThirtyImg), 630);
+}
+
+TEST(WinamaxOcrTest, readPrizePoolAmountShouldWork) {
+    auto twenty = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/prize_pool/20.png");
+
+    EXPECT_EQ(Env::winamaxOcr().readPrizePool(twenty), 20);
+}
+
 TEST(WinamaxOcrTest, playerHasFoldedShouldWork) {
     auto cardsSkin = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards_skins/skin_1.png");
     auto hands     = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards_skins/hand.png");

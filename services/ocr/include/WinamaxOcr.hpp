@@ -27,9 +27,13 @@ namespace OCR {
             [[nodiscard]] auto readCardRank(const cv::Mat& rankImage) const -> Card::Rank override;
             [[nodiscard]] auto readCardSuit(const cv::Mat& suitImage) const -> Card::Suit override;
             [[nodiscard]] auto readPlayerName(const cv::Mat& playerNameImage) const -> std::string override;
+
             [[nodiscard]] auto readGameAction(const cv::Mat& actionImage) const -> std::string;
-            [[nodiscard]] auto readPlayerBet(const cv::Mat& playerBetImage) const -> double;
+            [[nodiscard]] auto readPlayerBet(const cv::Mat& playerBetImage) const -> int32_t;
             [[nodiscard]] auto readPlayerBetInBB(const cv::Mat& playerBetInBBImage) const -> double;
+            [[nodiscard]] auto readPot(const cv::Mat& potImage) const -> int32_t;
+            [[nodiscard]] auto readPotInBB(const cv::Mat& potInBBImage) const -> double;
+            [[nodiscard]] auto readPrizePool(const cv::Mat& prizePoolImage) const -> int32_t;
             [[nodiscard]] auto hasFolded(const cv::Mat& handImage) const -> bool;
             [[nodiscard]] auto hasButton(const cv::Mat& buttonImage) const -> bool;
 

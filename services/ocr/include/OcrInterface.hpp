@@ -34,8 +34,8 @@ namespace OCR {
             [[nodiscard]] virtual auto readCard(const cv::Mat& cardImage) const -> Card;
             [[nodiscard]] virtual auto readWord(const cv::Mat& wordImage) const -> std::string;
             [[nodiscard]] virtual auto readWordByChar(const cv::Mat& wordImage) const -> std::string;
-            [[nodiscard]] virtual auto readNumbers(const cv::Mat& numberImage) const -> double;
-            [[nodiscard]] virtual auto readNumbersInBB(const cv::Mat& numberInBBImage) const -> double;
+            [[nodiscard]] virtual auto readIntNumbers(const cv::Mat& intNumberImage) const -> int32_t;
+            [[nodiscard]] virtual auto readFloatNumbers(const cv::Mat& floatNumberImage) const -> double;
             [[nodiscard]] auto         isSimilar(const cv::Mat& firstImage, const cv::Mat& secondImage,
                                                  double threshold = SIMILARITY_THRESHOLD, cv::InputArray& mask = cv::noArray()) const -> bool;
 
@@ -50,8 +50,8 @@ namespace OCR {
             cv::Ptr<OCRTesseract> _tesseractCard;
             cv::Ptr<OCRTesseract> _tesseractWord;
             cv::Ptr<OCRTesseract> _tesseractChar;
-            cv::Ptr<OCRTesseract> _tesseractNumbers;
-            cv::Ptr<OCRTesseract> _tesseractNumbersInBB;
+            cv::Ptr<OCRTesseract> _tesseractIntNumbers;
+            cv::Ptr<OCRTesseract> _tesseractFloatNumbers;
     };
 
 }  // namespace OCR

@@ -45,15 +45,25 @@ namespace OCR {
 
             return value;
         }
+
+        static inline auto constexpr toInt(std::string_view s) -> int32_t {
+            int32_t value = 0;
+
+            auto error = std::from_chars(s.begin(), s.end(), value);
+
+            if (error.ec != std::errc()) { throw std::runtime_error("Could not convert string to int"); }
+
+            return value;
+        }
     }  // namespace
 
     OcrInterface::OcrInterface() {
         // DEFAULT datapath = "/usr/local/share/tessdata"
-        _tesseractCard        = cv::text::OCRTesseract::create(nullptr, "eng", "23456789TJQKA", OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
-        _tesseractWord        = cv::text::OCRTesseract::create(nullptr, "eng", ALL_CHARACTERS, OEM_CUBE_ONLY, PSM_SINGLE_BLOCK);
-        _tesseractChar        = cv::text::OCRTesseract::create(nullptr, "eng", ALL_CHARACTERS, OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
-        _tesseractNumbers     = cv::text::OCRTesseract::create(nullptr, "eng", "0123456789, ", OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
-        _tesseractNumbersInBB = cv::text::OCRTesseract::create(nullptr, "eng", "0123456789,B ", OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
+        _tesseractCard         = cv::text::OCRTesseract::create(nullptr, "eng", "23456789TJQKA", OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
+        _tesseractWord         = cv::text::OCRTesseract::create(nullptr, "eng", ALL_CHARACTERS, OEM_CUBE_ONLY, PSM_SINGLE_BLOCK);
+        _tesseractChar         = cv::text::OCRTesseract::create(nullptr, "eng", ALL_CHARACTERS, OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
+        _tesseractIntNumbers   = cv::text::OCRTesseract::create(nullptr, "eng", "0123456789 ", OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
+        _tesseractFloatNumbers = cv::text::OCRTesseract::create(nullptr, "eng", "0123456789,.B ", OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
     }
 
     auto OCR::OcrInterface::readCard(const cv::Mat& cardImage) const -> Card {
@@ -79,23 +89,26 @@ namespace OCR {
         return word;
     }
 
-    auto OcrInterface::readNumbersInBB(const cv::Mat& numberInBBImage) const -> double {
-        auto numberInBB = _tesseractNumbersInBB->run(numberInBBImage, OCR_MIN_CONFIDENCE);
-
-        fullTrim(numberInBB);
-        removeChar(numberInBB, 'B');
-        replaceChar(numberInBB, ',', '.');
-
-        return toFloat(numberInBB);
-    }
-
-    auto OcrInterface::readNumbers(const cv::Mat& numberImage) const -> double {
-        auto number = _tesseractNumbers->run(numberImage, OCR_MIN_CONFIDENCE);
+    auto OcrInterface::readFloatNumbers(const cv::Mat& floatNumberImage) const -> double {
+        auto number = _tesseractFloatNumbers->run(floatNumberImage, OCR_MIN_CONFIDENCE);
 
         fullTrim(number);
+        removeChar(number, 'B');
         replaceChar(number, ',', '.');
 
+        LOG_DEBUG(Logger::getLogger(), "readFloatNumbers string: {}", number);
+
         return toFloat(number);
+    }
+
+    auto OcrInterface::readIntNumbers(const cv::Mat& intNumberImage) const -> int32_t {
+        auto number = _tesseractIntNumbers->run(intNumberImage, OCR_MIN_CONFIDENCE);
+
+        fullTrim(number);
+
+        LOG_DEBUG(Logger::getLogger(), "readIntNumbers string: {}", number);
+
+        return toInt(number);
     }
 
     auto OcrInterface::isSimilar(const cv::Mat& firstImage, const cv::Mat& secondImage, double threshold, cv::InputArray& mask) const
