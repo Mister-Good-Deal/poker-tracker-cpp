@@ -73,6 +73,7 @@ endif ()
 #-----------------------------------------------------------------------------------------------------------------------
 
 add_subdirectory(services/logger)
+add_subdirectory(services/utilities)
 add_subdirectory(services/game_handler)
 add_subdirectory(services/ocr)
 add_subdirectory(services/scraper)

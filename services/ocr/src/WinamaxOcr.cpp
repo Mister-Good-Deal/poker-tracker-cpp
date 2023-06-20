@@ -1,6 +1,7 @@
 #include "WinamaxOcr.hpp"
 
 #include <Logger.hpp>
+#include <Macros.hpp>
 
 namespace OCR {
     using Logger = Logger::Quill;
@@ -112,6 +113,8 @@ namespace OCR {
 
         cv::cvtColor(image, hsvImage, cv::COLOR_BGR2HSV);
         cv::inRange(hsvImage, colorLower, colorUpper, result);
+
+        DISPLAY_IMAGE("colorRangeThreshold", result);
 
         return result;
     }

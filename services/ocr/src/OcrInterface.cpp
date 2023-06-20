@@ -3,6 +3,7 @@
 #include <charconv>
 
 #include <Logger.hpp>
+#include <Macros.hpp>
 
 namespace OCR {
     using Logger = Logger::Quill;
@@ -97,6 +98,7 @@ namespace OCR {
         replaceChar(number, ',', '.');
 
         LOG_DEBUG(Logger::getLogger(), "readFloatNumbers string: {}", number);
+        DISPLAY_IMAGE("readFloatNumbers", floatNumberImage);
 
         return toFloat(number);
     }
@@ -107,6 +109,7 @@ namespace OCR {
         fullTrim(number);
 
         LOG_DEBUG(Logger::getLogger(), "readIntNumbers string: {}", number);
+        DISPLAY_IMAGE("readIntNumbers", intNumberImage);
 
         return toInt(number);
     }
