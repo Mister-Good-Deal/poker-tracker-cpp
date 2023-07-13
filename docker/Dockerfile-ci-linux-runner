@@ -1,188 +1,31 @@
-FROM gcc:bullseye
+ARG CI_REGISTRY
+ARG CI_REGISTRY_BUILDER_ROOT_IMAGE
 
-ARG CMAKE_VERSION
-ARG CLANG_VERSION
-ARG OPENJPEG_VERSION
-ARG WEBP_VERSION
-ARG TIFF_VERSION
-ARG PNG_VERSION
-ARG ZLIB_VERSION
-ARG LEPTONICA_VERSION
-ARG TESSERACT_VERSION
-ARG OPENCV_VERSION
-ARG NLOHMANN_JSON_VERSION
-ARG FMT_VERSION
-ARG QUILL_VERSION
-ARG LIBUV_VERSION
-ARG U_WEB_SOCKETS_VERSION
-ARG GOOGLETEST_VERSION
+FROM ${CI_REGISTRY}/${CI_REGISTRY_BUILDER_ROOT_IMAGE}:latest
+
 ARG CODE_CHECKER_VERSION
 ARG CPP_CHECK_VERSION
 ARG MAX_CPU_CORES
 
-RUN apt-get update && apt-get install -y git python3-dev python3-venv python3-setuptools
-
-# @todo skip all those install by making codeChecker working with alpine linux, python and muscl_libc problems
-
-# Install CMake with the given CMAKE_VERSION version from https://github.com/Kitware/CMake
-RUN wget https://gitlab.kitware.com/cmake/cmake/-/archive/v${CMAKE_VERSION}/cmake-v${CMAKE_VERSION}.tar.gz \
-    -q -O /tmp/cmake-v${CMAKE_VERSION}.tar.gz && \
-    cd /tmp && tar -xvzf cmake-v${CMAKE_VERSION}.tar.gz && cd cmake-v${CMAKE_VERSION} && \
-    ./bootstrap --parallel=${MAX_CPU_CORES} -- -DCMAKE_USE_OPENSSL=ON && make -j ${MAX_CPU_CORES} && make install && \
-    rm -rf /tmp/cmake-v${CMAKE_VERSION}.tar.gz /tmp/cmake-v${CMAKE_VERSION}
-
-# Install Clang with the given CLANG_VERSION version from https://github.com/llvm/llvm-project
-RUN git clone https://github.com/llvm/llvm-project.git && cd llvm-project && git checkout llvmorg-${CLANG_VERSION} && \
-    cmake -S llvm -B build -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra" && \
-    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
-    cd .. && rm -rf llvm-project
-
-ENV CMAKE_COMMON_OPTION="-DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON"
-
-# Install zlib with the given ZLIB_VERSION version from https://github.com/madler/zlib
-RUN wget https://github.com/madler/zlib/archive/refs/tags/v${ZLIB_VERSION}.tar.gz \
-    -q -O /tmp/zlib-${ZLIB_VERSION}.tar.gz && \
-    cd /tmp && ls && tar -xvzf zlib-${ZLIB_VERSION}.tar.gz && cd zlib-${ZLIB_VERSION} && \
-    cmake -S . -B build ${CMAKE_COMMON_OPTION} && \
-    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
-    rm -rf /tmp/zlib-${ZLIB_VERSION}.tar.gz /tmp/zlib-${ZLIB_VERSION}
-
-## Install openjepg with the given OPENJPEG_VERSION from https://github.com/uclouvain/openjpeg
-#RUN wget https://github.com/uclouvain/openjpeg/archive/refs/tags/v${OPENJPEG_VERSION}.tar.gz \
-#    -q -O /tmp/openjpeg-${OPENJPEG_VERSION}.tar.gz && \
-#    cd /tmp && tar -xvzf openjpeg-${OPENJPEG_VERSION}.tar.gz && cd openjpeg-${OPENJPEG_VERSION} && \
-#    cmake -S . -B build ${CMAKE_COMMON_OPTION} && \
-#    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
-#    rm -rf /tmp/openjpeg-${OPENJPEG_VERSION}.tar.gz /tmp/openjpeg-${OPENJPEG_VERSION}
-
-# Install webp with the given WEBP_VERSION from https://github.com/webmproject/libwebp
-RUN wget https://github.com/webmproject/libwebp/archive/refs/tags/v${WEBP_VERSION}.tar.gz \
-    -q -O /tmp/libwebp-${WEBP_VERSION}.tar.gz && \
-    cd /tmp && tar -xvzf libwebp-${WEBP_VERSION}.tar.gz && cd libwebp-${WEBP_VERSION} && \
-    cmake -S . -B build ${CMAKE_COMMON_OPTION} && \
-    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
-    rm -rf /tmp/libwebp-${WEBP_VERSION}.tar.gz /tmp/libwebp-${WEBP_VERSION}
-
-# Install tiff with the given TIFF_VERSION from http://download.osgeo.org/libtiff/
-RUN wget http://download.osgeo.org/libtiff/tiff-${TIFF_VERSION}.tar.gz \
-    -q -O /tmp/tiff-${TIFF_VERSION}.tar.gz && \
-    cd /tmp && tar -xvzf tiff-${TIFF_VERSION}.tar.gz && cd tiff-${TIFF_VERSION} && \
-    cmake -S . -B build ${CMAKE_COMMON_OPTION} && \
-    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
-    rm -rf /tmp/tiff-${TIFF_VERSION}.tar.gz /tmp/tiff-${TIFF_VERSION}
-
-# Install PNG with the given PNG_VERSION from https://github.com/glennrp/libpng
-RUN wget https://github.com/glennrp/libpng/archive/refs/tags/v${PNG_VERSION}.tar.gz \
-    -q -O /tmp/libpng-${PNG_VERSION}.tar.gz && \
-    cd /tmp && tar -xvzf libpng-${PNG_VERSION}.tar.gz && cd libpng-${PNG_VERSION} && \
-    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DPNG_TESTS=OFF && \
-    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
-    rm -rf /tmp/libpng-${PNG_VERSION}.tar.gz /tmp/libpng-${PNG_VERSION}
-
-# Install leptonica with the given LEPTONICA_VERSION from https://github.com/DanBloomberg/leptonica
-RUN wget https://github.com/DanBloomberg/leptonica/archive/refs/tags/${LEPTONICA_VERSION}.tar.gz \
-    -q -O /tmp/leptonica-${LEPTONICA_VERSION}.tar.gz && \
-    cd /tmp && tar -xvzf leptonica-${LEPTONICA_VERSION}.tar.gz && cd leptonica-${LEPTONICA_VERSION} && \
-    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DBUILD_PROG=OFF -DSW_BUILD=OFF && \
-    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
-    rm -rf /tmp/leptonica-${LEPTONICA_VERSION}.tar.gz /tmp/leptonica-${LEPTONICA_VERSION}
-
-# Install tesseract with the given TESSERACT_VERSION from https://github.com/tesseract-ocr/tesseract
-RUN wget https://github.com/tesseract-ocr/tesseract/archive/refs/tags/${TESSERACT_VERSION}.tar.gz \
-    -q -O /tmp/tesseract-${TESSERACT_VERSION}.tar.gz && \
-    cd /tmp && tar -xvzf tesseract-${TESSERACT_VERSION}.tar.gz && cd tesseract-${TESSERACT_VERSION} && \
-    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DSW_BUILD=OFF -DBUILD_TRAINING_TOOLS=OFF -DGRAPHICS_DISABLED=ON -DENABLE_LTO=ON && \
-    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
-    rm -rf /tmp/tesseract-${TESSERACT_VERSION}.tar.gz /tmp/tesseract-${TESSERACT_VERSION}
-
-# Get tesseract latin trained data for tesseract
-ENV TESSDATA_PREFIX "/usr/local/share/tessdata"
-# tessdata_fast fail on detecting Queen 'Q' on Winamax OCR
-RUN mkdir -p ${TESSDATA_PREFIX} && \
-    wget https://github.com/tesseract-ocr/tessdata_best/raw/main/eng.traineddata -q -O ${TESSDATA_PREFIX}/eng.traineddata
-
-# Install OpenCV with the given OPENCV_VERSION from https://github.com/opencv/opencv
-RUN wget https://github.com/opencv/opencv/archive/refs/tags/${OPENCV_VERSION}.tar.gz -q -O /tmp/opencv-${OPENCV_VERSION}.tar.gz && \
-    wget https://github.com/opencv/opencv_contrib/archive/refs/tags/${OPENCV_VERSION}.tar.gz \
-    -q -O /tmp/opencv_contrib-${OPENCV_VERSION}.tar.gz && \
-    cd /tmp && tar -xvzf opencv-${OPENCV_VERSION}.tar.gz && tar -xvzf opencv_contrib-${OPENCV_VERSION}.tar.gz && \
-    cd opencv-${OPENCV_VERSION} && \
-    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DBUILD_LIST="core,highgui,imgcodecs,text" \
-    -DOPENCV_EXTRA_MODULES_PATH="../opencv_contrib-${OPENCV_VERSION}/modules" -DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF \
-    -DWITH_OPENCL=OFF -DENABLE_CXX11=ON && \
-    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
-    rm -rf /tmp/opencv-${OPENCV_VERSION}.tar.gz /tmp/opencv-${OPENCV_VERSION} /tmp/opencv_contrib-${OPENCV_VERSION}.tar.gz \
-    /tmp/opencv_contrib-${OPENCV_VERSION}
-
-# Install nlohmann_json with the given NLOHMANN_JSON_VERSION version from https://github.com/nlohmann/json
-RUN wget https://github.com/nlohmann/json/archive/refs/tags/v${NLOHMANN_JSON_VERSION}.tar.gz \
-    -q -O /tmp/json-${NLOHMANN_JSON_VERSION}.tar.gz && \
-    cd /tmp && ls && tar -xvzf json-${NLOHMANN_JSON_VERSION}.tar.gz && cd json-${NLOHMANN_JSON_VERSION} && \
-    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DJSON_BuildTests=OFF && \
-    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
-    rm -rf /tmp/json-${NLOHMANN_JSON_VERSION}.tar.gz /tmp/json-${NLOHMANN_JSON_VERSION}
-
-# Install fmt with the given FMT_VERSION version from https://github.com/fmtlib/fmt
-RUN wget https://github.com/fmtlib/fmt/archive/refs/tags/${FMT_VERSION}.tar.gz \
-    -q -O /tmp/fmt-${FMT_VERSION}.tar.gz && \
-    cd /tmp && ls && tar -xvzf fmt-${FMT_VERSION}.tar.gz && cd fmt-${FMT_VERSION} && \
-    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DFMT_DOC=OFF -DFMT_TEST=OFF && \
-    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
-    rm -rf /tmp/fmt-${FMT_VERSION}.tar.gz /tmp/fmt-${FMT_VERSION}
-
-# Install quill with the given QUILL_VERSION version from https://github.com/odygrd/quill
-RUN wget https://github.com/odygrd/quill/archive/refs/tags/v${QUILL_VERSION}.tar.gz \
-    -q -O /tmp/quill-${QUILL_VERSION}.tar.gz && \
-    cd /tmp && ls && tar -xvzf quill-${QUILL_VERSION}.tar.gz && cd quill-${QUILL_VERSION} && \
-    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DQUILL_FMT_EXTERNAL=ON && \
-    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
-    rm -rf /tmp/quill-${QUILL_VERSION}.tar.gz /tmp/quill-${QUILL_VERSION}
-
-# Install libuv with the given LIBUV_VERSION version from https://github.com/libuv/libuv
-RUN wget https://github.com/libuv/libuv/archive/refs/tags/v${LIBUV_VERSION}.tar.gz \
-    -q -O /tmp/libuv-${LIBUV_VERSION}.tar.gz && \
-    cd /tmp && ls && tar -xvzf libuv-${LIBUV_VERSION}.tar.gz && cd libuv-${LIBUV_VERSION} && \
-    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DWITH_OPENSSL=OFF -DLIBUV_BUILD_TESTS=OFF && \
-    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
-    rm -rf /tmp/libuv-${LIBUV_VERSION}.tar.gz /tmp/libuv-${LIBUV_VERSION}
-
-# Install uWebSockets with the given U_WEB_SOCKETS_VERSION version from forked https://github.com/ZiperRom1/uWebSockets
-RUN wget https://github.com/ZiperRom1/uWebSockets/releases/download/v${U_WEB_SOCKETS_VERSION}/uWebSockets-${U_WEB_SOCKETS_VERSION}.tar.gz \
-    -q -O /tmp/uWebSockets-${U_WEB_SOCKETS_VERSION}.tar.gz && \
-    cd /tmp && ls && tar -xvzf uWebSockets-${U_WEB_SOCKETS_VERSION}.tar.gz && cd uWebSockets-${U_WEB_SOCKETS_VERSION} && \
-    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DWITH_OPENSSL=OFF -DWITH_QUIC=OFF -DWITH_LIBUV=ON -DWITH_ZLIB=ON && \
-    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
-    rm -rf /tmp/uWebSockets-${U_WEB_SOCKETS_VERSION}.tar.gz /tmp/uWebSockets-${U_WEB_SOCKETS_VERSION}
-
-# Install googleTest with the given GOOGLETEST_VERSION version from https://github.com/google/googletest
-RUN wget https://github.com/google/googletest/archive/refs/tags/v${GOOGLETEST_VERSION}.tar.gz \
-    -q -O /tmp/googletest-${GOOGLETEST_VERSION}.tar.gz && \
-    cd /tmp && tar -xvzf googletest-${GOOGLETEST_VERSION}.tar.gz && cd googletest-${GOOGLETEST_VERSION} && \
-    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DGTEST_CREATE_SHARED_LIBRARY=ON && \
-    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
-    rm -rf /tmp/googletest-${GOOGLETEST_VERSION}.tar.gz /tmp/googletest-${GOOGLETEST_VERSION}
-
-# @todo End of todo
+RUN apk add --no-cache clang16-headers git curl python3-dev py3-virtualenv py3-setuptools
 
 # Install cpp-check with the given CPP_CHECK_VERSION version from https://github.com/danmar/cppcheck
 RUN wget https://github.com/danmar/cppcheck/archive/refs/tags/${CPP_CHECK_VERSION}.tar.gz \
     -q -O /tmp/cppcheck-${CPP_CHECK_VERSION}.tar.gz && \
     cd /tmp && tar -xvzf cppcheck-${CPP_CHECK_VERSION}.tar.gz && cd cppcheck-${CPP_CHECK_VERSION} && \
-    mkdir build && cd build && cmake .. && make -j ${MAX_CPU_CORES} && make install && \
+    CXX=/usr/bin/clang++ CC=/usr/bin/clang cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DUSE_MATCHCOMPILER=ON \
+    -DRUN_CLANG_TIDY_NAMES=/usr/bin/run-clang-tidy -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON && \
+    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
     rm -rf /tmp/cppcheck-${CPP_CHECK_VERSION}.tar.gz /tmp/cppcheck-${CPP_CHECK_VERSION}
 
 # Install codeChecker with the given CODE_CHECKER_VERSION version from https://github.com/Ericsson/codechecker
-RUN wget https://github.com/Ericsson/codechecker/archive/refs/tags/v${CODE_CHECKER_VERSION}.tar.gz \
+# @fixme Use a forked version of codeChecker to fix logger compilation issue https://github.com/ZiperRom1/codechecker/tree/master
+RUN wget https://github.com/ZiperRom1/codechecker/archive/refs/tags/v${CODE_CHECKER_VERSION}.tar.gz \
     -q -O /opt/codechecker-${CODE_CHECKER_VERSION}.tar.gz && \
     cd /opt && tar -xvzf codechecker-${CODE_CHECKER_VERSION}.tar.gz && cd codechecker-${CODE_CHECKER_VERSION} && \
+    make venv && source venv/bin/activate && \
     BUILD_LOGGER_64_BIT_ONLY=YES BUILD_UI_DIST=NO make standalone_package && \
     rm -rf /opt/codechecker-${CODE_CHECKER_VERSION}.tar.gz
-
-# Install graphviz with the package manager
-RUN apt-get install -y graphviz && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN export CC="/usr/local/bin/clang" && export CXX="/usr/local/bin/clang++"
 
 ENV PATH="${PATH}:/opt/codechecker-${CODE_CHECKER_VERSION}/build/CodeChecker/bin"
 
