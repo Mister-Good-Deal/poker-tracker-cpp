@@ -2,8 +2,8 @@
 
 #include <opencv4/opencv2/imgcodecs.hpp>
 
-#include "CardFactory.hpp"
-#include "WinamaxOcr.hpp"
+#include <CardFactory.hpp>
+#include <WinamaxOcr.hpp>
 
 using GameHandler::Factory::card;
 using OCR::WinamaxOcr;
@@ -11,17 +11,9 @@ using OCR::WinamaxOcr;
 using enum GameHandler::Card::Suit;
 using enum GameHandler::Card::Rank;
 
-#define EXPECT_THROW_WITH_MESSAGE(code, exception_type, expected_message) \
-    do                                                                    \
-    {                                                                     \
-        EXPECT_THROW(                                                     \
-            try { code; } catch (const exception_type& e) {               \
-                EXPECT_STREQ(e.what(), expected_message);                 \
-                throw;                                                    \
-            },                                                            \
-            exception_type);                                              \
-    } while (0)
-
+/**
+ * Avoid to load the OCR model for each test, it takes a lot of time (~1s).
+ */
 class Env : public ::testing::Environment {
     public:
         static auto winamaxOcr() -> const WinamaxOcr {
@@ -89,24 +81,72 @@ TEST(WinamaxOcrTest, readCardShouldWork) {
     EXPECT_EQ(Env::winamaxOcr().readCard(kingOfClub), card("KC"));
 }
 
-TEST(WinamaxOcrTest, readWordShouldWork) {
-    auto parole = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/txt_parole.png");
+TEST(WinamaxOcrTest, readActionShouldWork) {
+    auto raisesTxt = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/raises_text.png");
 
-    EXPECT_STREQ(Env::winamaxOcr().readWord(parole).c_str(), "PAROLE");
+    EXPECT_STREQ(Env::winamaxOcr().readGameAction(raisesTxt).c_str(), "RAISES TO 3 BB");
 }
 
-TEST(WinamaxOcrTest, DISABLED_playerHasFoldedShouldWork) {
-    // @fixme cannot set class cv::Mat attribute when using Env::winamaxOcr() ...
-    WinamaxOcr ocr;
-    // @todo Test same size skins
-    auto cardsSkin1       = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards_skins/skin_1.png");
-    auto cardsSkin2       = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards_skins/skin_2.png");
-    auto cardsSkinCompare = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards_skins/skin_1.png");
+TEST(WinamaxOcrTest, readPlayerNameShouldWork) {
+    auto player1NameImg = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/player_name/name_1.png");
+    auto player2NameImg = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/player_name/name_2.png");
+    auto player3NameImg = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/player_name/name_3.png");
 
-    ocr.setCardsSkin(cardsSkinCompare);
+    EXPECT_STREQ(Env::winamaxOcr().readPlayerName(player1NameImg).c_str(), "_Mister_");
+    //    EXPECT_STREQ(Env::winamaxOcr().readPlayerName(player2NameImg).c_str(), "G00dspeed"); // @todo fixme
+    EXPECT_STREQ(Env::winamaxOcr().readPlayerName(player3NameImg).c_str(), "sucre_461406");
+}
 
-    EXPECT_FALSE(ocr.hasFolded(cardsSkin1));
-    EXPECT_TRUE(ocr.hasFolded(cardsSkin2));
+TEST(WinamaxOcrTest, readBetAmountShouldWork) {
+    auto zeroDotFiftyBBImg         = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/bets/0_dot_50_BB.png");
+    auto oneBBImg                  = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/bets/1_BB.png");
+    auto threeHundredAndFifteenImg = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/bets/315.png");
+
+    EXPECT_EQ(Env::winamaxOcr().readPlayerBetInBB(zeroDotFiftyBBImg), 0.5);
+    EXPECT_EQ(Env::winamaxOcr().readPlayerBetInBB(oneBBImg), 1);
+    EXPECT_EQ(Env::winamaxOcr().readPlayerBet(threeHundredAndFifteenImg), 315);
+}
+
+TEST(WinamaxOcrTest, readPotAmountShouldWork) {
+    auto oneDotFiftyBBImg       = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/pot/1_dot_50_BB.png");
+    auto fourBBImg              = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/pot/4_BB.png");
+    auto sixHundredAndThirtyImg = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/pot/630.png");
+
+    EXPECT_EQ(Env::winamaxOcr().readPotInBB(oneDotFiftyBBImg), 1.5);
+    EXPECT_EQ(Env::winamaxOcr().readPotInBB(fourBBImg), 4);
+    EXPECT_EQ(Env::winamaxOcr().readPot(sixHundredAndThirtyImg), 630);
+}
+
+TEST(WinamaxOcrTest, DISABLED_readPrizePoolAmountShouldWork) {
+    // @todo Learn tesseract on specific font https://github.com/tesseract-ocr/tesstrain https://www.youtube.com/watch?v=KE4xEzFGSU8
+    // @link https://www.myfonts.com/products/fat-corner-b-276039
+    // @link https://www.myfonts.com/products/wide-blunt-183803
+    // @link https://www.myfonts.com/products/blind-leco-1988-273748
+    auto twenty = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/prize_pool/20.png");
+
+    EXPECT_EQ(Env::winamaxOcr().readPrizePool(twenty), 20);
+}
+
+TEST(WinamaxOcrTest, readBlindLevelShouldWork) {}
+
+TEST(WinamaxOcrTest, readBlindAmountShouldWork) {}
+
+TEST(WinamaxOcrTest, readGameTimeDurationShouldWork) {}
+
+TEST(WinamaxOcrTest, playerHasFoldedShouldWork) {
+    auto cardsSkin = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards_skins/skin_1.png");
+    auto hands     = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards_skins/hand.png");
+
+    EXPECT_TRUE(Env::winamaxOcr().hasFolded(hands));
+    EXPECT_FALSE(Env::winamaxOcr().hasFolded(cardsSkin));
+}
+
+TEST(WinamaxOcrTest, playerButtonDetectionShouldWork) {
+    auto button   = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/screen_btn.png");
+    auto noButton = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/screen_no_btn.png");
+
+    EXPECT_TRUE(Env::winamaxOcr().hasButton(button));
+    EXPECT_FALSE(Env::winamaxOcr().hasButton(noButton));
 }
 
 auto main(int argc, char* argv[]) -> int {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Hand.hpp"
+#include <Hand.hpp>
 
 namespace GameHandler {
     class Player {
@@ -12,7 +12,7 @@ namespace GameHandler {
 
             virtual ~Player() = default;
 
-            auto operator=(const Player& other) -> Player&;
+            auto operator=(const Player& other) -> Player& = default;
             auto operator=(Player&& other) noexcept -> Player&;
 
             [[nodiscard]] auto getName() const -> std::string { return _name; }

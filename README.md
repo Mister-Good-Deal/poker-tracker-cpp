@@ -17,31 +17,166 @@ players short stack style (Spin and Go).
   mouse and graphics
 - [nlohmann-json](https://github.com/nlohmann/json) - Allow to use JSON representation of a game for archived and later
   reprocessing
+- [quill](https://github.com/odygrd/quill) - Quill is a cross-platform low latency logging library based on C++14/C++17.
+- [uwebsockets](https://github.com/uNetworking/uWebSockets) - Simple, secure & standards compliant web server for the most
+  demanding of applications
 - [GoogleTest](https://github.com/google/googletest) - Testing library for runnings services unit tests
 
 ## Services
 
-The bot is composed of multiple services which are working together.
+The bot is composed of multiple services that work together to provide its functionality.
 
-### Game handler
+### Logger
 
-This service represents the game status and historic.
+This service is responsible for handling logging functionalities. It provides logging capabilities for the entire bot.
 
-It logs all the game's events and can serialize them in JSON format.
+*Services used*
+
+- None
+
+*Libraries used*
+
+- quill
+
+### Game Handler
+
+This service represents the game status and history. It logs all the game's events and can serialize them in JSON format.
+
+*Services used*
+
+- Logger
 
 *Libraries used*
 
 - nlohmann-json
 
+### Websockets
+
+This service handles communication between the poker bot via websockets and the frontend app. It enables real-time data exchange between the
+bot and the frontend VueJs application.
+
+*Services used*
+
+- Logger
+
+*Libraries used*
+
+- uwebsockets
+
 ### OCR
 
-This service reads inputs from a poker room screenshot to extract all needed information from it.
+This service reads inputs from a poker room screenshot and extracts all the necessary information from it using optical character
+recognition (OCR) techniques.
+
+*Services used*
+
+- Logger
+- Game Handler
 
 *Libraries used*
 
 - OpenCV
 
-### todo
+### Scrapper
+
+This service scrapes data from the poker room's user interface to gather information about ongoing games, players, and other relevant data.
+
+*Services used*
+
+- Logger
+- Game Handler
+
+*Libraries used*
+
+- OpenCV
+- X11
+- Xext
+
+### Game Session
+
+This service manages the game session and handles game-related functionalities such as starting new games, monitoring a whole game, and
+determining game outcomes.
+
+*Services used*
+
+- Logger
+- Game Handler
+- Scrapper
+- OCR
+
+*Libraries used*
+
+- nlohmann-json
+- OpenCV
+
+### Dependencies graph
+
+Here the dependencies graph of the services with libraries.
+
+```plantuml
+!define AWSPUML https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/v16.0/dist
+
+package "Logger Service" {
+    component Logger
+    folder "Libraries (Logger)" {
+        component Quill_Logger
+    }
+}
+
+package "Game Handler Service" {
+    component GameHandler
+    folder "Libraries (Game Handler)" {
+        component NlohmannJson_GameHandler
+    }
+}
+
+package "Websockets Service" {
+    component Websockets
+    folder "Libraries (Websockets)" {
+        component UWebsockets_Websockets
+    } 
+}
+
+package "OCR Service" {
+    component OCR
+    folder "Libraries (OCR)" {
+        component OpenCV_OCR
+        component opencv_core_OCR
+        component opencv_imgproc_OCR
+        component opencv_text_OCR
+    }
+}
+
+package "Scrapper Service" {
+    component Scrapper
+    folder "Libraries (Scrapper)" {
+        component OpenCV_Scrapper
+        component opencv_core_Scrapper
+        component opencv_imgproc_Scrapper
+        component opencv_imgcodecs_Scrapper
+        component X11_Scrapper
+        component Xext_Scrapper
+    }
+}
+
+package "Game Session Service" {
+    component GameSession
+    folder "Libraries (Game Session)" {
+        component NlohmannJson_GameSession
+        component OpenCV_GameSession
+    }
+}
+
+Logger --> GameHandler
+Logger --> Websockets
+Logger --> OCR
+Logger --> GameSession
+GameHandler --> OCR
+GameHandler --> Scrapper
+GameHandler --> GameSession
+Scrapper --> GameSession
+OCR --> GameSession
+```
 
 ## Coding
 

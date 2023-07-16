@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM alpine:edge
 
 ARG GCC_VERSION
 ARG MINGW_VERSION
@@ -7,19 +7,22 @@ ARG BINUTILS_VERSION
 ARG OPENJPEG_VERSION
 ARG WEBP_VERSION
 ARG TIFF_VERSION
+ARG PNG_VERSION
+ARG ZLIB_VERSION
 ARG LEPTONICA_VERSION
 ARG TESSERACT_VERSION
 ARG OPENCV_VERSION
 ARG NLOHMANN_JSON_VERSION
+ARG FMT_VERSION
 ARG QUILL_VERSION
 ARG LIBUV_VERSION
-ARG ZLIB_VERSION
 ARG U_WEB_SOCKETS_VERSION
 ARG GOOGLETEST_VERSION
 ARG MAX_CPU_CORES
 
-RUN apk add --no-cache bash make gcc>${GCC_VERSION} g++>${GCC_VERSION} mingw-w64-gcc=~${MINGW_VERSION} \
-    mingw-w64-binutils=~${BINUTILS_VERSION} mingw-w64-headers mingw-w64-winpthreads mingw-w64-crt cmake>${CMAKE_VERSION}
+# Install from APK
+RUN apk add --no-cache bash make gcc=~${GCC_VERSION} g++=~${GCC_VERSION} mingw-w64-gcc=~${MINGW_VERSION} \
+    mingw-w64-binutils=~${BINUTILS_VERSION} mingw-w64-headers mingw-w64-winpthreads mingw-w64-crt cmake=~${CMAKE_VERSION}
 
 ENV INSTALL_PREFIX=/usr/x86_64-w64-mingw32
 ENV CMAKE_TOOLCHAIN=/tmp/mingw-w64-x86_64.cmake
@@ -27,6 +30,14 @@ ENV CMAKE_COMMON_OPTION="--install-prefix ${INSTALL_PREFIX} -DCMAKE_TOOLCHAIN_FI
 
 # Copy cmake toolchain from windows cross compiling
 COPY cmake/mingw-w64-x86_64.cmake /tmp
+
+# Install zlib with the given ZLIB_VERSION version from https://github.com/madler/zlib
+RUN wget https://github.com/madler/zlib/archive/refs/tags/v${ZLIB_VERSION}.tar.gz \
+    -q -O /tmp/zlib-${ZLIB_VERSION}.tar.gz && \
+    cd /tmp && ls && tar -xvzf zlib-${ZLIB_VERSION}.tar.gz && cd zlib-${ZLIB_VERSION} && \
+    cmake -S . -B build ${CMAKE_COMMON_OPTION} && \
+    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
+    rm -rf /tmp/zlib-${ZLIB_VERSION}.tar.gz /tmp/zlib-${ZLIB_VERSION}
 
 # Install openjepg with the given OPENJPEG_VERSION from https://github.com/uclouvain/openjpeg
 RUN wget https://github.com/uclouvain/openjpeg/archive/refs/tags/v${OPENJPEG_VERSION}.tar.gz \
@@ -51,6 +62,14 @@ RUN wget http://download.osgeo.org/libtiff/tiff-${TIFF_VERSION}.tar.gz \
     cmake -S . -B build ${CMAKE_COMMON_OPTION} && \
     cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
     rm -rf /tmp/tiff-${TIFF_VERSION}.tar.gz /tmp/tiff-${TIFF_VERSION}
+
+# Install PNG with the given PNG_VERSION from https://github.com/glennrp/libpng
+RUN wget https://github.com/glennrp/libpng/archive/refs/tags/v${PNG_VERSION}.tar.gz \
+    -q -O /tmp/libpng-${PNG_VERSION}.tar.gz && \
+    cd /tmp && tar -xvzf libpng-${PNG_VERSION}.tar.gz && cd libpng-${PNG_VERSION} && \
+    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DPNG_TESTS=OFF && \
+    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
+    rm -rf /tmp/libpng-${PNG_VERSION}.tar.gz /tmp/libpng-${PNG_VERSION}
 
 # Install leptonica with the given LEPTONICA_VERSION from https://github.com/DanBloomberg/leptonica
 RUN wget https://github.com/DanBloomberg/leptonica/archive/refs/tags/${LEPTONICA_VERSION}.tar.gz \
@@ -93,25 +112,33 @@ RUN wget https://github.com/opencv/opencv/archive/refs/tags/${OPENCV_VERSION}.ta
 RUN wget https://github.com/nlohmann/json/archive/refs/tags/v${NLOHMANN_JSON_VERSION}.tar.gz \
     -q -O /tmp/json-${NLOHMANN_JSON_VERSION}.tar.gz && \
     cd /tmp && ls && tar -xvzf json-${NLOHMANN_JSON_VERSION}.tar.gz && cd json-${NLOHMANN_JSON_VERSION} && \
-    cmake -S . -B build ${CMAKE_COMMON_OPTION} && \
+    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DJSON_BuildTests=OFF && \
     cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
     rm -rf /tmp/json-${NLOHMANN_JSON_VERSION}.tar.gz /tmp/json-${NLOHMANN_JSON_VERSION}
+
+# Install fmt with the given FMT_VERSION version from https://github.com/fmtlib/fmt
+RUN wget https://github.com/fmtlib/fmt/archive/refs/tags/${FMT_VERSION}.tar.gz \
+    -q -O /tmp/fmt-${FMT_VERSION}.tar.gz && \
+    cd /tmp && ls && tar -xvzf fmt-${FMT_VERSION}.tar.gz && cd fmt-${FMT_VERSION} && \
+    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DFMT_DOC=OFF -DFMT_TEST=OFF && \
+    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
+    rm -rf /tmp/fmt-${FMT_VERSION}.tar.gz /tmp/fmt-${FMT_VERSION}
+
+# Install quill with the given QUILL_VERSION version from https://github.com/odygrd/quill
+RUN wget https://github.com/odygrd/quill/archive/refs/tags/v${QUILL_VERSION}.tar.gz \
+    -q -O /tmp/quill-${QUILL_VERSION}.tar.gz && \
+    cd /tmp && ls && tar -xvzf quill-${QUILL_VERSION}.tar.gz && cd quill-${QUILL_VERSION} && \
+    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DQUILL_FMT_EXTERNAL=ON && \
+    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
+    rm -rf /tmp/quill-${QUILL_VERSION}.tar.gz /tmp/quill-${QUILL_VERSION}
 
 # Install libuv with the given LIBUV_VERSION version from https://github.com/libuv/libuv
 RUN wget https://github.com/libuv/libuv/archive/refs/tags/v${LIBUV_VERSION}.tar.gz \
     -q -O /tmp/libuv-${LIBUV_VERSION}.tar.gz && \
     cd /tmp && ls && tar -xvzf libuv-${LIBUV_VERSION}.tar.gz && cd libuv-${LIBUV_VERSION} && \
-    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DWITH_OPENSSL=OFF && \
+    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DWITH_OPENSSL=OFF -DLIBUV_BUILD_TESTS=OFF && \
     cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
     rm -rf /tmp/libuv-${LIBUV_VERSION}.tar.gz /tmp/libuv-${LIBUV_VERSION}
-
-# Install zlib with the given ZLIB_VERSION version from https://github.com/madler/zlib
-RUN wget https://github.com/madler/zlib/archive/refs/tags/v${ZLIB_VERSION}.tar.gz \
-    -q -O /tmp/zlib-${ZLIB_VERSION}.tar.gz && \
-    cd /tmp && ls && tar -xvzf zlib-${ZLIB_VERSION}.tar.gz && cd zlib-${ZLIB_VERSION} && \
-    cmake -S . -B build ${CMAKE_COMMON_OPTION} && \
-    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
-    rm -rf /tmp/zlib-${ZLIB_VERSION}.tar.gz /tmp/zlib-${ZLIB_VERSION}
 
 # Install uWebSockets with the given U_WEB_SOCKETS_VERSION version from forked https://github.com/ZiperRom1/uWebSockets
 RUN wget https://github.com/ZiperRom1/uWebSockets/releases/download/v${U_WEB_SOCKETS_VERSION}/uWebSockets-${U_WEB_SOCKETS_VERSION}.tar.gz \
@@ -120,14 +147,6 @@ RUN wget https://github.com/ZiperRom1/uWebSockets/releases/download/v${U_WEB_SOC
     cmake -S . -B build ${CMAKE_COMMON_OPTION} -DWITH_OPENSSL=OFF -DWITH_QUIC=OFF -DWITH_LIBUV=ON -DWITH_ZLIB=ON && \
     cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
     rm -rf /tmp/uWebSockets-${U_WEB_SOCKETS_VERSION}.tar.gz /tmp/uWebSockets-${U_WEB_SOCKETS_VERSION}
-
-# Install quill with the given QUILL_VERSION version from https://github.com/odygrd/quill
-RUN wget https://github.com/odygrd/quill/archive/refs/tags/v${QUILL_VERSION}.tar.gz \
-    -q -O /tmp/quill-${QUILL_VERSION}.tar.gz && \
-    cd /tmp && ls && tar -xvzf quill-${QUILL_VERSION}.tar.gz && cd quill-${QUILL_VERSION} && \
-    cmake -S . -B build ${CMAKE_COMMON_OPTION} && \
-    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
-    rm -rf /tmp/quill-${QUILL_VERSION}.tar.gz /tmp/quill-${QUILL_VERSION}
 
 # Install googleTest with the given GOOGLETEST_VERSION version from https://github.com/google/googletest
 RUN wget https://github.com/google/googletest/archive/refs/tags/v${GOOGLETEST_VERSION}.tar.gz \

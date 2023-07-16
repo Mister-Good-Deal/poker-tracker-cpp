@@ -1,11 +1,11 @@
 #pragma once
 
-#include <map>
 #include <string>
+#include <unordered_map>
 
 #include <opencv4/opencv2/opencv.hpp>
 
-#include "Logger.hpp"
+#include <Logger.hpp>
 
 #ifdef _WIN32
 
@@ -19,13 +19,24 @@
 
 #endif
 namespace Scraper {
+    struct WindowInfo {
+            std::string title;
+            uint64_t    id;
+#ifdef _WIN32
+            HWND ref;
+
+            WindowInfo(std::string_view title, HWND ref) : title(title), id(std::hash<std::string_view>{}(title), ref(ref)) {}
+#elif __linux__
+            Window ref;
+
+            WindowInfo(std::string_view title, Window ref) : title(title), id(ref), ref(ref) {}
+#endif
+    };
+
     class ScraperInterface {
         public:
-#ifdef _WIN32
-            using windows_t = std::map<std::string, HWND>;
-#elif __linux__
-            using windows_t = std::map<std::string, Window>;
-#endif
+            using windows_t = std::unordered_map<uint64_t, WindowInfo>;
+
             ScraperInterface()                              = default;
             ScraperInterface(const ScraperInterface& other) = default;
             ScraperInterface(ScraperInterface&& other) noexcept { *this = std::move(other); };
@@ -35,9 +46,19 @@ namespace Scraper {
             auto operator=(const ScraperInterface& other) -> ScraperInterface& = default;
             auto operator=(ScraperInterface&& other) noexcept -> ScraperInterface&;
 
-            auto getWindowsName() -> std::vector<std::string_view>;
-            auto getScreenshot(const std::string& windowName) -> cv::Mat;
+            auto getActiveWindows() -> windows_t;
+            auto getScreenshot(uint64_t windowId) -> cv::Mat;
+            auto getWindowElementsView(const cv::Mat& img) -> cv::Mat;
 
+            /**
+             *              Players positions on the table
+             *
+             *          Player 2  __________________  Player 3
+             *                   |                  |
+             *                   |                  |
+             *                   |__________________|
+             *                         Player 1
+             */
             auto getFirstCardImg(const cv::Mat& img) -> cv::Mat { return img(getFirstCardCoordinate()); };
             auto getSecondCardImg(const cv::Mat& img) -> cv::Mat { return img(getSecondCardCoordinate()); };
             auto getPotImg(const cv::Mat& img) -> cv::Mat { return img(getPotCoordinate()); };
@@ -61,6 +82,9 @@ namespace Scraper {
             auto getPlayer3BetImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer3BetCoordinate()); };
             auto getPlayer2CardsImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer2HandCoordinate()); };
             auto getPlayer3CardsImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer3HandCoordinate()); };
+            auto getBlindLevelImg(const cv::Mat& img) -> cv::Mat { return img(getBlindLevelCoordinate()); };
+            auto getBlindAmountImg(const cv::Mat& img) -> cv::Mat { return img(getBlindAmountCoordinate()); };
+            auto getGameTimeImg(const cv::Mat& img) -> cv::Mat { return img(getGameTimeCoordinate()); };
 
             // All screen elements coordinates from top left corner (0, 0) in top left(x, y) cv::Rect(x, y, width, eight)
             virtual auto getFirstCardCoordinate() -> cv::Rect     = 0;
@@ -86,6 +110,9 @@ namespace Scraper {
             virtual auto getPlayer3BetCoordinate() -> cv::Rect    = 0;
             virtual auto getPlayer2HandCoordinate() -> cv::Rect   = 0;
             virtual auto getPlayer3HandCoordinate() -> cv::Rect   = 0;
+            virtual auto getBlindLevelCoordinate() -> cv::Rect    = 0;
+            virtual auto getBlindAmountCoordinate() -> cv::Rect   = 0;
+            virtual auto getGameTimeCoordinate() -> cv::Rect      = 0;
 
         private:
             windows_t _activeWindows;

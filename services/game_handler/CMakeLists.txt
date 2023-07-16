@@ -28,18 +28,6 @@ set(
     src/RoundAction.cpp
 )
 
-set(
-    HEADERS
-    include/Board.hpp
-    include/Card.hpp
-    include/CardFactory.hpp
-    include/Game.hpp
-    include/Hand.hpp
-    include/Player.hpp
-    include/Round.hpp
-    include/RoundAction.hpp
-)
-
 #-----------------------------------------------------------------------------------------------------------------------
 # Library target creation and setup
 #-----------------------------------------------------------------------------------------------------------------------
@@ -55,7 +43,7 @@ target_include_directories(
     logger
 )
 
-target_link_libraries(game_handler PRIVATE logger nlohmann_json::nlohmann_json)
+target_link_libraries(game_handler PUBLIC logger nlohmann_json::nlohmann_json)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Tests

@@ -1,8 +1,8 @@
 #include "Game.hpp"
 
 namespace GameHandler {
+    using std::ranges::any_of;
     using std::ranges::for_each;
-    using std::views::keys;
 
     auto Game::operator=(Game&& other) noexcept -> Game& {
         if (this != &other)
@@ -19,39 +19,35 @@ namespace GameHandler {
         return *this;
     }
 
-    auto Game::operator=(const Game& other) -> Game& {
-        if (this != &other)
+    auto Game::init(const std::string& player1Name, const std::string& player2Name, const std::string& player3Name) -> void {
+        auto nameList = {player1Name, player2Name, player3Name};
+
+        if (any_of(nameList, [](const auto& name) { return name.empty(); }))
         {
-            _rounds      = other._rounds;
-            _players     = other._players;
-            _startTime   = other._startTime;
-            _endTime     = other._endTime;
-            _winner      = other._winner;
-            _buyIn       = other._buyIn;
-            _multipliers = other._multipliers;
+            throw invalid_player_name(fmt::format("A player's name is empty, player_1 `{}`, player_2 `{}`, player_3 `{}`", player1Name,
+                                                  player2Name, player3Name));
         }
 
-        return *this;
-    }
-
-    auto Game::init(const Player& player1, const Player& player2, const Player& player3) -> void {
-        _players[player1.getName()] = player1;
-        _players[player2.getName()] = player2;
-        _players[player3.getName()] = player3;
+        _players[0] = Player(player1Name, true);
+        _players[1] = Player(player2Name);
+        _players[2] = Player(player3Name);
 
         newRound();
 
-        _startTime = system_clock::now();
+        _startTime   = system_clock::now();
+        _initialized = true;
     }
 
     auto Game::end() -> void { _endTime = system_clock::now(); }
     auto Game::newRound() -> void { _rounds.emplace_back(); }
 
-    auto Game::getPlayer(const std::string& playerName) -> Player {
-        if (_players.find(playerName) == _players.end())
-        { throw UnknownPlayerException("The player " + playerName + " is unknown in this game"); }
+    auto Game::getPlayer(const std::string& playerName) -> Player& {
+        for (auto& player : _players)
+        {
+            if (player.getName() == playerName) { return player; }
+        }
 
-        return _players.at(playerName);
+        throw UnknownPlayerException("The player " + playerName + " is unknown in this game");
     }
 
     auto Game::toJson() const -> json {
@@ -61,7 +57,7 @@ namespace GameHandler {
         auto playersNameArray = json::array();
 
         for_each(_rounds, [&roundsArray](const Round& round) { roundsArray.emplace_back(round.toJson()); });
-        for_each(_players | keys, [&playersNameArray](const auto& playerName) { playersNameArray.emplace_back(playerName); });
+        for_each(_players, [&playersNameArray](const Player& player) { playersNameArray.emplace_back(player.getName()); });
 
         return {{"rounds", roundsArray},
                 {"players", playersNameArray},

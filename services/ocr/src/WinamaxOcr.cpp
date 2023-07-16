@@ -1,11 +1,15 @@
 #include "WinamaxOcr.hpp"
 
-#include "Logger.hpp"
+#include <Logger.hpp>
+#include <Macros.hpp>
 
 namespace OCR {
     using Logger = Logger::Quill;
 
     using enum GameHandler::Card::Suit;
+
+    WinamaxOcr::WinamaxOcr() :
+        _cardsSkin(cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards_skins/" + DEFAULT_CARD_SKIN)), _buttonImg(getButtonImg()){};
 
     auto WinamaxOcr::operator=(WinamaxOcr&& other) noexcept -> WinamaxOcr& {
         if (this != &other) { _cardsSkin = std::move(other._cardsSkin); }
@@ -13,15 +17,13 @@ namespace OCR {
         return *this;
     }
 
-    auto WinamaxOcr::readCardRank(cv::Mat& rankImage) const -> Card::Rank {
-        std::string rank;
-
-        _cardOcr()->run(rankImage, rank);
+    auto WinamaxOcr::readCardRank(const cv::Mat& rankImage) const -> Card::Rank {
+        auto rank = _cardOcr()->run(rankImage, OCR_MIN_CONFIDENCE);
 
         return Card::charToRank(rank[0]);
     }
 
-    auto WinamaxOcr::readCardSuit(cv::Mat& suitImage) const -> Card::Suit {
+    auto WinamaxOcr::readCardSuit(const cv::Mat& suitImage) const -> Card::Suit {
         const int32_t EPSILON = 10;
         // Winamax BGR color format
         const cv::Vec3i HEART_COLOR   = {27, 6, 177};   // Red
@@ -52,11 +54,68 @@ namespace OCR {
         return suit;
     }
 
-    auto WinamaxOcr::hasFolded(cv::Mat& cardsSkinImage) const -> bool {
-        return similarityScore(cardsSkinImage, _cardsSkin) >= SIMILARITY_THRESHOLD;
+    auto WinamaxOcr::readPlayerName(const cv::Mat& playerNameImage) const -> std::string {
+        return readWordByChar(_extractWhiteText(playerNameImage));
     }
+
+    auto WinamaxOcr::readGameAction(const cv::Mat& gameActionImage) const -> std::string {
+        return readWord(_extractYellowText(gameActionImage));
+    }
+
+    auto WinamaxOcr::readPlayerBet(const cv::Mat& playerBetImage) const -> int32_t {
+        return readIntNumbers(_extractYellowText(playerBetImage));
+    }
+
+    auto WinamaxOcr::readPlayerBetInBB(const cv::Mat& playerBetInBBImage) const -> double {
+        return readFloatNumbers(_extractYellowText(playerBetInBBImage));
+    }
+
+    auto WinamaxOcr::readPot(const cv::Mat& potImage) const -> int32_t { return readIntNumbers(potImage); }
+    auto WinamaxOcr::readPotInBB(const cv::Mat& potInBBImage) const -> double { return readFloatNumbers(potInBBImage); }
+    auto WinamaxOcr::readPrizePool(const cv::Mat& prizePoolImage) const -> int32_t { return readIntNumbers(prizePoolImage); }
+
+    auto WinamaxOcr::getButtonMask() const -> cv::Mat {
+        auto buttonImg = getButtonImg();
+        auto mask      = cv::Mat(buttonImg.rows, buttonImg.cols, CV_8UC1, cv::Scalar(0));
+
+        cv::circle(mask, {buttonImg.rows / 2, buttonImg.cols / 2}, buttonImg.cols / 2, 255, -1);
+
+        return mask;
+    }
+
+    auto WinamaxOcr::getButtonImg() const -> cv::Mat { return cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/" + DEFAULT_BUTTON_IMG); }
+    auto WinamaxOcr::hasFolded(const cv::Mat& handImage) const -> bool { return !isSimilar(handImage, _cardsSkin); }
+
+    // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
+    auto WinamaxOcr::getRankCardArea() const -> cv::Rect { return {0, 0, 20, 23}; }
+    auto WinamaxOcr::getSuitCardArea() const -> cv::Rect { return {2, 25, 14, 16}; }
+
+    auto WinamaxOcr::hasButton(const cv::Mat& buttonImage) const -> bool {
+        return isSimilar(buttonImage, getButtonImg(), 0.05, getButtonMask());
+    }
+
+    auto WinamaxOcr::_extractWhiteText(const cv::Mat& image) const -> cv::Mat {
+        return _colorRangeThreshold(image, {0, 0, 200}, {255, 55, 255});
+    }
+
+    auto WinamaxOcr::_extractYellowText(const cv::Mat& image) const -> cv::Mat {
+        return _colorRangeThreshold(image, {22, 0, 0}, {42, 255, 255});
+    }
+    // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
 
     auto WinamaxOcr::_cvColorToString(const cv::Vec3b& color) const -> std::string {
         return "(" + std::to_string(color[0]) + ", " + std::to_string(color[1]) + ", " + std::to_string(color[2]) + ")";
+    }
+
+    auto WinamaxOcr::_colorRangeThreshold(const cv::Mat& image, const cv::Scalar& colorLower, const cv::Scalar& colorUpper) const
+        -> cv::Mat {
+        cv::Mat hsvImage, result;
+
+        cv::cvtColor(image, hsvImage, cv::COLOR_BGR2HSV);
+        cv::inRange(hsvImage, colorLower, colorUpper, result);
+
+        DISPLAY_IMAGE("colorRangeThreshold", result);
+
+        return result;
     }
 }  // namespace OCR

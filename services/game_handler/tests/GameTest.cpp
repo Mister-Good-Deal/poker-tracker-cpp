@@ -13,14 +13,16 @@ class GameTest : public ::testing::Test {};
 
 // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
 TEST(GameTest, jsonRepresentationShouldBeCorrect) {
-    Game   game;
-    Player player1("player_1", true);
-    Player player2("player_2");
-    Player player3("player_3");
+    Game game;
 
     game.setBuyIn(10);
     game.setMultipliers(3);
-    game.init(player1, player2, player3);
+    game.init("player_1", "player_2", "player_3");
+
+    // Shortcuts for players names
+    Player& player1 = game.getPlayer1();
+    Player& player2 = game.getPlayer2();
+    Player& player3 = game.getPlayer3();
 
     // Run a scenario
 

@@ -11,7 +11,7 @@ namespace Scraper {
     }
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    auto WinamaxScraper::getBoardCard1Coordinate() -> cv::Rect { return {199, BOARD_CARDS_Y_COORDINATE, CARD_WIDTH, CARD_HEIGHT}; }
+    auto WinamaxScraper::getBoardCard1Coordinate() -> cv::Rect { return {195, BOARD_CARDS_Y_COORDINATE, CARD_WIDTH, CARD_HEIGHT}; }
 
     auto WinamaxScraper::getBoardCard2Coordinate() -> cv::Rect {
         return {getBoardCard1Coordinate().x + BOARD_CARDS_WIDTH_SEPARATION, BOARD_CARDS_Y_COORDINATE, CARD_WIDTH, CARD_HEIGHT};
