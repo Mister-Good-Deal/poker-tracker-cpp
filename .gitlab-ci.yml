@@ -73,7 +73,7 @@ clang_check:
   cache: [ ] # Needed to make a new CMake build without cache about CXX compiler
   dependencies: [ ] # Needed to make a new CMake build without cache about CXX compiler
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX-debug -DCMAKE_CXX_COMPILER=/usr/local/bin/clang++
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX-debug -DCMAKE_CXX_COMPILER=/usr/bin/clang++
       -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --log-context
     - cmake --build $BUILD_PATH_LINUX-debug
     - CPP_SRC_FILES=$(find ${PROJECT_PATH}/services -regex '.*\.\(cpp\|hpp\)' | tr "\n" " ")
@@ -166,7 +166,7 @@ test_ocr:
 graph_dependencies:
   stage: documentation
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX-debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=/usr/local/bin/clang++
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX-debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=/usr/bin/clang++
       --graphviz=$BUILD_PATH_LINUX-debug/dependencies_graph.dot
     - dot -Tpng -o $BUILD_PATH_LINUX-debug/dependencies_graph.png $BUILD_PATH_LINUX-debug/dependencies_graph.dot
   artifacts:
