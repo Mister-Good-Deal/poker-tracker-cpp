@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-#include <opencv2/highgui.hpp>
+#include <opencv4/opencv2/highgui.hpp>
 
 #ifdef DISPLAY_OPENCV_IMG
     #define DISPLAY_IMAGE(windowTitle, src)                             \

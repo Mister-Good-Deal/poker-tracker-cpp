@@ -3,6 +3,8 @@
 #include <OcrInterface.hpp>
 
 namespace OCR {
+    using std::chrono::seconds;
+
     class WinamaxOcr final : public OcrInterface {
         public:
             static constexpr std::string DEFAULT_CARD_SKIN  = "skin_1.png";
@@ -34,6 +36,9 @@ namespace OCR {
             [[nodiscard]] auto readPot(const cv::Mat& potImage) const -> int32_t;
             [[nodiscard]] auto readPotInBB(const cv::Mat& potInBBImage) const -> double;
             [[nodiscard]] auto readPrizePool(const cv::Mat& prizePoolImage) const -> int32_t;
+            [[nodiscard]] auto readBlindLevel(const cv::Mat& blindLevelImage) const -> int32_t;
+            [[nodiscard]] auto readBlindAmount(const cv::Mat& blindAmountImage) const -> int32_t;
+            [[nodiscard]] auto readGameDuration(const cv::Mat& gameDurationImage) const -> seconds;
             [[nodiscard]] auto hasFolded(const cv::Mat& handImage) const -> bool;
             [[nodiscard]] auto hasButton(const cv::Mat& buttonImage) const -> bool;
 

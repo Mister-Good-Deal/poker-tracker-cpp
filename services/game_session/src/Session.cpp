@@ -70,16 +70,16 @@ namespace GameSession {
             // Get prize pool
             auto prizePoolImg = _scraper->getPrizePoolImg(screenshot);
 
-            _game.setMultipliers(_ocr->readNumbers(prizePoolImg) / _game.getBuyIn());
+            _game.setMultipliers(_ocr->readIntNumbers(prizePoolImg) / _game.getBuyIn());
 
             // Get player stacks
             auto player1StackImg = _scraper->getPlayer1StackImg(screenshot);
             auto player2StackImg = _scraper->getPlayer2StackImg(screenshot);
             auto player3StackImg = _scraper->getPlayer3StackImg(screenshot);
 
-            _game.getPlayer1().setStack(_ocr->readNumbers(player1StackImg));
-            _game.getPlayer2().setStack(_ocr->readNumbers(player2StackImg));
-            _game.getPlayer3().setStack(_ocr->readNumbers(player3StackImg));
+            _game.getPlayer1().setStack(_ocr->readIntNumbers(player1StackImg));
+            _game.getPlayer2().setStack(_ocr->readIntNumbers(player2StackImg));
+            _game.getPlayer3().setStack(_ocr->readIntNumbers(player3StackImg));
 
             // Get button position
             auto player1ButtonImg = _scraper->getPlayer1ButtonImg(screenshot);
@@ -100,7 +100,7 @@ namespace GameSession {
             // Get round pot
             auto potImg = _scraper->getPotImg(screenshot);
 
-            _game.getCurrentRound().setPot(_ocr->readNumbers(potImg));
+            _game.getCurrentRound().setPot(_ocr->readIntNumbers(potImg));
         } catch (const invalid_player_name& error)
         { LOG_INFO(Logger::getLogger(), "{}", error.what()); }
     }

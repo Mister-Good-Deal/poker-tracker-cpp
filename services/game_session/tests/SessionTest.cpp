@@ -20,7 +20,7 @@ TEST(SessionTest, winamaxHarvestInfo) {
 
     session.getGame().setBuyIn(10);
 
-    cv::Mat screenshot = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/screen_1.png");
+    cv::Mat screenshot = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/screen_4.png");
 
     session.harvestGameInfo(screenshot);
 

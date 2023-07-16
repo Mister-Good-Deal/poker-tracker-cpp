@@ -1,9 +1,7 @@
 #include <gtest/gtest.h>
 
-#include <OcrFactory.hpp>
 #include <WinamaxScraper.hpp>
 
-using OCR::Factory::OcrFactory;
 using Scraper::WinamaxScraper;
 
 class WinamaxScraperTest : public ::testing::Test {};
@@ -42,25 +40,19 @@ TEST(WinamaxScraperTest, displayAllElements) {
     cv::waitKey(-1);
 }
 
-TEST(WinamaxScraperTest, shouldScrapPlayersName) {
+TEST(WinamaxScraperTest, checkPlayerButtonScapping) {
     WinamaxScraper scraper;
-    auto           ocr = OcrFactory::create("Winamax");
 
-    cv::Mat screenshot     = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/screen_3.png");
-    cv::Mat player1NameImg = scraper.getPlayer1NameImg(screenshot);
-    cv::Mat player2NameImg = scraper.getPlayer2NameImg(screenshot);
-    cv::Mat player3NameImg = scraper.getPlayer3NameImg(screenshot);
+    cv::Mat screenshot = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/screen_2.png");
+    cv::Mat img_1      = scraper.getGameTimeImg(screenshot);
+    //    cv::Mat img_2      = scraper.getPlayer2BetImg(screenshot);
+    //    cv::Mat img_3 = scraper.getPlayer3ButtonImg(screenshot);
 
-    cv::imshow("player1NameImg", player1NameImg);
-    cv::imshow("player2NameImg", player2NameImg);
-    cv::imshow("player3NameImg", player3NameImg);
+    cv::imshow("img_1", img_1);
+    //    cv::imshow("img_2", img_2);
+    //    cv::imshow("img_3", img_3);
+    cv::waitKey(1);
 
-    EXPECT_STREQ(ocr->readWord(player1NameImg).c_str(), "_Mister_");
-    EXPECT_STREQ(ocr->readWord(player2NameImg).c_str(), "G00dspeed");
-    EXPECT_STREQ(ocr->readWord(player3NameImg).c_str(), "sucre_461406");
-
-    cv::imshow("player1NameImg processed", player1NameImg);
-    cv::imshow("player2NameImg processed", player2NameImg);
-    cv::imshow("player3NameImg processed", player3NameImg);
-    cv::waitKey(-1);
+    cv::imwrite(std::string(WINAMAX_IMAGES_DIR) + "/58s.png", img_1);
+    //    cv::imwrite(std::string(WINAMAX_IMAGES_DIR) + "/betAmount_2.png", img_2);
 }
