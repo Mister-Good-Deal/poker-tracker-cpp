@@ -9,7 +9,6 @@ Implements [rule of five](https://en.cppreference.com/w/cpp/language/rule_of_thr
 **Header**
 
 ```c++
-#parse("C File Header.h")
 #pragma once
 
 ${NAMESPACES_OPEN}
@@ -30,7 +29,6 @@ ${NAMESPACES_CLOSE}
 **Implementation**
 
 ```c++
-#parse("C File Header.h")
 #[[#include]]# "${HEADER_FILENAME}"
 
 ${NAMESPACES_OPEN_CPP}

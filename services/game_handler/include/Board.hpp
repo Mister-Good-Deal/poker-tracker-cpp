@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Hand.hpp"
+#include <Hand.hpp>
 
 namespace GameHandler {
-    constexpr int8_t BOARD_CARDS_NUMBER = 5;
-    constexpr int8_t FLOP_CARDS_NUMBER  = 3;
-    constexpr int8_t STRAIGHT_SIZE      = 5;
-    constexpr int8_t FLUSH_SIZE         = 5;
+    static const int8_t BOARD_CARDS_NUMBER = 5;
+    static const int8_t FLOP_CARDS_NUMBER  = 3;
+    static const int8_t STRAIGHT_SIZE      = 5;
+    static const int8_t FLUSH_SIZE         = 5;
 
     enum class HandRank : int8_t { HIGH_CARD = 0, PAIR, TWO_PAIR, TRIPS, STRAIGHT, FLUSH, FULL, QUADS, STRAIGHT_FLUSH };
 

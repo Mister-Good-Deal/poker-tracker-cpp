@@ -13,17 +13,4 @@ namespace GameHandler {
 
         return *this;
     }
-
-    auto Player::operator=(const Player& other) -> Player& {
-        if (this != &other)
-        {
-            _name       = other._name;
-            _hand       = other._hand;
-            _stack      = other._stack;
-            _self       = other._self;
-            _eliminated = other._eliminated;
-        }
-
-        return *this;
-    }
 }  // namespace GameHandler

@@ -99,7 +99,7 @@ IncludeCategories:
     Priority: 1
     SortPriority: 1
     CaseSensitive: false
-  - Regex: '^<(algorithm|array|chrono|deque|exception|forward_list|fstream|functional|iomanip|ios|iosfwd|iostream|istream|iterator|limits|list|locale|map|memory|new|numeric|ostream|queue|random|ratio|set|sstream|stack|stdexcept|string|tuple|type_traits|typeindex|unordered_map|unordered_set|utility|valarray|vector)>$'
+  - Regex: '^<(algorithm|array|charconv|chrono|deque|exception|forward_list|fstream|functional|iomanip|ios|iosfwd|iostream|istream|iterator|limits|list|locale|map|memory|new|numeric|ostream|queue|random|ratio|set|sstream|stack|stdexcept|string|tuple|type_traits|typeindex|unordered_map|unordered_set|utility|valarray|vector)>$'
     Priority: 2
     SortPriority: 2
     CaseSensitive: false

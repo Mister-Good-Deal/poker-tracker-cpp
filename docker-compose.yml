@@ -9,12 +9,19 @@ services:
       args:
         - GCC_VERSION=${GCC_VERSION}
         - CMAKE_VERSION=${CMAKE_VERSION}
-        - SDL_VERSION=${SDL_VERSION}
+        - OPENJPEG_VERSION=${OPENJPEG_VERSION}
+        - WEBP_VERSION=${WEBP_VERSION}
+        - TIFF_VERSION=${TIFF_VERSION}
+        - PNG_VERSION=${PNG_VERSION}
+        - ZLIB_VERSION=${ZLIB_VERSION}
         - LEPTONICA_VERSION=${LEPTONICA_VERSION}
         - TESSERACT_VERSION=${TESSERACT_VERSION}
         - OPENCV_VERSION=${OPENCV_VERSION}
         - NLOHMANN_JSON_VERSION=${NLOHMANN_JSON_VERSION}
+        - FMT_VERSION=${FMT_VERSION}
         - QUILL_VERSION=${QUILL_VERSION}
+        - LIBUV_VERSION=${LIBUV_VERSION}
+        - U_WEB_SOCKETS_VERSION=${U_WEB_SOCKETS_VERSION}
         - GOOGLETEST_VERSION=${GOOGLETEST_VERSION}
         - MAX_CPU_CORES=${MAX_CPU_CORES}
     image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-gcc:latest
@@ -27,7 +34,6 @@ services:
         - CI_REGISTRY=${REGISTRY_HOST}
         - CI_REGISTRY_BUILDER_ROOT_IMAGE=${REGISTRY_REPO_PATH}/builder-linux-gcc
         - CLANG_VERSION=${CLANG_VERSION}
-        - MAX_CPU_CORES=${MAX_CPU_CORES}
     image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-clang:latest
 
   builder-linux-clang-dev:
@@ -38,20 +44,7 @@ services:
         - CI_REGISTRY=${REGISTRY_HOST}
         - CI_REGISTRY_BUILDER_ROOT_IMAGE=${REGISTRY_REPO_PATH}/builder-linux-clang
         - GDB_VERSION=${GDB_VERSION}
-        - MAX_CPU_CORES=${MAX_CPU_CORES}
     image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-clang-dev:latest
-
-  builder-linux-clang-ci:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile-builder-linux-clang-ci
-      args:
-        - CI_REGISTRY=${REGISTRY_HOST}
-        - CI_REGISTRY_BUILDER_ROOT_IMAGE=${REGISTRY_REPO_PATH}/builder-linux-clang
-        - CPP_CHECK_VERSION=${CPP_CHECK_VERSION}
-        - CODE_CHECKER_VERSION=${CODE_CHECKER_VERSION}
-        - MAX_CPU_CORES=${MAX_CPU_CORES}
-    image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-clang-ci:latest
 
   builder-windows-mingw:
     build:
@@ -62,15 +55,19 @@ services:
         - CMAKE_VERSION=${CMAKE_VERSION}
         - MINGW_VERSION=${MINGW_VERSION}
         - BINUTILS_VERSION=${BINUTILS_VERSION}
-        - SDL_VERSION=${SDL_VERSION}
         - OPENJPEG_VERSION=${OPENJPEG_VERSION}
         - WEBP_VERSION=${WEBP_VERSION}
         - TIFF_VERSION=${TIFF_VERSION}
+        - PNG_VERSION=${PNG_VERSION}
+        - ZLIB_VERSION=${ZLIB_VERSION}
         - LEPTONICA_VERSION=${LEPTONICA_VERSION}
         - TESSERACT_VERSION=${TESSERACT_VERSION}
         - OPENCV_VERSION=${OPENCV_VERSION}
         - NLOHMANN_JSON_VERSION=${NLOHMANN_JSON_VERSION}
+        - FMT_VERSION=${FMT_VERSION}
         - QUILL_VERSION=${QUILL_VERSION}
+        - LIBUV_VERSION=${LIBUV_VERSION}
+        - U_WEB_SOCKETS_VERSION=${U_WEB_SOCKETS_VERSION}
         - GOOGLETEST_VERSION=${GOOGLETEST_VERSION}
         - MAX_CPU_CORES=${MAX_CPU_CORES}
     image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-windows-mingw:latest
@@ -84,11 +81,23 @@ services:
         - CI_REGISTRY_BUILDER_ROOT_IMAGE=${REGISTRY_REPO_PATH}/builder-windows-mingw
     image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-windows-mingw-dev:latest
 
-  deploy:
+  ci-linux-runner:
     build:
       context: .
-      dockerfile: docker/Dockerfile-deploy
-    image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/deploy:latest
+      dockerfile: docker/Dockerfile-ci-linux-runner
+      args:
+        - CI_REGISTRY=${REGISTRY_HOST}
+        - CI_REGISTRY_BUILDER_ROOT_IMAGE=${REGISTRY_REPO_PATH}/builder-linux-clang
+        - CPP_CHECK_VERSION=${CPP_CHECK_VERSION}
+        - CODE_CHECKER_VERSION=${CODE_CHECKER_VERSION}
+        - MAX_CPU_CORES=${MAX_CPU_CORES}
+    image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/ci-linux-runner:latest
+
+  ci-deploy:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile-ci-deploy
+    image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/ci-deploy:latest
 
   # ---------------------------------------------------- Execution -----------------------------------------------------
 
@@ -96,14 +105,18 @@ services:
     image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-clang-dev:latest
     container_name: "Linux_GCC_and_Clang_dev_env"
     ports:
-      - "3022:22"
+      - "3022:22" # SSH
+      - "9001:9001" # WS server
     tty: true
     stdin_open: true
+    security_opt:
+      - apparmor:unconfined
     environment:
       - DISPLAY=${DISPLAY}
     volumes:
       - .:/app
       - /tmp/.X11-unix:/tmp/.X11-unix
+      - /run/user/1000:/run/user/1000
     entrypoint: docker/docker-entrypoint-dev.sh
 
   dev-windows:
@@ -113,15 +126,18 @@ services:
       - "3023:22"
     tty: true
     stdin_open: true
+    security_opt:
+      - apparmor:unconfined
     environment:
       - DISPLAY=${DISPLAY}
     volumes:
       - .:/app
       - /tmp/.X11-unix:/tmp/.X11-unix
+      - /run/user/1000:/run/user/1000
     entrypoint: docker/docker-entrypoint-dev.sh
 
   ci:
-    image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/builder-linux-clang-ci:latest
+    image: ${REGISTRY_HOST}/${REGISTRY_REPO_PATH}/ci-linux-runner:latest
     container_name: "Linux_GCC_and_Clang_ci_env"
     tty: true
     stdin_open: true

@@ -1,34 +1,68 @@
+FROM alpine:edge
+
 ARG GCC_VERSION
-
-FROM gcc:${GCC_VERSION}-bullseye
-
 ARG CMAKE_VERSION
-ARG SDL_VERSION
+ARG OPENJPEG_VERSION
+ARG WEBP_VERSION
+ARG TIFF_VERSION
+ARG PNG_VERSION
+ARG ZLIB_VERSION
 ARG LEPTONICA_VERSION
 ARG TESSERACT_VERSION
 ARG OPENCV_VERSION
 ARG NLOHMANN_JSON_VERSION
+ARG FMT_VERSION
 ARG QUILL_VERSION
+ARG LIBUV_VERSION
+ARG U_WEB_SOCKETS_VERSION
 ARG GOOGLETEST_VERSION
 ARG MAX_CPU_CORES
 
 ENV CMAKE_COMMON_OPTION="-DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON"
 
-# Install CMake with the given CMAKE_VERSION version from https://github.com/Kitware/CMake
-RUN wget https://gitlab.kitware.com/cmake/cmake/-/archive/v${CMAKE_VERSION}/cmake-v${CMAKE_VERSION}.tar.gz \
-    -q -O /tmp/cmake-v${CMAKE_VERSION}.tar.gz && \
-    cd /tmp && tar -xvzf cmake-v${CMAKE_VERSION}.tar.gz && cd cmake-v${CMAKE_VERSION} && \
-    ./bootstrap --parallel=${MAX_CPU_CORES} -- -DCMAKE_USE_OPENSSL=ON && make -j ${MAX_CPU_CORES} && make install && \
-    rm -rf /tmp/cmake-v${CMAKE_VERSION}.tar.gz /tmp/cmake-v${CMAKE_VERSION}
+# Install from APK
+RUN apk add --no-cache bash make gcc=~${GCC_VERSION} g++=~${GCC_VERSION} cmake=~${CMAKE_VERSION} libx11-dev libxext-dev \
+    gtk+3.0-dev libcanberra-gtk3 dbus-dev
 
-# Install SDL with the given SDL_VERSION version from https://github.com/libsdl-org/SDL
-RUN apt-get update && apt-get install -y libgtk-3-dev && \
-    wget https://github.com/libsdl-org/SDL/archive/refs/tags/release-${SDL_VERSION}.tar.gz \
-    -q -O /tmp/sdl-${SDL_VERSION}.tar.gz && \
-    cd /tmp && tar -xvzf sdl-${SDL_VERSION}.tar.gz && cd SDL-release-${SDL_VERSION} && \
+# Install zlib with the given ZLIB_VERSION version from https://github.com/madler/zlib
+RUN wget https://github.com/madler/zlib/archive/refs/tags/v${ZLIB_VERSION}.tar.gz \
+    -q -O /tmp/zlib-${ZLIB_VERSION}.tar.gz && \
+    cd /tmp && ls && tar -xvzf zlib-${ZLIB_VERSION}.tar.gz && cd zlib-${ZLIB_VERSION} && \
     cmake -S . -B build ${CMAKE_COMMON_OPTION} && \
     cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
-    rm -rf /tmp/sdl-${SDL_VERSION}.tar.gz /tmp/SDL-release-${SDL_VERSION}
+    rm -rf /tmp/zlib-${ZLIB_VERSION}.tar.gz /tmp/zlib-${ZLIB_VERSION}
+
+# Install openjepg with the given OPENJPEG_VERSION from https://github.com/uclouvain/openjpeg
+RUN wget https://github.com/uclouvain/openjpeg/archive/refs/tags/v${OPENJPEG_VERSION}.tar.gz \
+    -q -O /tmp/openjpeg-${OPENJPEG_VERSION}.tar.gz && \
+    cd /tmp && tar -xvzf openjpeg-${OPENJPEG_VERSION}.tar.gz && cd openjpeg-${OPENJPEG_VERSION} && \
+    cmake -S . -B build ${CMAKE_COMMON_OPTION} && \
+    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
+    rm -rf /tmp/openjpeg-${OPENJPEG_VERSION}.tar.gz /tmp/openjpeg-${OPENJPEG_VERSION}
+
+# Install webp with the given WEBP_VERSION from https://github.com/webmproject/libwebp
+RUN wget https://github.com/webmproject/libwebp/archive/refs/tags/v${WEBP_VERSION}.tar.gz \
+    -q -O /tmp/libwebp-${WEBP_VERSION}.tar.gz && \
+    cd /tmp && tar -xvzf libwebp-${WEBP_VERSION}.tar.gz && cd libwebp-${WEBP_VERSION} && \
+    cmake -S . -B build ${CMAKE_COMMON_OPTION} && \
+    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
+    rm -rf /tmp/libwebp-${WEBP_VERSION}.tar.gz /tmp/libwebp-${WEBP_VERSION}
+
+# Install tiff with the given TIFF_VERSION from http://download.osgeo.org/libtiff/
+RUN wget http://download.osgeo.org/libtiff/tiff-${TIFF_VERSION}.tar.gz \
+    -q -O /tmp/tiff-${TIFF_VERSION}.tar.gz && \
+    cd /tmp && tar -xvzf tiff-${TIFF_VERSION}.tar.gz && cd tiff-${TIFF_VERSION} && \
+    cmake -S . -B build ${CMAKE_COMMON_OPTION} && \
+    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
+    rm -rf /tmp/tiff-${TIFF_VERSION}.tar.gz /tmp/tiff-${TIFF_VERSION}
+
+# Install PNG with the given PNG_VERSION from https://github.com/glennrp/libpng
+RUN wget https://github.com/glennrp/libpng/archive/refs/tags/v${PNG_VERSION}.tar.gz \
+    -q -O /tmp/libpng-${PNG_VERSION}.tar.gz && \
+    cd /tmp && tar -xvzf libpng-${PNG_VERSION}.tar.gz && cd libpng-${PNG_VERSION} && \
+    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DPNG_TESTS=OFF && \
+    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
+    rm -rf /tmp/libpng-${PNG_VERSION}.tar.gz /tmp/libpng-${PNG_VERSION}
 
 # Install leptonica with the given LEPTONICA_VERSION from https://github.com/DanBloomberg/leptonica
 RUN wget https://github.com/DanBloomberg/leptonica/archive/refs/tags/${LEPTONICA_VERSION}.tar.gz \
@@ -53,7 +87,7 @@ RUN mkdir -p ${TESSDATA_PREFIX} && \
     wget https://github.com/tesseract-ocr/tessdata_best/raw/main/eng.traineddata -q -O ${TESSDATA_PREFIX}/eng.traineddata
 
 # Install OpenCV with the given OPENCV_VERSION from https://github.com/opencv/opencv
-RUN apt-get install -y libgtkglext1-dev libopenjp2-7-dev libgtk-3-dev libcanberra-gtk3-module && \
+RUN apk add --no-cache linux-headers && \
     wget https://github.com/opencv/opencv/archive/refs/tags/${OPENCV_VERSION}.tar.gz -q -O /tmp/opencv-${OPENCV_VERSION}.tar.gz && \
     wget https://github.com/opencv/opencv_contrib/archive/refs/tags/${OPENCV_VERSION}.tar.gz \
     -q -O /tmp/opencv_contrib-${OPENCV_VERSION}.tar.gz && \
@@ -70,17 +104,41 @@ RUN apt-get install -y libgtkglext1-dev libopenjp2-7-dev libgtk-3-dev libcanberr
 RUN wget https://github.com/nlohmann/json/archive/refs/tags/v${NLOHMANN_JSON_VERSION}.tar.gz \
     -q -O /tmp/json-${NLOHMANN_JSON_VERSION}.tar.gz && \
     cd /tmp && ls && tar -xvzf json-${NLOHMANN_JSON_VERSION}.tar.gz && cd json-${NLOHMANN_JSON_VERSION} && \
-    cmake -S . -B build ${CMAKE_COMMON_OPTION} && \
+    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DJSON_BuildTests=OFF && \
     cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
     rm -rf /tmp/json-${NLOHMANN_JSON_VERSION}.tar.gz /tmp/json-${NLOHMANN_JSON_VERSION}
+
+# Install fmt with the given FMT_VERSION version from https://github.com/fmtlib/fmt
+RUN wget https://github.com/fmtlib/fmt/archive/refs/tags/${FMT_VERSION}.tar.gz \
+    -q -O /tmp/fmt-${FMT_VERSION}.tar.gz && \
+    cd /tmp && ls && tar -xvzf fmt-${FMT_VERSION}.tar.gz && cd fmt-${FMT_VERSION} && \
+    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DFMT_DOC=OFF -DFMT_TEST=OFF && \
+    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
+    rm -rf /tmp/fmt-${FMT_VERSION}.tar.gz /tmp/fmt-${FMT_VERSION}
 
 # Install quill with the given QUILL_VERSION version from https://github.com/odygrd/quill
 RUN wget https://github.com/odygrd/quill/archive/refs/tags/v${QUILL_VERSION}.tar.gz \
     -q -O /tmp/quill-${QUILL_VERSION}.tar.gz && \
     cd /tmp && ls && tar -xvzf quill-${QUILL_VERSION}.tar.gz && cd quill-${QUILL_VERSION} && \
-    cmake -S . -B build ${CMAKE_COMMON_OPTION} && \
+    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DQUILL_FMT_EXTERNAL=ON && \
     cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
     rm -rf /tmp/quill-${QUILL_VERSION}.tar.gz /tmp/quill-${QUILL_VERSION}
+
+# Install libuv with the given LIBUV_VERSION version from https://github.com/libuv/libuv
+RUN wget https://github.com/libuv/libuv/archive/refs/tags/v${LIBUV_VERSION}.tar.gz \
+    -q -O /tmp/libuv-${LIBUV_VERSION}.tar.gz && \
+    cd /tmp && ls && tar -xvzf libuv-${LIBUV_VERSION}.tar.gz && cd libuv-${LIBUV_VERSION} && \
+    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DWITH_OPENSSL=OFF -DLIBUV_BUILD_TESTS=OFF && \
+    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
+    rm -rf /tmp/libuv-${LIBUV_VERSION}.tar.gz /tmp/libuv-${LIBUV_VERSION}
+
+# Install uWebSockets with the given U_WEB_SOCKETS_VERSION version from forked https://github.com/ZiperRom1/uWebSockets
+RUN wget https://github.com/ZiperRom1/uWebSockets/releases/download/v${U_WEB_SOCKETS_VERSION}/uWebSockets-${U_WEB_SOCKETS_VERSION}.tar.gz \
+    -q -O /tmp/uWebSockets-${U_WEB_SOCKETS_VERSION}.tar.gz && \
+    cd /tmp && ls && tar -xvzf uWebSockets-${U_WEB_SOCKETS_VERSION}.tar.gz && cd uWebSockets-${U_WEB_SOCKETS_VERSION} && \
+    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DWITH_OPENSSL=OFF -DWITH_QUIC=OFF -DWITH_LIBUV=ON -DWITH_ZLIB=ON && \
+    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
+    rm -rf /tmp/uWebSockets-${U_WEB_SOCKETS_VERSION}.tar.gz /tmp/uWebSockets-${U_WEB_SOCKETS_VERSION}
 
 # Install googleTest with the given GOOGLETEST_VERSION version from https://github.com/google/googletest
 RUN wget https://github.com/google/googletest/archive/refs/tags/v${GOOGLETEST_VERSION}.tar.gz \

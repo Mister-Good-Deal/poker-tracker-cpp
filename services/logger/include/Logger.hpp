@@ -5,6 +5,11 @@
 namespace Logger {
     class Quill {
         public:
+            static constexpr std::string_view LOGGER_FILE_NAME = "app.log";
+            // Formatters names in quill/src/PatternFormatter.cpp
+            static constexpr std::string_view LOG_PATTERN =
+                "%(level_name:<9) %(ascii_time)\t[%(thread_name:<12)]\t%(fileline:<25) - %(message)";
+
             Quill() = delete;
 
             static auto getLogger() -> quill::Logger*;

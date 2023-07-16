@@ -4,13 +4,9 @@ ARG CI_REGISTRY_BUILDER_ROOT_IMAGE
 FROM ${CI_REGISTRY}/${CI_REGISTRY_BUILDER_ROOT_IMAGE}:latest
 
 ARG CLANG_VERSION
-ARG MAX_CPU_CORES
 
-# Install Clang with the given CLANG_VERSION version from https://github.com/llvm/llvm-project
-RUN git clone https://github.com/llvm/llvm-project.git && cd llvm-project && git checkout llvmorg-${CLANG_VERSION} && \
-    cmake -S llvm -B build -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra" && \
-    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
-    cd .. && rm -rf llvm-project
+# Install Clang with the given CLANG_VERSION version from APK package manager
+RUN apk add --no-cache clang16 clang16-extra-tools clang16-analyzer
 
 WORKDIR /app
 

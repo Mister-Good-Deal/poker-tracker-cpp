@@ -1,8 +1,8 @@
 #pragma once
 
-#include <map>
+#include <unordered_map>
 
-#include "Card.hpp"
+#include <Card.hpp>
 
 namespace GameHandler::Factory {
     using enum Card::Rank;
@@ -13,7 +13,7 @@ namespace GameHandler::Factory {
             explicit invalid_card(const std::string& arg) : runtime_error(arg){};
     };
 
-    static const std::map<std::string, Card> CARD_PROTOTYPES = {
+    static const std::unordered_map<std::string, Card> CARD_PROTOTYPES = {
         // Hearts
         {"2H", Card(TWO, HEART)},
         {"3H", Card(THREE, HEART)},
