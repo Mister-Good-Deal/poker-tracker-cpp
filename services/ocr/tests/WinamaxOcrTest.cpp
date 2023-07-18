@@ -127,11 +127,33 @@ TEST(WinamaxOcrTest, DISABLED_readPrizePoolAmountShouldWork) {
     EXPECT_EQ(Env::winamaxOcr().readPrizePool(twenty), 20);
 }
 
-TEST(WinamaxOcrTest, readBlindLevelShouldWork) {}
+TEST(WinamaxOcrTest, readBlindLevelShouldWork) {
+    auto two   = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/blind_level/2.png");
+    auto three = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/blind_level/3.png");
 
-TEST(WinamaxOcrTest, readBlindAmountShouldWork) {}
+    EXPECT_EQ(Env::winamaxOcr().readPrizePool(two), 2);
+    EXPECT_EQ(Env::winamaxOcr().readPrizePool(three), 3);
+}
 
-TEST(WinamaxOcrTest, readGameTimeDurationShouldWork) {}
+TEST(WinamaxOcrTest, readBlindAmountShouldWork) {
+    auto fifteenToThirty = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/blind_amount/15_30.png");
+    auto twentyToForty   = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/blind_amount/20_40.png");
+
+    EXPECT_EQ(Env::winamaxOcr().readSmallBlind(fifteenToThirty), 15);
+    EXPECT_EQ(Env::winamaxOcr().readBigBlind(fifteenToThirty), 30);
+    EXPECT_EQ(Env::winamaxOcr().readSmallBlind(twentyToForty), 20);
+    EXPECT_EQ(Env::winamaxOcr().readBigBlind(twentyToForty), 40);
+}
+
+TEST(WinamaxOcrTest, readGameTimeDurationShouldWork) {
+    auto oneMinute          = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/game_duration/1m.png");
+    auto eighteenSeconds    = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/game_duration/18s.png");
+    auto fiftyHeightSeconds = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/game_duration/58s.png");
+
+    EXPECT_EQ(Env::winamaxOcr().readGameDuration(oneMinute), std::chrono::seconds(60));
+    EXPECT_EQ(Env::winamaxOcr().readGameDuration(eighteenSeconds), std::chrono::seconds(18));
+    EXPECT_EQ(Env::winamaxOcr().readGameDuration(fiftyHeightSeconds), std::chrono::seconds(58));
+}
 
 TEST(WinamaxOcrTest, playerHasFoldedShouldWork) {
     auto cardsSkin = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards_skins/skin_1.png");

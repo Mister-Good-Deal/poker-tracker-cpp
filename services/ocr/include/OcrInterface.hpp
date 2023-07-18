@@ -8,6 +8,9 @@
 namespace OCR {
     using cv::text::OCRTesseract;
     using GameHandler::Card;
+    using std::chrono::seconds;
+
+    using intRange = std::pair<int32_t, int32_t>;
 
     class OcrInterface {
         public:
@@ -35,7 +38,9 @@ namespace OCR {
             [[nodiscard]] virtual auto readWord(const cv::Mat& wordImage) const -> std::string;
             [[nodiscard]] virtual auto readWordByChar(const cv::Mat& wordImage) const -> std::string;
             [[nodiscard]] virtual auto readIntNumbers(const cv::Mat& intNumberImage) const -> int32_t;
+            [[nodiscard]] virtual auto readIntRange(const cv::Mat& intRangeImage) const -> intRange;
             [[nodiscard]] virtual auto readFloatNumbers(const cv::Mat& floatNumberImage) const -> double;
+            [[nodiscard]] virtual auto readDuration(const cv::Mat& clockImage) const -> seconds;
             [[nodiscard]] auto         isSimilar(const cv::Mat& firstImage, const cv::Mat& secondImage,
                                                  double threshold = SIMILARITY_THRESHOLD, cv::InputArray& mask = cv::noArray()) const -> bool;
 
@@ -51,7 +56,9 @@ namespace OCR {
             cv::Ptr<OCRTesseract> _tesseractWord;
             cv::Ptr<OCRTesseract> _tesseractChar;
             cv::Ptr<OCRTesseract> _tesseractIntNumbers;
+            cv::Ptr<OCRTesseract> _tesseractIntRange;
             cv::Ptr<OCRTesseract> _tesseractFloatNumbers;
+            cv::Ptr<OCRTesseract> _tesseractDuration;
     };
 
 }  // namespace OCR
