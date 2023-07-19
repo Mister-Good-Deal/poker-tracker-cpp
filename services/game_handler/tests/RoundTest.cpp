@@ -43,6 +43,7 @@ TEST(RoundTest, jsonRepresentationShouldBeCorrect) {
     std::this_thread::sleep_for(seconds(4));
     round.fold(player2);
     round.end(player1);
+    
     // language=json
     auto expectedJson = R"(
         {

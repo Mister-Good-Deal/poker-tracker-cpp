@@ -9,7 +9,7 @@ namespace GameSession {
     using GameHandler::RoundAction;
     using OCR::OcrInterface;
     using OCR::Factory::OcrFactory;
-    using Scraper::ScraperInterface;
+    using Scraper::Scraper;
     using Scraper::Factory::ScraperFactory;
     using std::chrono::milliseconds;
     using std::chrono::seconds;
@@ -39,14 +39,14 @@ namespace GameSession {
             auto _harvestGameInfo(const cv::Mat& screenshot) -> void;
 
         private:
-            milliseconds                      _tickRate = milliseconds(TICK_RATE);
-            std::string                       _roomName;
-            uint64_t                          _windowId = 0;
-            std::unique_ptr<ScraperInterface> _scraper;
-            std::unique_ptr<OcrInterface>     _ocr;
-            Game                              _game;
-            GamePhases                        _gamePhase = GamePhases::STARTING;
-            cv::Mat                           _currentScreenshot;
+            milliseconds                  _tickRate = milliseconds(TICK_RATE);
+            std::string                   _roomName;
+            uint64_t                      _windowId = 0;
+            std::unique_ptr<Scraper>      _scraper;
+            std::unique_ptr<OcrInterface> _ocr;
+            Game                          _game;
+            GamePhases                    _gamePhase = GamePhases::STARTING;
+            cv::Mat                       _currentScreenshot;
 
             auto _evaluatePlayerAction() -> RoundAction;
             auto _processPlayerAction(const RoundAction& action) -> void;
