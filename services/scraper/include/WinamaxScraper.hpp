@@ -32,32 +32,58 @@ namespace Scraper {
             auto operator=(WinamaxScraper&& other) noexcept -> WinamaxScraper&;
 
             // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
-            auto getFirstCardCoordinate() -> cv::Rect override { return {291, 350 + PADDING_TOP, CARD_WIDTH, HAND_HEIGHT}; }
-            auto getSecondCardCoordinate() -> cv::Rect override { return {312, 350 + PADDING_TOP, CARD_WIDTH, HAND_HEIGHT}; }
-            auto getPotCoordinate() -> cv::Rect override { return {269, 285 + PADDING_TOP, 132, 23}; }
-            auto getPrizePoolCoordinate() -> cv::Rect override { return {229, 220 + PADDING_TOP, 211, 60}; }
-            auto getBoardCard1Coordinate() -> cv::Rect override;
-            auto getBoardCard2Coordinate() -> cv::Rect override;
-            auto getBoardCard3Coordinate() -> cv::Rect override;
-            auto getBoardCard4Coordinate() -> cv::Rect override;
-            auto getBoardCard5Coordinate() -> cv::Rect override;
-            auto getPlayer1NameCoordinate() -> cv::Rect override { return {263, 392 + PADDING_TOP, NAME_WIDTH, NAME_HEIGHT}; }
-            auto getPlayer2NameCoordinate() -> cv::Rect override { return {40, 138 + PADDING_TOP, NAME_WIDTH, NAME_HEIGHT}; }
-            auto getPlayer3NameCoordinate() -> cv::Rect override { return {490, 138 + PADDING_TOP, NAME_WIDTH, NAME_HEIGHT}; }
-            auto getPlayer1ButtonCoordinate() -> cv::Rect override { return {255, 333 + PADDING_TOP, BUTTON_WIDTH, BUTTON_HEIGHT}; }
-            auto getPlayer2ButtonCoordinate() -> cv::Rect override { return {170, 134 + PADDING_TOP, BUTTON_WIDTH, BUTTON_HEIGHT}; }
-            auto getPlayer3ButtonCoordinate() -> cv::Rect override { return {528, 206 + PADDING_TOP, BUTTON_WIDTH, BUTTON_HEIGHT}; }
-            auto getPlayer1StackCoordinate() -> cv::Rect override { return {278, 409 + PADDING_TOP, STACK_WIDTH, STACK_HEIGHT}; }
-            auto getPlayer2StackCoordinate() -> cv::Rect override { return {54, 153 + PADDING_TOP, STACK_WIDTH, STACK_HEIGHT}; }
-            auto getPlayer3StackCoordinate() -> cv::Rect override { return {508, 153 + PADDING_TOP, STACK_WIDTH, STACK_HEIGHT}; }
-            auto getPlayer1BetCoordinate() -> cv::Rect override { return {287, 332 + PADDING_TOP, BET_WIDTH, BET_HEIGHT}; }
-            auto getPlayer2BetCoordinate() -> cv::Rect override { return {135, 184 + PADDING_TOP, BET_WIDTH, BET_HEIGHT}; }
-            auto getPlayer3BetCoordinate() -> cv::Rect override { return {435, 184 + PADDING_TOP, BET_WIDTH, BET_HEIGHT}; }
-            auto getPlayer2HandCoordinate() -> cv::Rect override { return {67, 97 + PADDING_TOP, HAND_WIDTH, HAND_HEIGHT}; }
-            auto getPlayer3HandCoordinate() -> cv::Rect override { return {515, 97 + PADDING_TOP, HAND_WIDTH, HAND_HEIGHT}; }
-            auto getBlindLevelCoordinate() -> cv::Rect override { return {485, 28 + PADDING_TOP, 12, 18}; }
-            auto getBlindAmountCoordinate() -> cv::Rect override { return {502, 28 + PADDING_TOP, 45, 18}; }
-            auto getGameTimeCoordinate() -> cv::Rect override { return {545, 28 + PADDING_TOP, 45, 18}; }
+            auto getFirstCardCoordinate() const -> const cv::Rect override {
+                return {291, 350 + PADDING_TOP, CARD_WIDTH, HAND_HEIGHT};
+            }
+            auto getSecondCardCoordinate() const -> const cv::Rect override {
+                return {312, 350 + PADDING_TOP, CARD_WIDTH, HAND_HEIGHT};
+            }
+            auto getPotCoordinate() const -> const cv::Rect override { return {269, 285 + PADDING_TOP, 132, 23}; }
+            auto getPrizePoolCoordinate() const -> const cv::Rect override { return {229, 220 + PADDING_TOP, 211, 60}; }
+            auto getBoardCard1Coordinate() const -> const cv::Rect override;
+            auto getBoardCard2Coordinate() const -> const cv::Rect override;
+            auto getBoardCard3Coordinate() const -> const cv::Rect override;
+            auto getBoardCard4Coordinate() const -> const cv::Rect override;
+            auto getBoardCard5Coordinate() const -> const cv::Rect override;
+            auto getPlayer1NameCoordinate() const -> const cv::Rect override {
+                return {263, 392 + PADDING_TOP, NAME_WIDTH, NAME_HEIGHT};
+            }
+            auto getPlayer2NameCoordinate() const -> const cv::Rect override {
+                return {40, 138 + PADDING_TOP, NAME_WIDTH, NAME_HEIGHT};
+            }
+            auto getPlayer3NameCoordinate() const -> const cv::Rect override {
+                return {490, 138 + PADDING_TOP, NAME_WIDTH, NAME_HEIGHT};
+            }
+            auto getPlayer1ButtonCoordinate() const -> const cv::Rect override {
+                return {255, 333 + PADDING_TOP, BUTTON_WIDTH, BUTTON_HEIGHT};
+            }
+            auto getPlayer2ButtonCoordinate() const -> const cv::Rect override {
+                return {170, 134 + PADDING_TOP, BUTTON_WIDTH, BUTTON_HEIGHT};
+            }
+            auto getPlayer3ButtonCoordinate() const -> const cv::Rect override {
+                return {528, 206 + PADDING_TOP, BUTTON_WIDTH, BUTTON_HEIGHT};
+            }
+            auto getPlayer1StackCoordinate() const -> const cv::Rect override {
+                return {278, 409 + PADDING_TOP, STACK_WIDTH, STACK_HEIGHT};
+            }
+            auto getPlayer2StackCoordinate() const -> const cv::Rect override {
+                return {54, 153 + PADDING_TOP, STACK_WIDTH, STACK_HEIGHT};
+            }
+            auto getPlayer3StackCoordinate() const -> const cv::Rect override {
+                return {508, 153 + PADDING_TOP, STACK_WIDTH, STACK_HEIGHT};
+            }
+            auto getPlayer1BetCoordinate() const -> const cv::Rect override { return {287, 332 + PADDING_TOP, BET_WIDTH, BET_HEIGHT}; }
+            auto getPlayer2BetCoordinate() const -> const cv::Rect override { return {135, 184 + PADDING_TOP, BET_WIDTH, BET_HEIGHT}; }
+            auto getPlayer3BetCoordinate() const -> const cv::Rect override { return {435, 184 + PADDING_TOP, BET_WIDTH, BET_HEIGHT}; }
+            auto getPlayer2HandCoordinate() const -> const cv::Rect override {
+                return {67, 97 + PADDING_TOP, HAND_WIDTH, HAND_HEIGHT};
+            }
+            auto getPlayer3HandCoordinate() const -> const cv::Rect override {
+                return {515, 97 + PADDING_TOP, HAND_WIDTH, HAND_HEIGHT};
+            }
+            auto getBlindLevelCoordinate() const -> const cv::Rect override { return {485, 28 + PADDING_TOP, 12, 18}; }
+            auto getBlindAmountCoordinate() const -> const cv::Rect override { return {502, 28 + PADDING_TOP, 45, 18}; }
+            auto getGameTimeCoordinate() const -> const cv::Rect override { return {545, 28 + PADDING_TOP, 45, 18}; }
             // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
     };
 }  // namespace Scraper

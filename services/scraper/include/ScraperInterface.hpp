@@ -5,6 +5,8 @@
 
 #include <opencv4/opencv2/opencv.hpp>
 
+#include <nlohmann/json.hpp>
+
 #include <Logger.hpp>
 
 #ifdef _WIN32
@@ -19,6 +21,8 @@
 
 #endif
 namespace Scraper {
+    using json = nlohmann::json;
+
     struct WindowInfo {
             std::string title;
             uint64_t    id;
@@ -49,6 +53,8 @@ namespace Scraper {
             auto getActiveWindows() -> windows_t;
             auto getScreenshot(uint64_t windowId) -> cv::Mat;
             auto getWindowElementsView(const cv::Mat& img) -> cv::Mat;
+
+            [[nodiscard]] auto toJson() const -> json;
 
             /**
              *              Players positions on the table
@@ -87,36 +93,37 @@ namespace Scraper {
             auto getGameTimeImg(const cv::Mat& img) -> cv::Mat { return img(getGameTimeCoordinate()); };
 
             // All screen elements coordinates from top left corner (0, 0) in top left(x, y) cv::Rect(x, y, width, eight)
-            virtual auto getFirstCardCoordinate() -> cv::Rect     = 0;
-            virtual auto getSecondCardCoordinate() -> cv::Rect    = 0;
-            virtual auto getPotCoordinate() -> cv::Rect           = 0;
-            virtual auto getPrizePoolCoordinate() -> cv::Rect     = 0;
-            virtual auto getBoardCard1Coordinate() -> cv::Rect    = 0;
-            virtual auto getBoardCard2Coordinate() -> cv::Rect    = 0;
-            virtual auto getBoardCard3Coordinate() -> cv::Rect    = 0;
-            virtual auto getBoardCard4Coordinate() -> cv::Rect    = 0;
-            virtual auto getBoardCard5Coordinate() -> cv::Rect    = 0;
-            virtual auto getPlayer1NameCoordinate() -> cv::Rect   = 0;
-            virtual auto getPlayer2NameCoordinate() -> cv::Rect   = 0;
-            virtual auto getPlayer3NameCoordinate() -> cv::Rect   = 0;
-            virtual auto getPlayer1ButtonCoordinate() -> cv::Rect = 0;
-            virtual auto getPlayer2ButtonCoordinate() -> cv::Rect = 0;
-            virtual auto getPlayer3ButtonCoordinate() -> cv::Rect = 0;
-            virtual auto getPlayer1StackCoordinate() -> cv::Rect  = 0;
-            virtual auto getPlayer2StackCoordinate() -> cv::Rect  = 0;
-            virtual auto getPlayer3StackCoordinate() -> cv::Rect  = 0;
-            virtual auto getPlayer1BetCoordinate() -> cv::Rect    = 0;
-            virtual auto getPlayer2BetCoordinate() -> cv::Rect    = 0;
-            virtual auto getPlayer3BetCoordinate() -> cv::Rect    = 0;
-            virtual auto getPlayer2HandCoordinate() -> cv::Rect   = 0;
-            virtual auto getPlayer3HandCoordinate() -> cv::Rect   = 0;
-            virtual auto getBlindLevelCoordinate() -> cv::Rect    = 0;
-            virtual auto getBlindAmountCoordinate() -> cv::Rect   = 0;
-            virtual auto getGameTimeCoordinate() -> cv::Rect      = 0;
+            virtual auto getFirstCardCoordinate() const -> const cv::Rect     = 0;
+            virtual auto getSecondCardCoordinate() const -> const cv::Rect    = 0;
+            virtual auto getPotCoordinate() const -> const cv::Rect           = 0;
+            virtual auto getPrizePoolCoordinate() const -> const cv::Rect     = 0;
+            virtual auto getBoardCard1Coordinate() const -> const cv::Rect    = 0;
+            virtual auto getBoardCard2Coordinate() const -> const cv::Rect    = 0;
+            virtual auto getBoardCard3Coordinate() const -> const cv::Rect    = 0;
+            virtual auto getBoardCard4Coordinate() const -> const cv::Rect    = 0;
+            virtual auto getBoardCard5Coordinate() const -> const cv::Rect    = 0;
+            virtual auto getPlayer1NameCoordinate() const -> const cv::Rect   = 0;
+            virtual auto getPlayer2NameCoordinate() const -> const cv::Rect   = 0;
+            virtual auto getPlayer3NameCoordinate() const -> const cv::Rect   = 0;
+            virtual auto getPlayer1ButtonCoordinate() const -> const cv::Rect = 0;
+            virtual auto getPlayer2ButtonCoordinate() const -> const cv::Rect = 0;
+            virtual auto getPlayer3ButtonCoordinate() const -> const cv::Rect = 0;
+            virtual auto getPlayer1StackCoordinate() const -> const cv::Rect  = 0;
+            virtual auto getPlayer2StackCoordinate() const -> const cv::Rect  = 0;
+            virtual auto getPlayer3StackCoordinate() const -> const cv::Rect  = 0;
+            virtual auto getPlayer1BetCoordinate() const -> const cv::Rect    = 0;
+            virtual auto getPlayer2BetCoordinate() const -> const cv::Rect    = 0;
+            virtual auto getPlayer3BetCoordinate() const -> const cv::Rect    = 0;
+            virtual auto getPlayer2HandCoordinate() const -> const cv::Rect   = 0;
+            virtual auto getPlayer3HandCoordinate() const -> const cv::Rect   = 0;
+            virtual auto getBlindLevelCoordinate() const -> const cv::Rect    = 0;
+            virtual auto getBlindAmountCoordinate() const -> const cv::Rect   = 0;
+            virtual auto getGameTimeCoordinate() const -> const cv::Rect      = 0;
 
         private:
             windows_t _activeWindows;
 
             auto _parseActiveWindows() -> void;
+            auto _rectToJson(const cv::Rect& rect) const -> json;
     };
 }  // namespace Scraper

@@ -11,21 +11,23 @@ namespace Scraper {
     }
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers)
-    auto WinamaxScraper::getBoardCard1Coordinate() -> cv::Rect { return {195, BOARD_CARDS_Y_COORDINATE, CARD_WIDTH, CARD_HEIGHT}; }
+    auto WinamaxScraper::getBoardCard1Coordinate() const -> const cv::Rect {
+        return {195, BOARD_CARDS_Y_COORDINATE, CARD_WIDTH, CARD_HEIGHT};
+    }
 
-    auto WinamaxScraper::getBoardCard2Coordinate() -> cv::Rect {
+    auto WinamaxScraper::getBoardCard2Coordinate() const -> const cv::Rect {
         return {getBoardCard1Coordinate().x + BOARD_CARDS_WIDTH_SEPARATION, BOARD_CARDS_Y_COORDINATE, CARD_WIDTH, CARD_HEIGHT};
     }
 
-    auto WinamaxScraper::getBoardCard3Coordinate() -> cv::Rect {
+    auto WinamaxScraper::getBoardCard3Coordinate() const -> const cv::Rect {
         return {getBoardCard2Coordinate().x + BOARD_CARDS_WIDTH_SEPARATION, BOARD_CARDS_Y_COORDINATE, CARD_WIDTH, CARD_HEIGHT};
     }
 
-    auto WinamaxScraper::getBoardCard4Coordinate() -> cv::Rect {
+    auto WinamaxScraper::getBoardCard4Coordinate() const -> const cv::Rect {
         return {getBoardCard3Coordinate().x + BOARD_CARDS_WIDTH_SEPARATION, BOARD_CARDS_Y_COORDINATE, CARD_WIDTH, CARD_HEIGHT};
     }
 
-    auto WinamaxScraper::getBoardCard5Coordinate() -> cv::Rect {
+    auto WinamaxScraper::getBoardCard5Coordinate() const -> const cv::Rect {
         return {getBoardCard4Coordinate().x + BOARD_CARDS_WIDTH_SEPARATION, BOARD_CARDS_Y_COORDINATE, CARD_WIDTH, CARD_HEIGHT};
     }
 }  // namespace Scraper

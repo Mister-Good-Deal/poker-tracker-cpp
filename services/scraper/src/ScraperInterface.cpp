@@ -168,4 +168,37 @@ namespace Scraper {
 
         return elementsView;
     }
+
+    auto ScraperInterface::toJson() const -> json {
+        return {{"firstCard", _rectToJson(getFirstCardCoordinate())},
+                {"secondCard", _rectToJson(getSecondCardCoordinate())},
+                {"pot", _rectToJson(getPotCoordinate())},
+                {"prizePool", _rectToJson(getPrizePoolCoordinate())},
+                {"boardCard1", _rectToJson(getBoardCard1Coordinate())},
+                {"boardCard2", _rectToJson(getBoardCard2Coordinate())},
+                {"boardCard3", _rectToJson(getBoardCard3Coordinate())},
+                {"boardCard4", _rectToJson(getBoardCard4Coordinate())},
+                {"boardCard5", _rectToJson(getBoardCard5Coordinate())},
+                {"player1Name", _rectToJson(getPlayer1NameCoordinate())},
+                {"player2Name", _rectToJson(getPlayer2NameCoordinate())},
+                {"player3Name", _rectToJson(getPlayer3NameCoordinate())},
+                {"player1Button", _rectToJson(getPlayer1ButtonCoordinate())},
+                {"player2Button", _rectToJson(getPlayer2ButtonCoordinate())},
+                {"player3Button", _rectToJson(getPlayer3ButtonCoordinate())},
+                {"player1Stack", _rectToJson(getPlayer1StackCoordinate())},
+                {"player2Stack", _rectToJson(getPlayer2StackCoordinate())},
+                {"player3Stack", _rectToJson(getPlayer3StackCoordinate())},
+                {"player1Bet", _rectToJson(getPlayer1BetCoordinate())},
+                {"player2Bet", _rectToJson(getPlayer2BetCoordinate())},
+                {"player3Bet", _rectToJson(getPlayer3BetCoordinate())},
+                {"player2Hand", _rectToJson(getPlayer2HandCoordinate())},
+                {"player3Hand", _rectToJson(getPlayer3HandCoordinate())},
+                {"blindLevel", _rectToJson(getBlindLevelCoordinate())},
+                {"blindAmount", _rectToJson(getBlindAmountCoordinate())},
+                {"gameTime", _rectToJson(getGameTimeCoordinate())}};
+    }
+
+    auto ScraperInterface::_rectToJson(const cv::Rect& rect) const -> json {
+        return {{"topLeft", {{"x", rect.x}, {"y", rect.y}}}, {"width", rect.width}, {"height", rect.height}};
+    };
 }  // namespace Scraper
