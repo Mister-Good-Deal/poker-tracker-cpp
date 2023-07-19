@@ -117,11 +117,12 @@ TEST(WinamaxOcrTest, readPotAmountShouldWork) {
     EXPECT_EQ(Env::winamaxOcr().readPot(sixHundredAndThirtyImg), 630);
 }
 
+// @todo Learn tesseract on specific font https://github.com/tesseract-ocr/tesstrain https://www.youtube.com/watch?v=KE4xEzFGSU8
+// @link https://www.myfonts.com/products/fat-corner-b-276039
+// @link https://www.myfonts.com/products/wide-blunt-183803
+// @link https://www.myfonts.com/products/blind-leco-1988-273748
+// @issue https://gitlab.laneuville.me/poker-bot/backend/-/issues/31
 TEST(WinamaxOcrTest, DISABLED_readPrizePoolAmountShouldWork) {
-    // @todo Learn tesseract on specific font https://github.com/tesseract-ocr/tesstrain https://www.youtube.com/watch?v=KE4xEzFGSU8
-    // @link https://www.myfonts.com/products/fat-corner-b-276039
-    // @link https://www.myfonts.com/products/wide-blunt-183803
-    // @link https://www.myfonts.com/products/blind-leco-1988-273748
     auto twenty = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/prize_pool/20.png");
 
     EXPECT_EQ(Env::winamaxOcr().readPrizePool(twenty), 20);
@@ -145,7 +146,9 @@ TEST(WinamaxOcrTest, readBlindAmountShouldWork) {
     EXPECT_EQ(Env::winamaxOcr().readBigBlind(twentyToForty), 40);
 }
 
-TEST(WinamaxOcrTest, readGameTimeDurationShouldWork) {
+// @todo Learn tesseract on specific font https://github.com/tesseract-ocr/tesstrain https://www.youtube.com/watch?v=KE4xEzFGSU8
+// @issue https://gitlab.laneuville.me/poker-bot/backend/-/issues/31
+TEST(WinamaxOcrTest, DISABLED_readGameTimeDurationShouldWork) {
     auto oneMinute          = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/game_duration/1m.png");
     auto eighteenSeconds    = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/game_duration/18s.png");
     auto fiftyHeightSeconds = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/game_duration/58s.png");
