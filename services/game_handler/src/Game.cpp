@@ -1,4 +1,4 @@
-#include "Game.hpp"
+#include "game_handler/Game.hpp"
 
 namespace GameHandler {
     using std::ranges::any_of;
@@ -7,13 +7,16 @@ namespace GameHandler {
     auto Game::operator=(Game&& other) noexcept -> Game& {
         if (this != &other)
         {
-            _rounds      = std::move(other._rounds);
-            _players     = std::move(other._players);
-            _startTime   = other._startTime;
-            _endTime     = other._endTime;
-            _winner      = other._winner;
-            _buyIn       = other._buyIn;
-            _multipliers = other._multipliers;
+            _rounds         = std::move(other._rounds);
+            _players        = std::move(other._players);
+            _startTime      = other._startTime;
+            _endTime        = other._endTime;
+            _winner         = other._winner;
+            _currentPlaying = other._currentPlaying;
+            _button         = other._button;
+            _buyIn          = other._buyIn;
+            _multipliers    = other._multipliers;
+            _initialized    = other._initialized;
         }
 
         return *this;

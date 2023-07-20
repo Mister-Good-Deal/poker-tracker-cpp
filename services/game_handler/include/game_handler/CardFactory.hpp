@@ -2,7 +2,7 @@
 
 #include <unordered_map>
 
-#include <Card.hpp>
+#include <game_handler/Card.hpp>
 
 namespace GameHandler::Factory {
     using enum Card::Rank;

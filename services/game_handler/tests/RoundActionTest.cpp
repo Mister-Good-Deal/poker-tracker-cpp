@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
-#include "Player.hpp"
-#include "RoundAction.hpp"
+#include <game_handler/Player.hpp>
+#include <game_handler/RoundAction.hpp>
 
 using GameHandler::Player;
 using GameHandler::RoundAction;

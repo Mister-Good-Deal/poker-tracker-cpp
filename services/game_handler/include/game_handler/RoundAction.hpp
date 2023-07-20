@@ -2,7 +2,7 @@
 
 #include <chrono>
 
-#include <Player.hpp>
+#include <game_handler/Player.hpp>
 
 namespace GameHandler {
     using std::chrono::seconds;

@@ -18,9 +18,7 @@ find_package(OpenCV REQUIRED)
 
 set(
         SRC
-        src/ScraperFactory.cpp
-        src/ScraperInterface.cpp
-        src/WinamaxScraper.cpp
+        src/Model.cpp
 )
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -52,9 +50,9 @@ endif ()
 #-----------------------------------------------------------------------------------------------------------------------
 
 # Add the image file as a resource
-set(WINAMAX_IMAGES_DIR "${PROJECT_SOURCE_DIR}/resources/winamax")
+set(WINAMAX_DIR "${PROJECT_SOURCE_DIR}/resources/winamax")
 
-add_definitions(-DWINAMAX_IMAGES_DIR="${WINAMAX_IMAGES_DIR}")
+add_definitions(-DWINAMAX_DIR="${WINAMAX_DIR}")
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Tests

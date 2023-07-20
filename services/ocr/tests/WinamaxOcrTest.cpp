@@ -2,8 +2,8 @@
 
 #include <opencv4/opencv2/imgcodecs.hpp>
 
-#include <CardFactory.hpp>
-#include <WinamaxOcr.hpp>
+#include <game_handler/CardFactory.hpp>
+#include <ocr/WinamaxOcr.hpp>
 
 using GameHandler::Factory::card;
 using OCR::WinamaxOcr;
@@ -117,21 +117,46 @@ TEST(WinamaxOcrTest, readPotAmountShouldWork) {
     EXPECT_EQ(Env::winamaxOcr().readPot(sixHundredAndThirtyImg), 630);
 }
 
+// @todo Learn tesseract on specific font https://github.com/tesseract-ocr/tesstrain https://www.youtube.com/watch?v=KE4xEzFGSU8
+// @link https://www.myfonts.com/products/fat-corner-b-276039
+// @link https://www.myfonts.com/products/wide-blunt-183803
+// @link https://www.myfonts.com/products/blind-leco-1988-273748
+// @issue https://gitlab.laneuville.me/poker-bot/backend/-/issues/31
 TEST(WinamaxOcrTest, DISABLED_readPrizePoolAmountShouldWork) {
-    // @todo Learn tesseract on specific font https://github.com/tesseract-ocr/tesstrain https://www.youtube.com/watch?v=KE4xEzFGSU8
-    // @link https://www.myfonts.com/products/fat-corner-b-276039
-    // @link https://www.myfonts.com/products/wide-blunt-183803
-    // @link https://www.myfonts.com/products/blind-leco-1988-273748
     auto twenty = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/prize_pool/20.png");
 
     EXPECT_EQ(Env::winamaxOcr().readPrizePool(twenty), 20);
 }
 
-TEST(WinamaxOcrTest, readBlindLevelShouldWork) {}
+TEST(WinamaxOcrTest, readBlindLevelShouldWork) {
+    auto two   = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/blind_level/2.png");
+    auto three = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/blind_level/3.png");
 
-TEST(WinamaxOcrTest, readBlindAmountShouldWork) {}
+    EXPECT_EQ(Env::winamaxOcr().readPrizePool(two), 2);
+    EXPECT_EQ(Env::winamaxOcr().readPrizePool(three), 3);
+}
 
-TEST(WinamaxOcrTest, readGameTimeDurationShouldWork) {}
+TEST(WinamaxOcrTest, readBlindAmountShouldWork) {
+    auto fifteenToThirty = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/blind_amount/15_30.png");
+    auto twentyToForty   = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/blind_amount/20_40.png");
+
+    EXPECT_EQ(Env::winamaxOcr().readSmallBlind(fifteenToThirty), 15);
+    EXPECT_EQ(Env::winamaxOcr().readBigBlind(fifteenToThirty), 30);
+    EXPECT_EQ(Env::winamaxOcr().readSmallBlind(twentyToForty), 20);
+    EXPECT_EQ(Env::winamaxOcr().readBigBlind(twentyToForty), 40);
+}
+
+// @todo Learn tesseract on specific font https://github.com/tesseract-ocr/tesstrain https://www.youtube.com/watch?v=KE4xEzFGSU8
+// @issue https://gitlab.laneuville.me/poker-bot/backend/-/issues/31
+TEST(WinamaxOcrTest, DISABLED_readGameTimeDurationShouldWork) {
+    auto oneMinute          = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/game_duration/1m.png");
+    auto eighteenSeconds    = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/game_duration/18s.png");
+    auto fiftyHeightSeconds = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/game_duration/58s.png");
+
+    EXPECT_EQ(Env::winamaxOcr().readGameDuration(oneMinute), std::chrono::seconds(60));
+    EXPECT_EQ(Env::winamaxOcr().readGameDuration(eighteenSeconds), std::chrono::seconds(18));
+    EXPECT_EQ(Env::winamaxOcr().readGameDuration(fiftyHeightSeconds), std::chrono::seconds(58));
+}
 
 TEST(WinamaxOcrTest, playerHasFoldedShouldWork) {
     auto cardsSkin = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards_skins/skin_1.png");

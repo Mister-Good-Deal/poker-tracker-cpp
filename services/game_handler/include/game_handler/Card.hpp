@@ -6,7 +6,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include <Logger.hpp>
+#include <logger/Logger.hpp>
 
 namespace GameHandler {
     using json   = nlohmann::json;

@@ -1,4 +1,4 @@
-#include "CardFactory.hpp"
+#include "game_handler/CardFactory.hpp"
 
 namespace GameHandler::Factory {
     auto CardFactory::create(const std::string& shortCardName) -> Card {

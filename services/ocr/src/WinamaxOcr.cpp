@@ -1,7 +1,7 @@
-#include "WinamaxOcr.hpp"
+#include "ocr/WinamaxOcr.hpp"
 
-#include <Logger.hpp>
-#include <Macros.hpp>
+#include <logger/Logger.hpp>
+#include <utilities/Macros.hpp>
 
 namespace OCR {
     using Logger = Logger::Quill;
@@ -73,6 +73,11 @@ namespace OCR {
     auto WinamaxOcr::readPot(const cv::Mat& potImage) const -> int32_t { return readIntNumbers(potImage); }
     auto WinamaxOcr::readPotInBB(const cv::Mat& potInBBImage) const -> double { return readFloatNumbers(potInBBImage); }
     auto WinamaxOcr::readPrizePool(const cv::Mat& prizePoolImage) const -> int32_t { return readIntNumbers(prizePoolImage); }
+    auto WinamaxOcr::readBlindLevel(const cv::Mat& blindLevelImage) const -> int32_t { return readIntNumbers(blindLevelImage); }
+    auto WinamaxOcr::readBlindRange(const cv::Mat& blindRangeImage) const -> intRange { return readIntRange(blindRangeImage); }
+    auto WinamaxOcr::readSmallBlind(const cv::Mat& blindRangeImage) const -> int32_t { return readBlindRange(blindRangeImage).first; }
+    auto WinamaxOcr::readBigBlind(const cv::Mat& blindRangeImage) const -> int32_t { return readBlindRange(blindRangeImage).second; }
+    auto WinamaxOcr::readGameDuration(const cv::Mat& gameDurationImage) const -> seconds { return readDuration(gameDurationImage); }
 
     auto WinamaxOcr::getButtonMask() const -> cv::Mat {
         auto buttonImg = getButtonImg();

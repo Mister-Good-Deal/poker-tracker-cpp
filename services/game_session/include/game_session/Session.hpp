@@ -1,16 +1,14 @@
 #pragma once
 
-#include <Game.hpp>
-#include <OcrFactory.hpp>
-#include <ScraperFactory.hpp>
+#include <game_handler/Game.hpp>
+#include <ocr/OcrFactory.hpp>
+#include <scraper/Model.hpp>
 
 namespace GameSession {
     using GameHandler::Game;
     using GameHandler::RoundAction;
     using OCR::OcrInterface;
     using OCR::Factory::OcrFactory;
-    using Scraper::ScraperInterface;
-    using Scraper::Factory::ScraperFactory;
     using std::chrono::milliseconds;
     using std::chrono::seconds;
 
@@ -39,14 +37,14 @@ namespace GameSession {
             auto _harvestGameInfo(const cv::Mat& screenshot) -> void;
 
         private:
-            milliseconds                      _tickRate = milliseconds(TICK_RATE);
-            std::string                       _roomName;
-            uint64_t                          _windowId = 0;
-            std::unique_ptr<ScraperInterface> _scraper;
-            std::unique_ptr<OcrInterface>     _ocr;
-            Game                              _game;
-            GamePhases                        _gamePhase = GamePhases::STARTING;
-            cv::Mat                           _currentScreenshot;
+            milliseconds                  _tickRate = milliseconds(TICK_RATE);
+            std::string                   _roomName;
+            uint64_t                      _windowId = 0;
+            Scraper::Model                _scraper  = Scraper::Model(_roomName, {0, 0});
+            std::unique_ptr<OcrInterface> _ocr;
+            Game                          _game;
+            GamePhases                    _gamePhase = GamePhases::STARTING;
+            cv::Mat                       _currentScreenshot;
 
             auto _evaluatePlayerAction() -> RoundAction;
             auto _processPlayerAction(const RoundAction& action) -> void;

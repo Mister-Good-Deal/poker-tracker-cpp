@@ -1,9 +1,9 @@
-#include "OcrInterface.hpp"
+#include "ocr/OcrInterface.hpp"
 
 #include <charconv>
 
-#include <Logger.hpp>
-#include <Macros.hpp>
+#include <logger/Logger.hpp>
+#include <utilities/Macros.hpp>
 
 namespace OCR {
     using Logger = Logger::Quill;
@@ -64,7 +64,9 @@ namespace OCR {
         _tesseractWord         = cv::text::OCRTesseract::create(nullptr, "eng", ALL_CHARACTERS, OEM_CUBE_ONLY, PSM_SINGLE_BLOCK);
         _tesseractChar         = cv::text::OCRTesseract::create(nullptr, "eng", ALL_CHARACTERS, OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
         _tesseractIntNumbers   = cv::text::OCRTesseract::create(nullptr, "eng", "0123456789 ", OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
+        _tesseractIntRange     = cv::text::OCRTesseract::create(nullptr, "eng", "0123456789- ", OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
         _tesseractFloatNumbers = cv::text::OCRTesseract::create(nullptr, "eng", "0123456789,.B ", OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
+        _tesseractDuration     = cv::text::OCRTesseract::create(nullptr, "eng", "0123456789: ", OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
     }
 
     auto OCR::OcrInterface::readCard(const cv::Mat& cardImage) const -> Card {
@@ -90,6 +92,32 @@ namespace OCR {
         return word;
     }
 
+    auto OcrInterface::readIntNumbers(const cv::Mat& intNumberImage) const -> int32_t {
+        auto number = _tesseractIntNumbers->run(intNumberImage, OCR_MIN_CONFIDENCE);
+
+        fullTrim(number);
+
+        LOG_DEBUG(Logger::getLogger(), "readIntNumbers string: {}", number);
+        DISPLAY_IMAGE("readIntNumbers", intNumberImage);
+
+        return toInt(number);
+    }
+
+    auto OcrInterface::readIntRange(const cv::Mat& intRangeImage) const -> intRange {
+        auto range = _tesseractIntRange->run(intRangeImage, OCR_MIN_CONFIDENCE);
+
+        fullTrim(range);
+
+        auto dashPos      = range.find('-');
+        auto firstNumber  = range.substr(0, dashPos);
+        auto secondNumber = range.substr(dashPos + 1);
+
+        LOG_DEBUG(Logger::getLogger(), "readIntRange string: {}", range);
+        DISPLAY_IMAGE("readIntRange", intRangeImage);
+
+        return {toInt(firstNumber), toInt(secondNumber)};
+    }
+
     auto OcrInterface::readFloatNumbers(const cv::Mat& floatNumberImage) const -> double {
         auto number = _tesseractFloatNumbers->run(floatNumberImage, OCR_MIN_CONFIDENCE);
 
@@ -103,15 +131,19 @@ namespace OCR {
         return toFloat(number);
     }
 
-    auto OcrInterface::readIntNumbers(const cv::Mat& intNumberImage) const -> int32_t {
-        auto number = _tesseractIntNumbers->run(intNumberImage, OCR_MIN_CONFIDENCE);
+    auto OcrInterface::readDuration(const cv::Mat& clockImage) const -> seconds {
+        auto clock = _tesseractDuration->run(clockImage, OCR_MIN_CONFIDENCE);
 
-        fullTrim(number);
+        fullTrim(clock);
 
-        LOG_DEBUG(Logger::getLogger(), "readIntNumbers string: {}", number);
-        DISPLAY_IMAGE("readIntNumbers", intNumberImage);
+        auto doubleDashPos = clock.find(':');
+        auto minutes       = clock.substr(0, doubleDashPos);
+        auto seconds       = clock.substr(doubleDashPos + 1);
 
-        return toInt(number);
+        LOG_DEBUG(Logger::getLogger(), "readDuration string: {}", clock);
+        DISPLAY_IMAGE("readDuration", clockImage);
+
+        return std::chrono::seconds(toInt(minutes) * 60 + toInt(seconds));
     }
 
     auto OcrInterface::isSimilar(const cv::Mat& firstImage, const cv::Mat& secondImage, double threshold, cv::InputArray& mask) const

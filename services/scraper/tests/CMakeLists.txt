@@ -18,4 +18,4 @@ function(add_class_test class_name)
     )
 endfunction()
 
-add_class_test(WinamaxScraper)
+add_class_test(Model)

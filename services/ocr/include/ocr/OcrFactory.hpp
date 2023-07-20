@@ -1,6 +1,6 @@
 #pragma once
 
-#include <OcrInterface.hpp>
+#include <ocr/OcrInterface.hpp>
 
 namespace OCR::Factory {
     class invalid_ocr : public std::runtime_error {

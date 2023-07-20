@@ -1,4 +1,4 @@
-#include "Player.hpp"
+#include "game_handler/Player.hpp"
 
 namespace GameHandler {
     auto Player::operator=(Player&& other) noexcept -> Player& {

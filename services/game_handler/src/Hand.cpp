@@ -1,4 +1,4 @@
-#include "Hand.hpp"
+#include "game_handler/Hand.hpp"
 
 #include <algorithm>
 

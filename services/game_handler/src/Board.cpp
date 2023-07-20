@@ -1,4 +1,4 @@
-#include "Board.hpp"
+#include "game_handler/Board.hpp"
 
 namespace GameHandler {
     using std::ranges::copy;

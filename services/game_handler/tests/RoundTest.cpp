@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
-#include "CardFactory.hpp"
-#include "Round.hpp"
+#include <game_handler/CardFactory.hpp>
+#include <game_handler/Round.hpp>
 
 using GameHandler::Board;
 using GameHandler::Player;
@@ -43,6 +43,7 @@ TEST(RoundTest, jsonRepresentationShouldBeCorrect) {
     std::this_thread::sleep_for(seconds(4));
     round.fold(player2);
     round.end(player1);
+
     // language=json
     auto expectedJson = R"(
         {
