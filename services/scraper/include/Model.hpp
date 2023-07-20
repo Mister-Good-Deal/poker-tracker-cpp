@@ -52,6 +52,8 @@ namespace Scraper {
             auto operator=(const Model& other) -> Model& = default;
             auto operator=(Model&& other) noexcept -> Model&;
 
+            auto getWindowSize() const -> const windowSize_t& { return _windowSize; }
+            auto getRoomName() const -> const std::string& { return _roomName; }
             auto getFirstCardCoord() const -> const cv::Rect& { return _firstCardCoord; }
             auto getSecondCardCoord() const -> const cv::Rect& { return _secondCardCoord; }
             auto getPotCoord() const -> const cv::Rect& { return _potCoord; }
@@ -79,6 +81,8 @@ namespace Scraper {
             auto getBlindAmountCoord() const -> const cv::Rect& { return _blindAmountCoord; }
             auto getGameTimeCoord() const -> const cv::Rect& { return _gameTimeCoord; }
 
+            void setWindowSize(const windowSize_t& windowSize) { _windowSize = windowSize; }
+            void setRoomName(const std::string& roomName) { _roomName = roomName; }
             void setFirstCardCoord(const cv::Rect& firstCardCoord) { _firstCardCoord = firstCardCoord; }
             void setSecondCardCoord(const cv::Rect& secondCardCoord) { _secondCardCoord = secondCardCoord; }
             void setPotCoord(const cv::Rect& potCoord) { _potCoord = potCoord; }

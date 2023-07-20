@@ -202,61 +202,66 @@ namespace Scraper {
     }
 
     auto Model::toJson() const -> json {
-        return {{"firstCardCoord", _rectToJson(getFirstCardCoord())},
-                {"secondCardCoord", _rectToJson(getSecondCardCoord())},
-                {"potCoord", _rectToJson(getPotCoord())},
-                {"prizePoolCoord", _rectToJson(getPrizePoolCoord())},
-                {"boardCard1Coord", _rectToJson(getBoardCard1Coord())},
-                {"boardCard2Coord", _rectToJson(getBoardCard2Coord())},
-                {"boardCard3Coord", _rectToJson(getBoardCard3Coord())},
-                {"boardCard4Coord", _rectToJson(getBoardCard4Coord())},
-                {"boardCard5Coord", _rectToJson(getBoardCard5Coord())},
-                {"player1NameCoord", _rectToJson(getPlayer1NameCoord())},
-                {"player2NameCoord", _rectToJson(getPlayer2NameCoord())},
-                {"player3NameCoord", _rectToJson(getPlayer3NameCoord())},
-                {"player1ButtonCoord", _rectToJson(getPlayer1ButtonCoord())},
-                {"player2ButtonCoord", _rectToJson(getPlayer2ButtonCoord())},
-                {"player3ButtonCoord", _rectToJson(getPlayer3ButtonCoord())},
-                {"player1StackCoord", _rectToJson(getPlayer1StackCoord())},
-                {"player2StackCoord", _rectToJson(getPlayer2StackCoord())},
-                {"player3StackCoord", _rectToJson(getPlayer3StackCoord())},
-                {"player1BetCoord", _rectToJson(getPlayer1BetCoord())},
-                {"player2BetCoord", _rectToJson(getPlayer2BetCoord())},
-                {"player3BetCoord", _rectToJson(getPlayer3BetCoord())},
-                {"player2HandCoord", _rectToJson(getPlayer2HandCoord())},
-                {"player3HandCoord", _rectToJson(getPlayer3HandCoord())},
-                {"blindLevelCoord", _rectToJson(getBlindLevelCoord())},
-                {"blindAmountCoord", _rectToJson(getBlindAmountCoord())},
-                {"gameTimeCoord", _rectToJson(getGameTimeCoord())}};
+        return {{"roomName", _roomName},
+                {"windowSize", {{"width", _windowSize.first}, {"height", _windowSize.second}}},
+                {"elementsBoxes",
+                 {{"firstCard", _rectToJson(getFirstCardCoord())},
+                  {"secondCard", _rectToJson(getSecondCardCoord())},
+                  {"pot", _rectToJson(getPotCoord())},
+                  {"prizePool", _rectToJson(getPrizePoolCoord())},
+                  {"boardCard1", _rectToJson(getBoardCard1Coord())},
+                  {"boardCard2", _rectToJson(getBoardCard2Coord())},
+                  {"boardCard3", _rectToJson(getBoardCard3Coord())},
+                  {"boardCard4", _rectToJson(getBoardCard4Coord())},
+                  {"boardCard5", _rectToJson(getBoardCard5Coord())},
+                  {"player1Name", _rectToJson(getPlayer1NameCoord())},
+                  {"player2Name", _rectToJson(getPlayer2NameCoord())},
+                  {"player3Name", _rectToJson(getPlayer3NameCoord())},
+                  {"player1Button", _rectToJson(getPlayer1ButtonCoord())},
+                  {"player2Button", _rectToJson(getPlayer2ButtonCoord())},
+                  {"player3Button", _rectToJson(getPlayer3ButtonCoord())},
+                  {"player1Stack", _rectToJson(getPlayer1StackCoord())},
+                  {"player2Stack", _rectToJson(getPlayer2StackCoord())},
+                  {"player3Stack", _rectToJson(getPlayer3StackCoord())},
+                  {"player1Bet", _rectToJson(getPlayer1BetCoord())},
+                  {"player2Bet", _rectToJson(getPlayer2BetCoord())},
+                  {"player3Bet", _rectToJson(getPlayer3BetCoord())},
+                  {"player2Hand", _rectToJson(getPlayer2HandCoord())},
+                  {"player3Hand", _rectToJson(getPlayer3HandCoord())},
+                  {"blindLevel", _rectToJson(getBlindLevelCoord())},
+                  {"blindAmount", _rectToJson(getBlindAmountCoord())},
+                  {"gameTime", _rectToJson(getGameTimeCoord())}}}};
     }
 
     auto Model::loadFromJson(const json& json) -> void {
-        _firstCardCoord     = _jsonToRect(json.at("firstCardCoord"));
-        _secondCardCoord    = _jsonToRect(json.at("secondCardCoord"));
-        _potCoord           = _jsonToRect(json.at("potCoord"));
-        _prizePoolCoord     = _jsonToRect(json.at("prizePoolCoord"));
-        _boardCard1Coord    = _jsonToRect(json.at("boardCard1Coord"));
-        _boardCard2Coord    = _jsonToRect(json.at("boardCard2Coord"));
-        _boardCard3Coord    = _jsonToRect(json.at("boardCard3Coord"));
-        _boardCard4Coord    = _jsonToRect(json.at("boardCard4Coord"));
-        _boardCard5Coord    = _jsonToRect(json.at("boardCard5Coord"));
-        _player1NameCoord   = _jsonToRect(json.at("player1NameCoord"));
-        _player2NameCoord   = _jsonToRect(json.at("player2NameCoord"));
-        _player3NameCoord   = _jsonToRect(json.at("player3NameCoord"));
-        _player1ButtonCoord = _jsonToRect(json.at("player1ButtonCoord"));
-        _player2ButtonCoord = _jsonToRect(json.at("player2ButtonCoord"));
-        _player3ButtonCoord = _jsonToRect(json.at("player3ButtonCoord"));
-        _player1StackCoord  = _jsonToRect(json.at("player1StackCoord"));
-        _player2StackCoord  = _jsonToRect(json.at("player2StackCoord"));
-        _player3StackCoord  = _jsonToRect(json.at("player3StackCoord"));
-        _player1BetCoord    = _jsonToRect(json.at("player1BetCoord"));
-        _player2BetCoord    = _jsonToRect(json.at("player2BetCoord"));
-        _player3BetCoord    = _jsonToRect(json.at("player3BetCoord"));
-        _player2HandCoord   = _jsonToRect(json.at("player2HandCoord"));
-        _player3HandCoord   = _jsonToRect(json.at("player3HandCoord"));
-        _blindLevelCoord    = _jsonToRect(json.at("blindLevelCoord"));
-        _blindAmountCoord   = _jsonToRect(json.at("blindAmountCoord"));
-        _gameTimeCoord      = _jsonToRect(json.at("gameTimeCoord"));
+        _roomName           = json.at("roomName");
+        _windowSize         = {json.at("windowSize").at("width"), json.at("windowSize").at("height")};
+        _firstCardCoord     = _jsonToRect(json.at("elementsBoxes").at("firstCard"));
+        _secondCardCoord    = _jsonToRect(json.at("elementsBoxes").at("secondCard"));
+        _potCoord           = _jsonToRect(json.at("elementsBoxes").at("pot"));
+        _prizePoolCoord     = _jsonToRect(json.at("elementsBoxes").at("prizePool"));
+        _boardCard1Coord    = _jsonToRect(json.at("elementsBoxes").at("boardCard1"));
+        _boardCard2Coord    = _jsonToRect(json.at("elementsBoxes").at("boardCard2"));
+        _boardCard3Coord    = _jsonToRect(json.at("elementsBoxes").at("boardCard3"));
+        _boardCard4Coord    = _jsonToRect(json.at("elementsBoxes").at("boardCard4"));
+        _boardCard5Coord    = _jsonToRect(json.at("elementsBoxes").at("boardCard5"));
+        _player1NameCoord   = _jsonToRect(json.at("elementsBoxes").at("player1Name"));
+        _player2NameCoord   = _jsonToRect(json.at("elementsBoxes").at("player2Name"));
+        _player3NameCoord   = _jsonToRect(json.at("elementsBoxes").at("player3Name"));
+        _player1ButtonCoord = _jsonToRect(json.at("elementsBoxes").at("player1Button"));
+        _player2ButtonCoord = _jsonToRect(json.at("elementsBoxes").at("player2Button"));
+        _player3ButtonCoord = _jsonToRect(json.at("elementsBoxes").at("player3Button"));
+        _player1StackCoord  = _jsonToRect(json.at("elementsBoxes").at("player1Stack"));
+        _player2StackCoord  = _jsonToRect(json.at("elementsBoxes").at("player2Stack"));
+        _player3StackCoord  = _jsonToRect(json.at("elementsBoxes").at("player3Stack"));
+        _player1BetCoord    = _jsonToRect(json.at("elementsBoxes").at("player1Bet"));
+        _player2BetCoord    = _jsonToRect(json.at("elementsBoxes").at("player2Bet"));
+        _player3BetCoord    = _jsonToRect(json.at("elementsBoxes").at("player3Bet"));
+        _player2HandCoord   = _jsonToRect(json.at("elementsBoxes").at("player2Hand"));
+        _player3HandCoord   = _jsonToRect(json.at("elementsBoxes").at("player3Hand"));
+        _blindLevelCoord    = _jsonToRect(json.at("elementsBoxes").at("blindLevel"));
+        _blindAmountCoord   = _jsonToRect(json.at("elementsBoxes").at("blindAmount"));
+        _gameTimeCoord      = _jsonToRect(json.at("elementsBoxes").at("gameTime"));
     }
 
     auto Model::_jsonToRect(const json& json) const -> cv::Rect {
