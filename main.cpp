@@ -28,7 +28,7 @@ auto main() -> int {
 
     quill::detail::set_thread_name("MainThread");
 
-    Scraper::Model scraper("Winamax", {3860, 1080});
+    Scraper::Model scraper("Winamax", {0, 0});
     Server*        serverPtr = nullptr;
 
     LOG_DEBUG(Logger::Quill::getLogger(), "Main application");

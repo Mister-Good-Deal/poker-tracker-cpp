@@ -43,7 +43,7 @@ namespace Scraper {
         public:
             using windows_t = std::unordered_map<uint64_t, WindowInfo>;
 
-            Model(std::string_view roomName, windowSize_t windowSize) : _roomName(roomName), _windowSize(std::move(windowSize)){};
+            Model(std::string_view roomName, windowSize_t windowSize) : _windowSize(std::move(windowSize)), _roomName(roomName){};
             Model(const Model& other) = default;
             Model(Model&& other) noexcept { *this = std::move(other); };
 

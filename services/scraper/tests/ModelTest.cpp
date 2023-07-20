@@ -8,6 +8,7 @@ using Scraper::windowSize_t;
 
 class ScraperTest : public ::testing::Test {};
 
+// NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
 TEST(ModelTest, displayScreenshot) {
     Model scraper("Winamax", {3840, 1080});
 
@@ -201,3 +202,4 @@ TEST(ModelTest, loadFromJsonShouldSetCorrectAttributes) {
     EXPECT_EQ(scraper.getBlindAmountCoord(), cv::Rect(3437, 3635, 3637, 3739));
     EXPECT_EQ(scraper.getGameTimeCoord(), cv::Rect(3539, 3839, 3941, 4043));
 }
+// NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
