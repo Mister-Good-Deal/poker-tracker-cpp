@@ -1,6 +1,6 @@
-#include "Session.hpp"
+#include "game_session/Session.hpp"
 
-#include <Logger.hpp>
+#include <logger/Logger.hpp>
 
 namespace GameSession {
     using GameHandler::invalid_player_name;
@@ -10,8 +10,7 @@ namespace GameSession {
     using enum RoundAction::ActionType;
 
     Session::Session(std::string_view roomName, uint64_t windowId) :
-        _roomName(roomName), _windowId(windowId), _scraper(ScraperFactory::create(_roomName)), _ocr(OcrFactory::create(_roomName)),
-        _game() {}
+        _roomName(roomName), _windowId(windowId), _scraper(_roomName, {0, 0}), _ocr(OcrFactory::create(_roomName)), _game() {}
 
     auto Session::operator=(Session&& other) noexcept -> Session& {
         if (this != &other)
@@ -26,7 +25,7 @@ namespace GameSession {
     }
 
     auto Session::run() -> void {
-        _currentScreenshot = _scraper->getScreenshot(_windowId);
+        _currentScreenshot = _scraper.getScreenshot(_windowId);
 
         _harvestGameInfo(_currentScreenshot);
 
@@ -51,7 +50,7 @@ namespace GameSession {
 
             std::this_thread::sleep_for(_tickRate);
 
-            _currentScreenshot = _scraper->getScreenshot(_windowId);
+            _currentScreenshot = _scraper.getScreenshot(_windowId);
         }
     }
 
@@ -61,30 +60,30 @@ namespace GameSession {
         try
         {
             // Get player names
-            auto player1NameImg = _scraper->getPlayer1NameImg(screenshot);
-            auto player2NameImg = _scraper->getPlayer2NameImg(screenshot);
-            auto player3NameImg = _scraper->getPlayer3NameImg(screenshot);
+            auto player1NameImg = _scraper.getPlayer1NameImg(screenshot);
+            auto player2NameImg = _scraper.getPlayer2NameImg(screenshot);
+            auto player3NameImg = _scraper.getPlayer3NameImg(screenshot);
 
             _game.init(_ocr->readWord(player1NameImg), _ocr->readWord(player2NameImg), _ocr->readWord(player3NameImg));
 
             // Get prize pool
-            auto prizePoolImg = _scraper->getPrizePoolImg(screenshot);
+            auto prizePoolImg = _scraper.getPrizePoolImg(screenshot);
 
             _game.setMultipliers(_ocr->readIntNumbers(prizePoolImg) / _game.getBuyIn());
 
             // Get player stacks
-            auto player1StackImg = _scraper->getPlayer1StackImg(screenshot);
-            auto player2StackImg = _scraper->getPlayer2StackImg(screenshot);
-            auto player3StackImg = _scraper->getPlayer3StackImg(screenshot);
+            auto player1StackImg = _scraper.getPlayer1StackImg(screenshot);
+            auto player2StackImg = _scraper.getPlayer2StackImg(screenshot);
+            auto player3StackImg = _scraper.getPlayer3StackImg(screenshot);
 
             _game.getPlayer1().setStack(_ocr->readIntNumbers(player1StackImg));
             _game.getPlayer2().setStack(_ocr->readIntNumbers(player2StackImg));
             _game.getPlayer3().setStack(_ocr->readIntNumbers(player3StackImg));
 
             // Get button position
-            auto player1ButtonImg = _scraper->getPlayer1ButtonImg(screenshot);
-            auto player2ButtonImg = _scraper->getPlayer2ButtonImg(screenshot);
-            auto player3ButtonImg = _scraper->getPlayer3ButtonImg(screenshot);
+            auto player1ButtonImg = _scraper.getPlayer1ButtonImg(screenshot);
+            auto player2ButtonImg = _scraper.getPlayer2ButtonImg(screenshot);
+            auto player3ButtonImg = _scraper.getPlayer3ButtonImg(screenshot);
 
             if (_ocr->isSimilar(player1ButtonImg, _ocr->getButtonImg()))
             {
@@ -98,7 +97,7 @@ namespace GameSession {
             }
 
             // Get round pot
-            auto potImg = _scraper->getPotImg(screenshot);
+            auto potImg = _scraper.getPotImg(screenshot);
 
             _game.getCurrentRound().setPot(_ocr->readIntNumbers(potImg));
         } catch (const invalid_player_name& error)

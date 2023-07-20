@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Hand.hpp>
+#include <game_handler/Hand.hpp>
 
 namespace GameHandler {
     static const int8_t BOARD_CARDS_NUMBER = 5;

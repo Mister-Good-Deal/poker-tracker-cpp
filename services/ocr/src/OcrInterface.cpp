@@ -1,9 +1,9 @@
-#include "OcrInterface.hpp"
+#include "ocr/OcrInterface.hpp"
 
 #include <charconv>
 
-#include <Logger.hpp>
-#include <Macros.hpp>
+#include <logger/Logger.hpp>
+#include <utilities/Macros.hpp>
 
 namespace OCR {
     using Logger = Logger::Quill;

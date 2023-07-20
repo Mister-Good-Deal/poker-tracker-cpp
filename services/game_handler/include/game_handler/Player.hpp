@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Hand.hpp>
+#include <game_handler/Hand.hpp>
 
 namespace GameHandler {
     class Player {

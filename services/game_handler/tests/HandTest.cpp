@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
-#include "CardFactory.hpp"
-#include "Hand.hpp"
+#include <game_handler/CardFactory.hpp>
+#include <game_handler/Hand.hpp>
 
 #define EXPECT_THROW_WITH_MESSAGE(code, exception_type, expected_message) \
     do                                                                    \

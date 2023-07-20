@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Board.hpp>
-#include <RoundAction.hpp>
+#include <game_handler/Board.hpp>
+#include <game_handler/RoundAction.hpp>
 
 namespace GameHandler {
     using std::chrono::system_clock;

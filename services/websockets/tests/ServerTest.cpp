@@ -2,8 +2,8 @@
 
 #include <gtest/gtest.h>
 
-#include <Logger.hpp>
-#include <Server.hpp>
+#include <logger/Logger.hpp>
+#include <websockets/Server.hpp>
 
 using Websockets::HttpRequest;
 using Websockets::HttpResponse;

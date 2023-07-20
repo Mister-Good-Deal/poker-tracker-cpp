@@ -1,6 +1,6 @@
-#include "OcrFactory.hpp"
+#include "ocr/OcrFactory.hpp"
 
-#include <WinamaxOcr.hpp>
+#include <ocr/WinamaxOcr.hpp>
 
 namespace OCR::Factory {
     auto OcrFactory::create(const std::string& ocrName) -> std::unique_ptr<OcrInterface> {

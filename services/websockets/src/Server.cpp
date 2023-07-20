@@ -1,6 +1,6 @@
-#include "Server.hpp"
+#include "websockets/Server.hpp"
 
-#include <Logger.hpp>
+#include <logger/Logger.hpp>
 
 namespace Websockets {
     using uWS::WebSocket;

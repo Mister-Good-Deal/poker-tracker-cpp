@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
-#include "Board.hpp"
-#include "CardFactory.hpp"
+#include <game_handler/Board.hpp>
+#include <game_handler/CardFactory.hpp>
 
 using GameHandler::Board;
 using GameHandler::Factory::card;

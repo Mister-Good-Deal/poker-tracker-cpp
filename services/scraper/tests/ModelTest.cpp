@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <Model.hpp>
+#include <scraper/Model.hpp>
 
 using nlohmann::json;
 using Scraper::Model;

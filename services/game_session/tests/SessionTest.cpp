@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <Session.hpp>
+#include <game_session/Session.hpp>
 
 using GameSession::Game;
 using GameSession::Session;

@@ -1,4 +1,4 @@
-#include "Model.hpp"
+#include "scraper/Model.hpp"
 
 #include <functional>
 

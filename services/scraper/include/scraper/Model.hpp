@@ -8,7 +8,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include <Logger.hpp>
+#include <logger/Logger.hpp>
 
 #ifdef _WIN32
 

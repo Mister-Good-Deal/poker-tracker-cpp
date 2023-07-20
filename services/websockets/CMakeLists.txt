@@ -17,8 +17,8 @@ find_package(uwebsockets CONFIG REQUIRED)
 #-----------------------------------------------------------------------------------------------------------------------
 
 set(
-    SRC
-    src/Server.cpp
+        SRC
+        src/Server.cpp
 )
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -28,12 +28,12 @@ set(
 add_library(websockets SHARED ${SRC})
 
 target_include_directories(
-    websockets
-    PUBLIC
-    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
-    "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-    PRIVATE
-    uws::uws
+        websockets
+        PUBLIC
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+        PRIVATE
+        uws::uws
 )
 
 target_link_libraries(websockets PUBLIC logger uws::uws)
@@ -53,29 +53,29 @@ endif ()
 include(GNUInstallDirs)
 
 install(
-    TARGETS websockets
-    EXPORT websockets_targets
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/websockets
+        TARGETS websockets
+        EXPORT websockets_targets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/websockets
 )
 
 install(
-    EXPORT websockets_targets
-    FILE websockets_targets.cmake
-    NAMESPACE Websockets::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/websockets
+        EXPORT websockets_targets
+        FILE websockets_targets.cmake
+        NAMESPACE Websockets::
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/websockets
 )
 
 if (WIN32)
     install(
-        FILES $<TARGET_FILE:uws::uws> /usr/x86_64-w64-mingw32/bin/libzlib1.dll /usr/x86_64-w64-mingw32/bin/libuv.dll
-        DESTINATION ${CMAKE_INSTALL_BINDIR}
+            FILES $<TARGET_FILE:uws::uws> /usr/x86_64-w64-mingw32/bin/libzlib1.dll /usr/x86_64-w64-mingw32/bin/libuv.dll
+            DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
 elseif (LINUX)
     install(
-        FILES $<TARGET_FILE:uws::uws>
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            FILES $<TARGET_FILE:uws::uws>
+            DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
 endif ()

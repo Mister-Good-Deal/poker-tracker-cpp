@@ -18,7 +18,7 @@ find_package(OpenCV REQUIRED)
 
 set(
         SRC
-        include/Macros.hpp
+        include/utilities/Macros.hpp
 )
 
 #-----------------------------------------------------------------------------------------------------------------------

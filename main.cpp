@@ -4,12 +4,11 @@
 
 #include <nlohmann/json.hpp>
 
-#include <Logger.hpp>
-#include <Server.hpp>
-#include <WinamaxScraper.hpp>
+#include <logger/Logger.hpp>
 #include <ranges>
+#include <scraper/Model.hpp>
+#include <websockets/Server.hpp>
 
-using Scraper::WinamaxScraper;
 using Scraper::WindowInfo;
 using std::ranges::for_each;
 using Websockets::HttpRequest;
@@ -29,7 +28,7 @@ auto main() -> int {
 
     quill::detail::set_thread_name("MainThread");
 
-    WinamaxScraper scraper;
+    Scraper::Model scraper("Winamax", {3860, 1080});
     Server*        serverPtr = nullptr;
 
     LOG_DEBUG(Logger::Quill::getLogger(), "Main application");
