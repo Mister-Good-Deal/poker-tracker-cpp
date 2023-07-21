@@ -27,13 +27,25 @@ namespace OCR {
             auto operator=(const OcrInterface&) -> OcrInterface& = default;
             auto operator=(OcrInterface&&) -> OcrInterface&      = default;
 
-            [[nodiscard]] virtual auto getRankCardArea() const -> cv::Rect                                 = 0;
-            [[nodiscard]] virtual auto getSuitCardArea() const -> cv::Rect                                 = 0;
-            [[nodiscard]] virtual auto getButtonImg() const -> cv::Mat                                     = 0;
-            [[nodiscard]] virtual auto getButtonMask() const -> cv::Mat                                    = 0;
-            [[nodiscard]] virtual auto readCardRank(const cv::Mat& rankImage) const -> Card::Rank          = 0;
-            [[nodiscard]] virtual auto readCardSuit(const cv::Mat& suitImage) const -> Card::Suit          = 0;
-            [[nodiscard]] virtual auto readPlayerName(const cv::Mat& playerNameImage) const -> std::string = 0;
+            [[nodiscard]] virtual auto getRankCardArea() const -> cv::Rect                                  = 0;
+            [[nodiscard]] virtual auto getSuitCardArea() const -> cv::Rect                                  = 0;
+            [[nodiscard]] virtual auto getButtonImg() const -> cv::Mat                                      = 0;
+            [[nodiscard]] virtual auto getButtonMask() const -> cv::Mat                                     = 0;
+            [[nodiscard]] virtual auto readCardRank(const cv::Mat& rankImage) const -> Card::Rank           = 0;
+            [[nodiscard]] virtual auto readCardSuit(const cv::Mat& suitImage) const -> Card::Suit           = 0;
+            [[nodiscard]] virtual auto readPlayerName(const cv::Mat& playerNameImage) const -> std::string  = 0;
+            [[nodiscard]] virtual auto readGameAction(const cv::Mat& actionImage) const -> std::string      = 0;
+            [[nodiscard]] virtual auto readPlayerBet(const cv::Mat& playerBetImage) const -> int32_t        = 0;
+            [[nodiscard]] virtual auto readPlayerBetInBB(const cv::Mat& playerBetInBBImage) const -> double = 0;
+            [[nodiscard]] virtual auto readPot(const cv::Mat& potImage) const -> int32_t                    = 0;
+            [[nodiscard]] virtual auto readPotInBB(const cv::Mat& potInBBImage) const -> double             = 0;
+            [[nodiscard]] virtual auto readPrizePool(const cv::Mat& prizePoolImage) const -> int32_t        = 0;
+            [[nodiscard]] virtual auto readBlindLevel(const cv::Mat& blindLevelImage) const -> int32_t      = 0;
+            [[nodiscard]] virtual auto readBlindRange(const cv::Mat& blindRangeImage) const -> intRange     = 0;
+            [[nodiscard]] virtual auto readSmallBlind(const cv::Mat& blindRangeImage) const -> int32_t      = 0;
+            [[nodiscard]] virtual auto readBigBlind(const cv::Mat& blindRangeImage) const -> int32_t        = 0;
+            [[nodiscard]] virtual auto readGameDuration(const cv::Mat& gameDurationImage) const -> seconds  = 0;
+
             [[nodiscard]] virtual auto readCard(const cv::Mat& cardImage) const -> Card;
             [[nodiscard]] virtual auto readWord(const cv::Mat& wordImage) const -> std::string;
             [[nodiscard]] virtual auto readWordByChar(const cv::Mat& wordImage) const -> std::string;

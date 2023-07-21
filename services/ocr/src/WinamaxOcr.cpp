@@ -9,10 +9,14 @@ namespace OCR {
     using enum GameHandler::Card::Suit;
 
     WinamaxOcr::WinamaxOcr() :
-        _cardsSkin(cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards_skins/" + DEFAULT_CARD_SKIN)), _buttonImg(getButtonImg()){};
+        _cardsSkin(cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards_skins/" + DEFAULT_CARD_SKIN)), _buttonImg(getButtonImg()) {}
 
     auto WinamaxOcr::operator=(WinamaxOcr&& other) noexcept -> WinamaxOcr& {
-        if (this != &other) { _cardsSkin = std::move(other._cardsSkin); }
+        if (this != &other)
+        {
+            _cardsSkin = std::move(other._cardsSkin);
+            _buttonImg = std::move(other._buttonImg);
+        }
 
         return *this;
     }
