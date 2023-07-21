@@ -13,10 +13,10 @@ namespace GameHandler {
             _endTime        = other._endTime;
             _winner         = other._winner;
             _currentPlaying = other._currentPlaying;
-            _button         = other._button;
             _buyIn          = other._buyIn;
             _multipliers    = other._multipliers;
             _initialized    = other._initialized;
+            _complete       = other._complete;
         }
 
         return *this;
@@ -69,7 +69,8 @@ namespace GameHandler {
                 {"buy_in", _buyIn},
                 {"multipliers", _multipliers},
                 {"balance", _computeBalance()},
-                {"duration", duration_cast<seconds>(_endTime - _startTime).count()}};
+                {"duration", duration_cast<seconds>(_endTime - _startTime).count()},
+                {"complete", _complete}};
     }
 
     auto Game::_computeBalance() const -> int32_t { return _buyIn * ((_winner->self() ? _multipliers : 0) - 1); }

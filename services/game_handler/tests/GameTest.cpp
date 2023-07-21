@@ -143,7 +143,8 @@ TEST(GameTest, jsonRepresentationShouldBeCorrect) {
             "multipliers": 3,
             "won": true,
             "balance": 20,
-            "duration": 0
+            "duration": 0,            
+            "complete": true            
         }
     )"_json;
 

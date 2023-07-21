@@ -14,15 +14,34 @@ namespace GameHandler {
             _actions        = std::move(other._actions);
             _board          = std::move(other._board);
             _hand           = std::move(other._hand);
+            _blinds         = other._blinds;
             _pot            = other._pot;
             _bet            = other._bet;
             _currentStreet  = other._currentStreet;
             _lastActionTime = other._lastActionTime;
+            _player1        = other._player1;
+            _player2        = other._player2;
+            _player3        = other._player3;
             _winner         = other._winner;
+            _ended          = other._ended;
+            _initialized    = other._initialized;
         }
 
         return *this;
     }
+
+    auto Round::init(const Hand& hand, const Blinds& blinds, int32_t pot, Player& player1, Player& player2, Player& player3) -> void {
+        _hand        = hand;
+        _blinds      = blinds;
+        _pot         = pot;
+        _player1     = &player1;
+        _player2     = &player2;
+        _player3     = &player3;
+        _initialized = true;
+    }
+
+    auto Round::start() -> void { _lastActionTime = system_clock::now(); }
+    auto Round::end() -> void { _ended = true; }
 
     auto Round::endStreet() -> void {
         switch (_currentStreet)
@@ -34,9 +53,6 @@ namespace GameHandler {
             case SHOWDOWN: break;
         }
     }
-
-    auto Round::start() -> void { _lastActionTime = system_clock::now(); }
-    auto Round::end(const Player& winner) -> void { _winner = &winner; }
 
     auto Round::call(const Player& player, int32_t amount) -> void {
         _actions.at(_currentStreet).emplace_back(CALL, player, _getAndResetLastActionTime(), amount);
@@ -78,6 +94,7 @@ namespace GameHandler {
         return {{"actions", {{"pre_flop", preFlopActions}, {"flop", flopActions}, {"turn", turnActions}, {"river", riverActions}}},
                 {"board", _board.toJson()},
                 {"hand", _hand.toJson()},
+                {"blinds", {{"small", _blinds.SB()}, {"big", _blinds.BB()}}},
                 {"pot", _pot},
                 {"bet", _bet},
                 {"won", _winner->self()},

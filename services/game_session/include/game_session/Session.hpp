@@ -6,6 +6,7 @@
 
 namespace GameSession {
     using GameHandler::Game;
+    using GameHandler::Player;
     using GameHandler::RoundAction;
     using OCR::OcrInterface;
     using OCR::Factory::OcrFactory;
@@ -14,9 +15,14 @@ namespace GameSession {
 
     static const uint32_t TICK_RATE = 500;
 
-    enum GamePhases : int8_t { STARTING = 0, IN_PROGRESS, ENDED };
+    enum GameStages : int8_t { STARTING = 0, IN_PROGRESS, ENDED };
 
     enum GameEvent : int8_t { PLAYER_ACTION = 0, GAME_ACTION, NONE };
+
+    class PotNotInitializedException : public std::runtime_error {
+        public:
+            explicit PotNotInitializedException(const std::string& arg) : runtime_error(arg) {}
+    };
 
     class Session {
         public:
@@ -35,6 +41,9 @@ namespace GameSession {
 
         protected:
             auto _harvestGameInfo(const cv::Mat& screenshot) -> void;
+            auto _initCurrentRound(const cv::Mat& screenshot) -> void;
+            auto _trackCurrentRound(const cv::Mat& screenshot) -> void;
+            auto _isGameOver() -> bool;
 
         private:
             milliseconds                  _tickRate = milliseconds(TICK_RATE);
@@ -43,7 +52,7 @@ namespace GameSession {
             Scraper::Model                _scraper  = Scraper::Model(_roomName, {0, 0});
             std::unique_ptr<OcrInterface> _ocr;
             Game                          _game;
-            GamePhases                    _gamePhase = GamePhases::STARTING;
+            GameStages                    _gameStage = GameStages::STARTING;
             cv::Mat                       _currentScreenshot;
 
             auto _evaluatePlayerAction() -> RoundAction;

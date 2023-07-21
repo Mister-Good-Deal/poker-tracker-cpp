@@ -34,7 +34,7 @@ namespace OCR {
             [[nodiscard]] auto readPotInBB(const cv::Mat& potInBBImage) const -> double override;
             [[nodiscard]] auto readPrizePool(const cv::Mat& prizePoolImage) const -> int32_t override;
             [[nodiscard]] auto readBlindLevel(const cv::Mat& blindLevelImage) const -> int32_t override;
-            [[nodiscard]] auto readBlindRange(const cv::Mat& blindRangeImage) const -> intRange override;
+            [[nodiscard]] auto readBlindRange(const cv::Mat& blindRangeImage) const -> Blinds override;
             [[nodiscard]] auto readSmallBlind(const cv::Mat& blindRangeImage) const -> int32_t override;
             [[nodiscard]] auto readBigBlind(const cv::Mat& blindRangeImage) const -> int32_t override;
             [[nodiscard]] auto readGameDuration(const cv::Mat& gameDurationImage) const -> seconds override;

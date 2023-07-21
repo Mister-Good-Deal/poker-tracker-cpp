@@ -19,7 +19,7 @@ namespace GameSession {
             _scraper   = std::move(other._scraper);
             _tickRate  = other._tickRate;
             _windowId  = other._windowId;
-            _gamePhase = other._gamePhase;
+            _gameStage = other._gameStage;
         }
 
         return *this;
@@ -30,23 +30,35 @@ namespace GameSession {
 
         _harvestGameInfo(_currentScreenshot);
 
-        while (_gamePhase != GamePhases::ENDED)
+        while (_gameStage != GameStages::ENDED)
         {
-            switch (_gamePhase)
+            switch (_gameStage)
             {
-                case GamePhases::STARTING:
+                case GameStages::STARTING:
                     if (!_game.isInitialized()) { _harvestGameInfo(_currentScreenshot); }
+
                     break;
-                case GamePhases::IN_PROGRESS:
-                    switch (_determineGameEvent())
+                case GameStages::IN_PROGRESS:
+                    while (_game.getCurrentRound().isInProgress())
                     {
-                        case GameEvent::PLAYER_ACTION: _processPlayerAction(_evaluatePlayerAction()); break;
-                        case GameEvent::GAME_ACTION: break;  // @todo handle game actions separately from player actions ?
-                        case GameEvent::NONE: break;
+                        _trackCurrentRound(_currentScreenshot);
+
+                        auto action = _evaluatePlayerAction();
+
+                        _processPlayerAction(action);
+                        // _game.getCurrentRound().end();
+                    }
+
+                    if (_isGameOver())
+                    {
+                        _game.end();
+                        _gameStage = GameStages::ENDED;
+                    } else {
+                        _game.newRound();
                     }
 
                     break;
-                case GamePhases::ENDED: break;
+                case GameStages::ENDED: break;
             }
 
             std::this_thread::sleep_for(_tickRate);
@@ -57,52 +69,78 @@ namespace GameSession {
 
     auto Session::_determineGameEvent() -> GameEvent { return PLAYER_ACTION; }
 
+    /**
+     * The _harvestGameInfo function is responsible for extracting game information from a given screenshot.
+     *
+     * It is called once at the initialization of the game.
+     *
+     * @param screenshot The screenshot of the game screen.
+     * @return void
+     */
     auto Session::_harvestGameInfo(const cv::Mat& screenshot) -> void {
         try
         {
             // Get player names
-            auto player1NameImg = _scraper.getPlayer1NameImg(screenshot);
-            auto player2NameImg = _scraper.getPlayer2NameImg(screenshot);
-            auto player3NameImg = _scraper.getPlayer3NameImg(screenshot);
+            _game.init(_ocr->readPlayerName(_scraper.getPlayer1NameImg(screenshot)),
+                       _ocr->readPlayerName(_scraper.getPlayer2NameImg(screenshot)),
+                       _ocr->readPlayerName(_scraper.getPlayer3NameImg(screenshot)));
 
-            _game.init(_ocr->readWord(player1NameImg), _ocr->readWord(player2NameImg), _ocr->readWord(player3NameImg));
+            // Determine if game was already started
+            // @todo use game duration to determine if game was already started
+            if (_ocr->readBlindLevel(_scraper.getBlindLevelImg(screenshot)) > 1) { _game.setComplete(false); }
 
             // Get prize pool
-            auto prizePoolImg = _scraper.getPrizePoolImg(screenshot);
-
-            _game.setMultipliers(_ocr->readIntNumbers(prizePoolImg) / _game.getBuyIn());
-
-            // Get player stacks
-            auto player1StackImg = _scraper.getPlayer1StackImg(screenshot);
-            auto player2StackImg = _scraper.getPlayer2StackImg(screenshot);
-            auto player3StackImg = _scraper.getPlayer3StackImg(screenshot);
-
-            _game.getPlayer1().setStack(_ocr->readIntNumbers(player1StackImg));
-            _game.getPlayer2().setStack(_ocr->readIntNumbers(player2StackImg));
-            _game.getPlayer3().setStack(_ocr->readIntNumbers(player3StackImg));
-
-            // Get button position
-            auto player1ButtonImg = _scraper.getPlayer1ButtonImg(screenshot);
-            auto player2ButtonImg = _scraper.getPlayer2ButtonImg(screenshot);
-            auto player3ButtonImg = _scraper.getPlayer3ButtonImg(screenshot);
-
-            if (_ocr->isSimilar(player1ButtonImg, _ocr->getButtonImg()))
-            {
-                _game.setButton(_game.getPlayer1());
-            } else if (_ocr->isSimilar(player2ButtonImg, _ocr->getButtonImg())) {
-                _game.setButton(_game.getPlayer2());
-            } else if (_ocr->isSimilar(player3ButtonImg, _ocr->getButtonImg())) {
-                _game.setButton(_game.getPlayer3());
-            } else {
-                LOG_ERROR(Logger::getLogger(), "Could not determine button position");
-            }
-
-            // Get round pot
-            auto potImg = _scraper.getPotImg(screenshot);
-
-            _game.getCurrentRound().setPot(_ocr->readIntNumbers(potImg));
+            _game.setMultipliers(_ocr->readPrizePool(_scraper.getPrizePoolImg(screenshot)) / _game.getBuyIn());
         } catch (const invalid_player_name& error)
         { LOG_INFO(Logger::getLogger(), "{}", error.what()); }
+    }
+
+    auto Session::_initCurrentRound(const cv::Mat& screenshot) -> void {
+        // Get round pot
+        auto pot = _ocr->readPot(_scraper.getPotImg(screenshot));
+        // Wait for the pot to be initialized with ante or blinds
+        if (pot == 0) { throw PotNotInitializedException("Pot is not initialized"); }
+
+        // Get player stacks
+        _game.getPlayer1().setStack(_ocr->readIntNumbers(_scraper.getPlayer1StackImg(screenshot)));
+        _game.getPlayer2().setStack(_ocr->readIntNumbers(_scraper.getPlayer2StackImg(screenshot)));
+        _game.getPlayer3().setStack(_ocr->readIntNumbers(_scraper.getPlayer3StackImg(screenshot)));
+
+        // Get button position
+        if (_ocr->isSimilar(_scraper.getPlayer1ButtonImg(screenshot), _ocr->getButtonImg()))
+        {
+            _game.getPlayer1().takeButton();
+        } else if (_ocr->isSimilar(_scraper.getPlayer2ButtonImg(screenshot), _ocr->getButtonImg())) {
+            _game.getPlayer2().takeButton();
+        } else if (_ocr->isSimilar(_scraper.getPlayer3ButtonImg(screenshot), _ocr->getButtonImg())) {
+            _game.getPlayer3().takeButton();
+        } else {
+            LOG_ERROR(Logger::getLogger(), "Could not determine button position");
+        }
+
+        // Get round blind level
+        auto blinds = _ocr->readBlindRange(_scraper.getBlindAmountImg(screenshot));
+        // Get hand
+        auto firstCard  = _ocr->readCard(_scraper.getFirstCardImg(screenshot));
+        auto secondCard = _ocr->readCard(_scraper.getSecondCardImg(screenshot));
+
+        _game.getCurrentRound().init({firstCard, secondCard}, blinds, pot, _game.getPlayer1(), _game.getPlayer2(), _game.getPlayer3());
+    }
+
+    auto Session::_trackCurrentRound(const cv::Mat& screenshot) -> void {
+        try
+        {
+            if (!_game.getCurrentRound().isInitialized()) { _initCurrentRound(screenshot); }
+
+            // @todo determine which player is playing and update his action when he plays
+        } catch (const PotNotInitializedException& error)
+        { LOG_INFO(Logger::getLogger(), "{}", error.what()); }
+    }
+
+    auto Session::_isGameOver() -> bool {
+        auto players = _game.getPlayers();
+
+        return std::count_if(players.begin(), players.end(), [](const Player& player) { return player.isEliminated(); }) == 2;
     }
 
     auto Session::_evaluatePlayerAction() -> RoundAction {

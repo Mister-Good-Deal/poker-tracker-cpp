@@ -4,9 +4,11 @@
 #include <opencv4/opencv2/text.hpp>
 
 #include <game_handler/Card.hpp>
+#include <game_handler/Round.hpp>
 
 namespace OCR {
     using cv::text::OCRTesseract;
+    using GameHandler::Blinds;
     using GameHandler::Card;
     using std::chrono::seconds;
 
@@ -41,7 +43,7 @@ namespace OCR {
             [[nodiscard]] virtual auto readPotInBB(const cv::Mat& potInBBImage) const -> double             = 0;
             [[nodiscard]] virtual auto readPrizePool(const cv::Mat& prizePoolImage) const -> int32_t        = 0;
             [[nodiscard]] virtual auto readBlindLevel(const cv::Mat& blindLevelImage) const -> int32_t      = 0;
-            [[nodiscard]] virtual auto readBlindRange(const cv::Mat& blindRangeImage) const -> intRange     = 0;
+            [[nodiscard]] virtual auto readBlindRange(const cv::Mat& blindRangeImage) const -> Blinds       = 0;
             [[nodiscard]] virtual auto readSmallBlind(const cv::Mat& blindRangeImage) const -> int32_t      = 0;
             [[nodiscard]] virtual auto readBigBlind(const cv::Mat& blindRangeImage) const -> int32_t        = 0;
             [[nodiscard]] virtual auto readGameDuration(const cv::Mat& gameDurationImage) const -> seconds  = 0;

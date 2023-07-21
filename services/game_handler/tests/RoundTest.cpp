@@ -22,6 +22,7 @@ TEST(RoundTest, jsonRepresentationShouldBeCorrect) {
 
     // Pre-flop
     round.start();
+    round.setBlinds({50, 100});
     player1.setHand(card("AH"), card("KH"));
     round.setHand(player1.getHand());
     std::this_thread::sleep_for(seconds(2));
@@ -74,6 +75,7 @@ TEST(RoundTest, jsonRepresentationShouldBeCorrect) {
             ],
             "pot": 1000,
             "bet": 700,
+            "blinds": { "small": 50, "big": 100 },
             "won": true,
             "winner": "player_1"
         }
