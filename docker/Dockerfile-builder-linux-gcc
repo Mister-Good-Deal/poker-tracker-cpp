@@ -11,6 +11,7 @@ ARG LEPTONICA_VERSION
 ARG TESSERACT_VERSION
 ARG OPENCV_VERSION
 ARG NLOHMANN_JSON_VERSION
+ARG JSON_SCHEMA_VALIDATOR_VERSION
 ARG FMT_VERSION
 ARG QUILL_VERSION
 ARG LIBUV_VERSION
@@ -76,7 +77,8 @@ RUN wget https://github.com/DanBloomberg/leptonica/archive/refs/tags/${LEPTONICA
 RUN wget https://github.com/tesseract-ocr/tesseract/archive/refs/tags/${TESSERACT_VERSION}.tar.gz \
     -q -O /tmp/tesseract-${TESSERACT_VERSION}.tar.gz && \
     cd /tmp && tar -xvzf tesseract-${TESSERACT_VERSION}.tar.gz && cd tesseract-${TESSERACT_VERSION} && \
-    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DSW_BUILD=OFF -DBUILD_TRAINING_TOOLS=OFF -DGRAPHICS_DISABLED=ON -DENABLE_LTO=ON && \
+    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DSW_BUILD=OFF -DBUILD_TRAINING_TOOLS=OFF -DGRAPHICS_DISABLED=ON \
+    -DDISABLED_LEGACY_ENGINE=ON && \
     cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
     rm -rf /tmp/tesseract-${TESSERACT_VERSION}.tar.gz /tmp/tesseract-${TESSERACT_VERSION}
 
@@ -106,7 +108,16 @@ RUN wget https://github.com/nlohmann/json/archive/refs/tags/v${NLOHMANN_JSON_VER
     cd /tmp && ls && tar -xvzf json-${NLOHMANN_JSON_VERSION}.tar.gz && cd json-${NLOHMANN_JSON_VERSION} && \
     cmake -S . -B build ${CMAKE_COMMON_OPTION} -DJSON_BuildTests=OFF && \
     cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
-    rm -rf /tmp/json-${NLOHMANN_JSON_VERSION}.tar.gz /tmp/json-${NLOHMANN_JSON_VERSION}
+    rm -rf /tmp/json-${NLOHMANN_JSON_VERSION}.tar.gz /tmp/json-${NLOHMANN_JSON_VERSION} 
+
+# Install nlohmann_json_schema_validator from https://github.com/pboettch/json-schema-validator
+RUN wget https://github.com/pboettch/json-schema-validator/archive/refs/tags/${JSON_SCHEMA_VALIDATOR_VERSION}.tar.gz \
+    -q -O /tmp/json-schema-validator-${JSON_SCHEMA_VALIDATOR_VERSION}.tar.gz && \
+    cd /tmp && ls && tar -xvzf json-schema-validator-${JSON_SCHEMA_VALIDATOR_VERSION}.tar.gz && \
+    cd json-schema-validator-${JSON_SCHEMA_VALIDATOR_VERSION} && \
+    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DJSON_VALIDATOR_BUILD_TESTS=OFF -DJSON_VALIDATOR_BUILD_EXAMPLES=OFF && \
+    cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
+    rm -rf /tmp/json-schema-validator-${JSON_SCHEMA_VALIDATOR_VERSION}.tar.gz /tmp/json-schema-validator-${JSON_SCHEMA_VALIDATOR_VERSION}
 
 # Install fmt with the given FMT_VERSION version from https://github.com/fmtlib/fmt
 RUN wget https://github.com/fmtlib/fmt/archive/refs/tags/${FMT_VERSION}.tar.gz \
