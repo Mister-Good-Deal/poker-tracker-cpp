@@ -201,6 +201,53 @@ namespace Scraper {
         return elementsView;
     }
 
+    auto Model::getPlayerHandCoord(uint8_t playerNum) const -> const cv::Rect& {
+        switch (playerNum)
+        {
+            case 2: return _player2HandCoord;
+            case 3: return _player3HandCoord;
+            default: throw std::invalid_argument("Invalid player number");
+        }
+    }
+
+    auto Model::getPlayerActionCoord(uint8_t playerNum) const -> const cv::Rect& {
+        switch (playerNum)
+        {
+            case 2: return _player2ActionCoord;
+            case 3: return _player3ActionCoord;
+            default: throw std::invalid_argument("Invalid player number");
+        }
+    }
+
+    auto Model::getPlayerBetCoord(uint8_t playerNum) const -> const cv::Rect& {
+        switch (playerNum)
+        {
+            case 2: return _player2BetCoord;
+            case 3: return _player3BetCoord;
+            default: throw std::invalid_argument("Invalid player number");
+        }
+    }
+
+    auto Model::getPlayerStackCoord(uint8_t playerNum) const -> const cv::Rect& {
+        switch (playerNum)
+        {
+            case 1: return _player1StackCoord;
+            case 2: return _player2StackCoord;
+            case 3: return _player3StackCoord;
+            default: throw std::invalid_argument("Invalid player number");
+        }
+    }
+
+    auto Model::getPlayerButtonCoord(uint8_t playerNum) const -> const cv::Rect& {
+        switch (playerNum)
+        {
+            case 1: return _player1ButtonCoord;
+            case 2: return _player2ButtonCoord;
+            case 3: return _player3ButtonCoord;
+            default: throw std::invalid_argument("Invalid player number");
+        }
+    }
+
     auto Model::toJson() const -> json {
         return {{"roomName", _roomName},
                 {"windowSize", {{"width", _windowSize.first}, {"height", _windowSize.second}}},
