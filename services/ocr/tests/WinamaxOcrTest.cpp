@@ -82,9 +82,14 @@ TEST(WinamaxOcrTest, readCardShouldWork) {
 }
 
 TEST(WinamaxOcrTest, readActionShouldWork) {
-    auto raisesTxt = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/raises_text.png");
+    auto raisesTxt     = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/actions/raises_to_3_bb.png");
+    auto bigBlindTxt   = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/actions/big_blind.png");
+    auto smallBlindTxt = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/actions/small_blind.png");
 
     EXPECT_STREQ(Env::winamaxOcr().readGameAction(raisesTxt).c_str(), "RAISES TO 3 BB");
+    EXPECT_STREQ(Env::winamaxOcr().readGameAction(smallBlindTxt).c_str(), "SMALL BLIND");
+    // @fixme Read BIG BUND instead of BIG BLIND, L and I are merged into a U
+    // EXPECT_STREQ(Env::winamaxOcr().readGameAction(bigBlindTxt).c_str(), "BIG BLIND");
 }
 
 TEST(WinamaxOcrTest, readPlayerNameShouldWork) {

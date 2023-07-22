@@ -38,9 +38,8 @@ namespace OCR {
             [[nodiscard]] auto readSmallBlind(const cv::Mat& blindRangeImage) const -> int32_t override;
             [[nodiscard]] auto readBigBlind(const cv::Mat& blindRangeImage) const -> int32_t override;
             [[nodiscard]] auto readGameDuration(const cv::Mat& gameDurationImage) const -> seconds override;
-
-            [[nodiscard]] auto hasFolded(const cv::Mat& handImage) const -> bool;
-            [[nodiscard]] auto hasButton(const cv::Mat& buttonImage) const -> bool;
+            [[nodiscard]] auto hasFolded(const cv::Mat& handImage) const -> bool override;
+            [[nodiscard]] auto hasButton(const cv::Mat& buttonImage) const -> bool override;
 
         private:
             cv::Mat _cardsSkin;

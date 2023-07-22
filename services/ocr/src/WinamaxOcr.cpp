@@ -125,10 +125,12 @@ namespace OCR {
         -> cv::Mat {
         cv::Mat hsvImage, result;
 
+        DISPLAY_IMAGE("colorRangeThreshold input", image);
+
         cv::cvtColor(image, hsvImage, cv::COLOR_BGR2HSV);
         cv::inRange(hsvImage, colorLower, colorUpper, result);
 
-        DISPLAY_IMAGE("colorRangeThreshold", result);
+        DISPLAY_IMAGE("colorRangeThreshold output", result);
 
         return result;
     }

@@ -47,6 +47,8 @@ namespace OCR {
             [[nodiscard]] virtual auto readSmallBlind(const cv::Mat& blindRangeImage) const -> int32_t      = 0;
             [[nodiscard]] virtual auto readBigBlind(const cv::Mat& blindRangeImage) const -> int32_t        = 0;
             [[nodiscard]] virtual auto readGameDuration(const cv::Mat& gameDurationImage) const -> seconds  = 0;
+            [[nodiscard]] virtual auto hasFolded(const cv::Mat& handImage) const -> bool                    = 0;
+            [[nodiscard]] virtual auto hasButton(const cv::Mat& buttonImage) const -> bool                  = 0;
 
             [[nodiscard]] virtual auto readCard(const cv::Mat& cardImage) const -> Card;
             [[nodiscard]] virtual auto readWord(const cv::Mat& wordImage) const -> std::string;
