@@ -14,6 +14,7 @@ namespace GameHandler {
 
             auto operator=(const Player& other) -> Player& = default;
             auto operator=(Player&& other) noexcept -> Player&;
+            auto operator==(const Player& other) const -> bool { return _name == other._name; }
 
             [[nodiscard]] auto getName() const -> std::string { return _name; }
             [[nodiscard]] auto getHand() const -> Hand { return _hand; }

@@ -43,6 +43,7 @@ namespace GameHandler {
 
             [[nodiscard]] auto getBoard() -> Board& { return _board; }
             [[nodiscard]] auto getPot() const -> int32_t { return _pot; }
+            [[nodiscard]] auto getLastBet() const -> int32_t { return _lastBet; }
             [[nodiscard]] auto isInProgress() const -> bool { return !_ended; }
             [[nodiscard]] auto isInitialized() const -> bool { return _initialized; }
 
@@ -70,6 +71,7 @@ namespace GameHandler {
             Blinds                   _blinds         = Blinds(0, 0);
             int32_t                  _pot            = 0;
             int32_t                  _bet            = 0;
+            int32_t                  _lastBet        = 0;
             Street                   _currentStreet  = Street::PREFLOP;
             time_point<system_clock> _lastActionTime = system_clock::now();
             const Player*            _player1        = nullptr;  // Player 1 is the Hero

@@ -17,6 +17,7 @@ namespace GameHandler {
             _blinds         = other._blinds;
             _pot            = other._pot;
             _bet            = other._bet;
+            _lastBet        = other._lastBet;
             _currentStreet  = other._currentStreet;
             _lastActionTime = other._lastActionTime;
             _player1        = other._player1;
@@ -59,6 +60,7 @@ namespace GameHandler {
 
         if (player.self()) { _bet += amount; }
 
+        _lastBet = amount;
         _pot += amount;
     }
 
@@ -67,11 +69,14 @@ namespace GameHandler {
 
         if (player.self()) { _bet += amount; }
 
+        _lastBet = amount;
         _pot += amount;
     }
 
     auto Round::check(const Player& player) -> void {
         _actions.at(_currentStreet).emplace_back(CHECK, player, _getAndResetLastActionTime());
+
+        _lastBet = 0;
     }
 
     auto Round::fold(const Player& player) -> void {
