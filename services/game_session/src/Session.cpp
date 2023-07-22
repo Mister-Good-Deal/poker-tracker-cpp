@@ -63,8 +63,6 @@ namespace GameSession {
         }
     }
 
-    auto Session::_determineGameEvent() -> GameEvent { return PLAYER_ACTION; }
-
     /**
      * The _harvestGameInfo function is responsible for extracting game information from a given screenshot.
      *
@@ -96,27 +94,11 @@ namespace GameSession {
         auto pot = _ocr->readPot(_scraper.getPotImg(screenshot));
         // Wait for the pot to be initialized with ante or blinds
         if (pot == 0) { throw PotNotInitializedException("Pot is not initialized"); }
-
         // Get player stacks
-        _game.getPlayer1().setStack(_ocr->readIntNumbers(_scraper.getPlayer1StackImg(screenshot)));
-        _game.getPlayer2().setStack(_ocr->readIntNumbers(_scraper.getPlayer2StackImg(screenshot)));
-        _game.getPlayer3().setStack(_ocr->readIntNumbers(_scraper.getPlayer3StackImg(screenshot)));
-
+        for (uint8_t i = 1; i <= 3; i++)
+        { _game.getPlayer(i).setStack(_ocr->readIntNumbers(_scraper.getPlayerStackImg(screenshot, i))); }
         // Get button position
-        if (_ocr->isSimilar(_scraper.getPlayer1ButtonImg(screenshot), _ocr->getButtonImg()))
-        {
-            _game.getPlayer1().takeButton();
-            _currentPlaying = &_game.getPlayer1();
-        } else if (_ocr->isSimilar(_scraper.getPlayer2ButtonImg(screenshot), _ocr->getButtonImg())) {
-            _game.getPlayer2().takeButton();
-            _currentPlaying = &_game.getPlayer2();
-        } else if (_ocr->isSimilar(_scraper.getPlayer3ButtonImg(screenshot), _ocr->getButtonImg())) {
-            _game.getPlayer3().takeButton();
-            _currentPlaying = &_game.getPlayer3();
-        } else {
-            LOG_ERROR(Logger::getLogger(), "Could not determine button position");
-        }
-
+        _assignButton(screenshot);
         // Get round blind level
         auto blinds = _ocr->readBlindRange(_scraper.getBlindAmountImg(screenshot));
         // Get hand
@@ -133,33 +115,35 @@ namespace GameSession {
 
             // @todo handle loop when player is not playing with last action image comparison
 
-            _determinePlayerAction(screenshot, *_currentPlaying);
+            _determinePlayerAction(screenshot, *_currentPlaying, _currentPlayingNum);
         } catch (const PotNotInitializedException& error)
         { LOG_INFO(Logger::getLogger(), "{}", error.what()); }
     }
 
-    auto Session::_determinePlayerAction(const cv::Mat& screenshot, const Player& player) -> void {
-        if (player == _game.getPlayer2())
+    auto Session::_determinePlayerAction(const cv::Mat& screenshot, const Player& player, uint8_t playerNum) -> void {
+        if (playerNum != 2 && playerNum != 3)
+        { throw WrongCurrentPlayingPlayerException("Current playing player must be either player 2 or 3"); }
+
+        // Did he fold ?
+        if (_ocr->hasFolded(_scraper.getPlayerCardsImg(screenshot, playerNum)))
         {
-            // Did he fold ?
-            if (_ocr->hasFolded(_scraper.getPlayer2CardsImg(screenshot)))
+            _game.getCurrentRound().fold(player);
+        } else {
+            auto action = _ocr->readGameAction(_scraper.getPlayerActionImg(screenshot, playerNum));
+
+            // Did he check ?
+            if (action == "CHECK")
             {
-                _game.getCurrentRound().fold(player);
+                _game.getCurrentRound().check(player);
             } else {
-                auto action = _ocr->readGameAction(_scraper.getPlayer2ActionImg(screenshot));
-                // Did he check ?
-                if (action == "CHECK")
+                auto betAmount = _ocr->readPlayerBet(_scraper.getPlayerBetImg(screenshot, playerNum));
+
+                // Did he bet or call ?
+                if (betAmount == _game.getCurrentRound().getLastBet())
                 {
-                    _game.getCurrentRound().check(player);
+                    _game.getCurrentRound().call(player, betAmount);
                 } else {
-                    auto betAmount = _ocr->readPlayerBet(_scraper.getPlayer2BetImg(screenshot));
-                    // Did he bet or call ?
-                    if (betAmount == _game.getCurrentRound().getLastBet())
-                    {
-                        _game.getCurrentRound().call(player, betAmount);
-                    } else {
-                        _game.getCurrentRound().bet(player, betAmount);
-                    }
+                    _game.getCurrentRound().bet(player, betAmount);
                 }
             }
         }
@@ -171,5 +155,18 @@ namespace GameSession {
         return std::count_if(players.begin(), players.end(), [](const Player& player) { return player.isEliminated(); }) == 2;
     }
 
-    auto Session::_processPlayerAction(const RoundAction& action) -> void {}
+    auto Session::_assignButton(const cv::Mat& screenshot) -> void {
+        for (uint8_t i = 1; i <= 3; i++)
+        {
+            if (!_ocr->isSimilar(_scraper.getPlayerButtonImg(screenshot, i), _ocr->getButtonImg())) { continue; }
+
+            _game.getPlayer(i).takeButton();
+            _currentPlaying    = &_game.getPlayer(i);
+            _currentPlayingNum = i;
+
+            return;
+        }
+
+        LOG_ERROR(Logger::getLogger(), "Could not determine button position");
+    }
 }  // namespace GameSession

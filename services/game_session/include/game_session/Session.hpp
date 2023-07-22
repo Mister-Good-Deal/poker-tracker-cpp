@@ -17,11 +17,14 @@ namespace GameSession {
 
     enum GameStages : int8_t { STARTING = 0, IN_PROGRESS, ENDED };
 
-    enum GameEvent : int8_t { PLAYER_ACTION = 0, GAME_ACTION, NONE };
-
     class PotNotInitializedException : public std::runtime_error {
         public:
             explicit PotNotInitializedException(const std::string& arg) : runtime_error(arg) {}
+    };
+
+    class WrongCurrentPlayingPlayerException : public std::runtime_error {
+        public:
+            explicit WrongCurrentPlayingPlayerException(const std::string& arg) : runtime_error(arg) {}
     };
 
     class Session {
@@ -43,7 +46,7 @@ namespace GameSession {
             auto _harvestGameInfo(const cv::Mat& screenshot) -> void;
             auto _initCurrentRound(const cv::Mat& screenshot) -> void;
             auto _trackCurrentRound(const cv::Mat& screenshot) -> void;
-            auto _determinePlayerAction(const cv::Mat& screenshot, const Player& player) -> void;
+            auto _determinePlayerAction(const cv::Mat& screenshot, const Player& player, uint8_t playerNum) -> void;
             auto _isGameOver() -> bool;
 
         private:
@@ -55,9 +58,9 @@ namespace GameSession {
             Game                          _game;
             GameStages                    _gameStage = GameStages::STARTING;
             cv::Mat                       _currentScreenshot;
-            const Player*                 _currentPlaying = nullptr;
+            const Player*                 _currentPlaying    = nullptr;
+            uint8_t                       _currentPlayingNum = 0;
 
-            auto _processPlayerAction(const RoundAction& action) -> void;
-            auto _determineGameEvent() -> GameEvent;
+            auto _assignButton(const cv::Mat& screenshot) -> void;
     };
 }  // namespace GameSession

@@ -44,6 +44,12 @@ namespace GameHandler {
     auto Game::end() -> void { _endTime = system_clock::now(); }
     auto Game::newRound() -> void { _rounds.emplace_back(); }
 
+    auto Game::getPlayer(uint8_t playerNum) -> Player& {
+        if (playerNum > 2) { throw std::invalid_argument("The given player number is invalid"); }
+
+        return _players[playerNum];
+    }
+
     auto Game::getPlayer(const std::string& playerName) -> Player& {
         for (auto& player : _players)
         {
