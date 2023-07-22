@@ -43,6 +43,7 @@ namespace GameSession {
             auto _harvestGameInfo(const cv::Mat& screenshot) -> void;
             auto _initCurrentRound(const cv::Mat& screenshot) -> void;
             auto _trackCurrentRound(const cv::Mat& screenshot) -> void;
+            auto _determinePlayerAction(const cv::Mat& screenshot, const Player& player) -> void;
             auto _isGameOver() -> bool;
 
         private:
@@ -54,8 +55,8 @@ namespace GameSession {
             Game                          _game;
             GameStages                    _gameStage = GameStages::STARTING;
             cv::Mat                       _currentScreenshot;
+            const Player*                 _currentPlaying = nullptr;
 
-            auto _evaluatePlayerAction() -> RoundAction;
             auto _processPlayerAction(const RoundAction& action) -> void;
             auto _determineGameEvent() -> GameEvent;
     };

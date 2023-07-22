@@ -42,10 +42,6 @@ namespace GameSession {
                     while (_game.getCurrentRound().isInProgress())
                     {
                         _trackCurrentRound(_currentScreenshot);
-
-                        auto action = _evaluatePlayerAction();
-
-                        _processPlayerAction(action);
                         // _game.getCurrentRound().end();
                     }
 
@@ -110,10 +106,13 @@ namespace GameSession {
         if (_ocr->isSimilar(_scraper.getPlayer1ButtonImg(screenshot), _ocr->getButtonImg()))
         {
             _game.getPlayer1().takeButton();
+            _currentPlaying = &_game.getPlayer1();
         } else if (_ocr->isSimilar(_scraper.getPlayer2ButtonImg(screenshot), _ocr->getButtonImg())) {
             _game.getPlayer2().takeButton();
+            _currentPlaying = &_game.getPlayer2();
         } else if (_ocr->isSimilar(_scraper.getPlayer3ButtonImg(screenshot), _ocr->getButtonImg())) {
             _game.getPlayer3().takeButton();
+            _currentPlaying = &_game.getPlayer3();
         } else {
             LOG_ERROR(Logger::getLogger(), "Could not determine button position");
         }
@@ -132,20 +131,44 @@ namespace GameSession {
         {
             if (!_game.getCurrentRound().isInitialized()) { _initCurrentRound(screenshot); }
 
-            // @todo determine which player is playing and update his action when he plays
+            // @todo handle loop when player is not playing with last action image comparison
+
+            _determinePlayerAction(screenshot, *_currentPlaying);
         } catch (const PotNotInitializedException& error)
         { LOG_INFO(Logger::getLogger(), "{}", error.what()); }
+    }
+
+    auto Session::_determinePlayerAction(const cv::Mat& screenshot, const Player& player) -> void {
+        if (player == _game.getPlayer2())
+        {
+            // Did he fold ?
+            if (_ocr->hasFolded(_scraper.getPlayer2CardsImg(screenshot)))
+            {
+                _game.getCurrentRound().fold(player);
+            } else {
+                auto action = _ocr->readGameAction(_scraper.getPlayer2ActionImg(screenshot));
+                // Did he check ?
+                if (action == "CHECK")
+                {
+                    _game.getCurrentRound().check(player);
+                } else {
+                    auto betAmount = _ocr->readPlayerBet(_scraper.getPlayer2BetImg(screenshot));
+                    // Did he bet or call ?
+                    if (betAmount == _game.getCurrentRound().getLastBet())
+                    {
+                        _game.getCurrentRound().call(player, betAmount);
+                    } else {
+                        _game.getCurrentRound().bet(player, betAmount);
+                    }
+                }
+            }
+        }
     }
 
     auto Session::_isGameOver() -> bool {
         auto players = _game.getPlayers();
 
         return std::count_if(players.begin(), players.end(), [](const Player& player) { return player.isEliminated(); }) == 2;
-    }
-
-    auto Session::_evaluatePlayerAction() -> RoundAction {
-        RoundAction action(CHECK, _game.getPlayer1(), seconds(1));
-        return action;
     }
 
     auto Session::_processPlayerAction(const RoundAction& action) -> void {}
