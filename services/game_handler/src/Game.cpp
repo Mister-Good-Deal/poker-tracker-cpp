@@ -47,7 +47,7 @@ namespace GameHandler {
     auto Game::getPlayer(uint8_t playerNum) -> Player& {
         if (playerNum > 2) { throw std::invalid_argument("The given player number is invalid"); }
 
-        return _players[playerNum];
+        return _players.at(playerNum);
     }
 
     auto Game::getPlayer(const std::string& playerName) -> Player& {

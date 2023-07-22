@@ -15,11 +15,13 @@ namespace GameSession {
     auto Session::operator=(Session&& other) noexcept -> Session& {
         if (this != &other)
         {
-            _game      = std::move(other._game);
-            _scraper   = std::move(other._scraper);
-            _tickRate  = other._tickRate;
-            _windowId  = other._windowId;
-            _gameStage = other._gameStage;
+            _game              = std::move(other._game);
+            _scraper           = std::move(other._scraper);
+            _tickRate          = other._tickRate;
+            _windowId          = other._windowId;
+            _gameStage         = other._gameStage;
+            _currentPlaying    = other._currentPlaying;
+            _currentPlayingNum = other._currentPlayingNum;
         }
 
         return *this;
