@@ -43,7 +43,8 @@ TEST(RoundTest, jsonRepresentationShouldBeCorrect) {
     round.bet(player1, 600);
     std::this_thread::sleep_for(seconds(4));
     round.fold(player2);
-    round.end(player1);
+    round.setWinner(player1);
+    round.end();
 
     // language=json
     auto expectedJson = R"(

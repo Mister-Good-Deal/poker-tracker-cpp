@@ -31,6 +31,7 @@ TEST(GameTest, jsonRepresentationShouldBeCorrect) {
 
     // Pre-flop
     round1.start();
+    round1.setBlinds({50, 100});
     player1.setHand(card("AH"), card("KH"));
     round1.setHand(player1.getHand());
     round1.check(player1);
@@ -44,7 +45,8 @@ TEST(GameTest, jsonRepresentationShouldBeCorrect) {
     round1.bet(player2, 200);
     round1.bet(player1, 600);
     round1.fold(player2);
-    round1.end(player1);
+    round1.setWinner(player1);
+    round1.end();
 
     // Round 2
 
@@ -54,6 +56,7 @@ TEST(GameTest, jsonRepresentationShouldBeCorrect) {
 
     // Pre-flop
     round2.start();
+    round2.setBlinds({100, 200});
     player1.setHand(card("AH"), card("AS"));
     round2.setHand(player1.getHand());
     round2.bet(player1, 200);
@@ -67,7 +70,8 @@ TEST(GameTest, jsonRepresentationShouldBeCorrect) {
     round2.getBoard().setTurn(card("8C"));
     // River
     round2.getBoard().setRiver(card("7C"));
-    round2.end(player1);
+    round2.setWinner(player1);
+    round2.end();
 
     // End game
     game.setWinner(player1);
@@ -104,6 +108,7 @@ TEST(GameTest, jsonRepresentationShouldBeCorrect) {
                         { "shortName": "KH", "rank": "King", "suit": "Heart" }
                     ],
                     "pot": 1000,
+                    "blinds": { "small": 50, "big": 100 },
                     "bet": 700,
                     "won": true,
                     "winner": "player_1"
@@ -132,6 +137,7 @@ TEST(GameTest, jsonRepresentationShouldBeCorrect) {
                         { "shortName": "AS", "rank": "Ace", "suit": "Spade" }
                     ],
                     "pot": 15000,
+                    "blinds": { "small": 100, "big": 200 },
                     "bet": 5000,
                     "won": true,
                     "winner": "player_1"
