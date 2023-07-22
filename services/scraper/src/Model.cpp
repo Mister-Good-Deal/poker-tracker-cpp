@@ -192,8 +192,8 @@ namespace Scraper {
             getBoardCard2Coord(),   getBoardCard3Coord(),   getBoardCard4Coord(),    getBoardCard5Coord(),    getPlayer1NameCoord(),
             getPlayer2NameCoord(),  getPlayer3NameCoord(),  getPlayer1ButtonCoord(), getPlayer2ButtonCoord(), getPlayer3ButtonCoord(),
             getPlayer1StackCoord(), getPlayer2StackCoord(), getPlayer3StackCoord(),  getPlayer1BetCoord(),    getPlayer2BetCoord(),
-            getPlayer3BetCoord(),   getPlayer2HandCoord(),  getPlayer3HandCoord(),   getBlindLevelCoord(),    getBlindAmountCoord(),
-            getGameTimeCoord()};
+            getPlayer3BetCoord(),   getPlayer2HandCoord(),  getPlayer3HandCoord(),   getPlayer2ActionCoord(), getPlayer3ActionCoord(),
+            getBlindLevelCoord(),   getBlindAmountCoord(),  getGameTimeCoord()};
 
         for (const auto& element : elements)
         { cv::rectangle(elementsView, element, cv::Scalar(0, 255, 0), 2); }
@@ -228,6 +228,8 @@ namespace Scraper {
                   {"player3Bet", _rectToJson(getPlayer3BetCoord())},
                   {"player2Hand", _rectToJson(getPlayer2HandCoord())},
                   {"player3Hand", _rectToJson(getPlayer3HandCoord())},
+                  {"player2Action", _rectToJson(getPlayer2ActionCoord())},
+                  {"player3Action", _rectToJson(getPlayer3ActionCoord())},
                   {"blindLevel", _rectToJson(getBlindLevelCoord())},
                   {"blindAmount", _rectToJson(getBlindAmountCoord())},
                   {"gameTime", _rectToJson(getGameTimeCoord())}}}};
@@ -259,6 +261,8 @@ namespace Scraper {
         _player3BetCoord    = _jsonToRect(json.at("elementsBoxes").at("player3Bet"));
         _player2HandCoord   = _jsonToRect(json.at("elementsBoxes").at("player2Hand"));
         _player3HandCoord   = _jsonToRect(json.at("elementsBoxes").at("player3Hand"));
+        _player2ActionCoord = _jsonToRect(json.at("elementsBoxes").at("player2Action"));
+        _player3ActionCoord = _jsonToRect(json.at("elementsBoxes").at("player3Action"));
         _blindLevelCoord    = _jsonToRect(json.at("elementsBoxes").at("blindLevel"));
         _blindAmountCoord   = _jsonToRect(json.at("elementsBoxes").at("blindAmount"));
         _gameTimeCoord      = _jsonToRect(json.at("elementsBoxes").at("gameTime"));

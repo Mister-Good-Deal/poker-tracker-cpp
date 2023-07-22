@@ -77,6 +77,8 @@ namespace Scraper {
             auto getPlayer3BetCoord() const -> const cv::Rect& { return _player3BetCoord; }
             auto getPlayer2HandCoord() const -> const cv::Rect& { return _player2HandCoord; }
             auto getPlayer3HandCoord() const -> const cv::Rect& { return _player3HandCoord; }
+            auto getPlayer2ActionCoord() const -> const cv::Rect& { return _player2ActionCoord; }
+            auto getPlayer3ActionCoord() const -> const cv::Rect& { return _player3ActionCoord; }
             auto getBlindLevelCoord() const -> const cv::Rect& { return _blindLevelCoord; }
             auto getBlindAmountCoord() const -> const cv::Rect& { return _blindAmountCoord; }
             auto getGameTimeCoord() const -> const cv::Rect& { return _gameTimeCoord; }
@@ -106,6 +108,8 @@ namespace Scraper {
             void setPlayer3BetCoord(const cv::Rect& player3BetCoord) { _player3BetCoord = player3BetCoord; }
             void setPlayer2HandCoord(const cv::Rect& player2HandCoord) { _player2HandCoord = player2HandCoord; }
             void setPlayer3HandCoord(const cv::Rect& player3HandCoord) { _player3HandCoord = player3HandCoord; }
+            void setPlayer2ActionCoord(const cv::Rect& player2ActionCoord) { _player2ActionCoord = player2ActionCoord; }
+            void setPlayer3ActionCoord(const cv::Rect& player3ActionCoord) { _player2ActionCoord = player3ActionCoord; }
             void setBlindLevelCoord(const cv::Rect& blindLevelCoord) { _blindLevelCoord = blindLevelCoord; }
             void setBlindAmountCoord(const cv::Rect& blindAmountCoord) { _blindAmountCoord = blindAmountCoord; }
             void setGameTimeCoord(const cv::Rect& gameTimeCoord) { _gameTimeCoord = gameTimeCoord; }
@@ -142,6 +146,8 @@ namespace Scraper {
             auto getPlayer3BetImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer3BetCoord()); };
             auto getPlayer2CardsImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer2HandCoord()); };
             auto getPlayer3CardsImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer3HandCoord()); };
+            auto getPlayer2ActionImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer2ActionCoord()); };
+            auto getPlayer3ActionImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer3ActionCoord()); };
             auto getBlindLevelImg(const cv::Mat& img) -> cv::Mat { return img(getBlindLevelCoord()); };
             auto getBlindAmountImg(const cv::Mat& img) -> cv::Mat { return img(getBlindAmountCoord()); };
             auto getGameTimeImg(const cv::Mat& img) -> cv::Mat { return img(getGameTimeCoord()); };
@@ -183,6 +189,8 @@ namespace Scraper {
             cv::Rect _player3BetCoord;
             cv::Rect _player2HandCoord;
             cv::Rect _player3HandCoord;
+            cv::Rect _player2ActionCoord;
+            cv::Rect _player3ActionCoord;
             cv::Rect _blindLevelCoord;
             cv::Rect _blindAmountCoord;
             cv::Rect _gameTimeCoord;
