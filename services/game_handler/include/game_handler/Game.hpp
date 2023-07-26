@@ -29,10 +29,10 @@ namespace GameHandler {
             auto getPlayer2() -> Player& { return _players[1]; };
             auto getPlayer3() -> Player& { return _players[2]; };
             auto getPlayer(uint8_t playerNum) -> Player&;
-            auto getPlayer(const std::string& playerName) -> Player&;
             auto getPlayers() -> std::array<Player, 3>& { return _players; };
 
             [[nodiscard]] auto isInitialized() const -> bool { return _initialized; };
+            [[nodiscard]] auto isOver() const -> bool { return _ended; };
             [[nodiscard]] auto getBuyIn() const -> int32_t { return _buyIn; };
 
             auto setBuyIn(int32_t buyIn) -> void { _buyIn = buyIn; }
@@ -42,14 +42,14 @@ namespace GameHandler {
             auto setComplete(bool complete) -> void { _complete = complete; }
 
             auto init(const std::string& player1Name, const std::string& player2Name, const std::string& player3Name) -> void;
-            auto newRound() -> void;
+            auto newRound(const Hand& hand, const Blinds& blinds) -> void;
             auto end() -> void;
 
             [[nodiscard]] auto toJson() const -> json;
 
         private:
             std::vector<Round>       _rounds;
-            std::array<Player, 3>    _players;
+            std::array<Player, 3>    _players;  // Player 1 is the Hero, others are Villains
             time_point<system_clock> _startTime;
             time_point<system_clock> _endTime;
             const Player*            _winner         = nullptr;
@@ -58,6 +58,7 @@ namespace GameHandler {
             int32_t                  _multipliers    = 2;
             bool                     _initialized    = false;
             bool                     _complete       = true;
+            bool                     _ended          = false;
 
             [[nodiscard]] auto _computeBalance() const -> int32_t;
     };

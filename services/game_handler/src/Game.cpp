@@ -31,32 +31,30 @@ namespace GameHandler {
                                                   player2Name, player3Name));
         }
 
-        _players[0] = Player(player1Name, true);
-        _players[1] = Player(player2Name);
-        _players[2] = Player(player3Name);
-
-        newRound();
-
+        _players[0]  = Player(player1Name, 1);
+        _players[1]  = Player(player2Name, 2);
+        _players[2]  = Player(player3Name, 3);
         _startTime   = system_clock::now();
         _initialized = true;
     }
 
-    auto Game::end() -> void { _endTime = system_clock::now(); }
-    auto Game::newRound() -> void { _rounds.emplace_back(); }
+    auto Game::end() -> void {
+        if (_winner == nullptr) { throw std::runtime_error("The game's winner has not been set"); }
 
-    auto Game::getPlayer(uint8_t playerNum) -> Player& {
-        if (playerNum > 2) { throw std::invalid_argument("The given player number is invalid"); }
-
-        return _players.at(playerNum);
+        _endTime = system_clock::now();
+        _ended   = true;
     }
 
-    auto Game::getPlayer(const std::string& playerName) -> Player& {
-        for (auto& player : _players)
-        {
-            if (player.getName() == playerName) { return player; }
-        }
+    auto Game::newRound(const Hand& hand, const Blinds& blinds) -> void {
+        _rounds.emplace_back(hand, blinds, _players);
 
-        throw UnknownPlayerException("The player " + playerName + " is unknown in this game");
+        getCurrentRound().init(hand, blinds, _buyIn * 3, _players);
+    }
+
+    auto Game::getPlayer(uint8_t playerNum) -> Player& {
+        if (playerNum <= 0 || playerNum > 3) { throw std::invalid_argument("The given player number is invalid"); }
+
+        return _players.at(playerNum - 1);
     }
 
     auto Game::toJson() const -> json {

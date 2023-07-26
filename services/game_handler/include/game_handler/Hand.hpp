@@ -41,6 +41,7 @@ namespace GameHandler {
             [[nodiscard]] auto isPlur() const -> bool { return _plur; };
             [[nodiscard]] auto isConnected() const -> bool { return _connected; };
             [[nodiscard]] auto isPremium() const -> bool { return _premium; };
+            [[nodiscard]] auto isSet() const -> bool { return !_firstCard.isUnknown() && !_secondCard.isUnknown(); };
 
             [[nodiscard]] auto toJson() const -> json;
             [[nodiscard]] auto toDetailedJson() const -> json;
