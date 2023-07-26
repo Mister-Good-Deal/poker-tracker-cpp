@@ -43,25 +43,21 @@ namespace GameSession {
                 case GameStages::IN_PROGRESS:
                     while (_game.getCurrentRound().isInProgress())
                     {
+                        if (!_game.getCurrentRound().isInitialized()) { _initCurrentRound(_currentScreenshot); }
+                        if (!_isNextActionTriggered(_currentScreenshot)) { continue; }
+
                         _trackCurrentRound(_currentScreenshot);
-                        // _game.getCurrentRound().end();
                     }
 
-                    if (_isGameOver())
-                    {
-                        _game.end();
-                        _gameStage = GameStages::ENDED;
-                    } else {
-                        _game.newRound();
-                    }
+                    _determineGameOver();
+
+                    if (!_game.isOver()) { _game.newRound(); }
 
                     break;
                 case GameStages::ENDED: break;
             }
 
             std::this_thread::sleep_for(_tickRate);
-
-            _currentScreenshot = _scraper.getScreenshot(_windowId);
         }
     }
 
@@ -107,22 +103,16 @@ namespace GameSession {
         auto firstCard  = _ocr->readCard(_scraper.getFirstCardImg(screenshot));
         auto secondCard = _ocr->readCard(_scraper.getSecondCardImg(screenshot));
 
-        _game.getCurrentRound().init({firstCard, secondCard}, blinds, pot, _game.getPlayer1(), _game.getPlayer2(), _game.getPlayer3());
+        _game.getCurrentRound().init({firstCard, secondCard}, blinds, pot, _game.getPlayers());
     }
 
     auto Session::_trackCurrentRound(const cv::Mat& screenshot) -> void {
         try
-        {
-            if (!_game.getCurrentRound().isInitialized()) { _initCurrentRound(screenshot); }
-
-            // @todo handle loop when player is not playing with last action image comparison
-
-            _determinePlayerAction(screenshot, *_currentPlaying, _currentPlayingNum);
-        } catch (const PotNotInitializedException& error)
+        { _determinePlayerAction(screenshot, *_currentPlaying, _currentPlayingNum); } catch (const PotNotInitializedException& error)
         { LOG_INFO(Logger::getLogger(), "{}", error.what()); }
     }
 
-    auto Session::_determinePlayerAction(const cv::Mat& screenshot, const Player& player, uint8_t playerNum) -> void {
+    auto Session::_determinePlayerAction(const cv::Mat& screenshot, Player& player, uint8_t playerNum) -> void {
         if (playerNum != 2 && playerNum != 3)
         { throw WrongCurrentPlayingPlayerException("Current playing player must be either player 2 or 3"); }
 
@@ -151,10 +141,19 @@ namespace GameSession {
         }
     }
 
-    auto Session::_isGameOver() -> bool {
-        auto players = _game.getPlayers();
+    auto Session::_determineGameOver() -> void {
+        const auto& players = _game.getPlayers();
 
-        return std::count_if(players.begin(), players.end(), [](const Player& player) { return player.isEliminated(); }) == 2;
+        auto winnerFinder = [](const Player& player) { return !player.isEliminated(); };
+
+        if (std::count_if(players.begin(), players.end(), winnerFinder) == 1)
+        {
+            auto gameWinner = std::find_if(players.begin(), players.end(), winnerFinder);
+
+            _game.setWinner(*gameWinner);
+            _game.end();
+            _gameStage = GameStages::ENDED;
+        }
     }
 
     auto Session::_assignButton(const cv::Mat& screenshot) -> void {
@@ -163,12 +162,17 @@ namespace GameSession {
             if (!_ocr->isSimilar(_scraper.getPlayerButtonImg(screenshot, i), _ocr->getButtonImg())) { continue; }
 
             _game.getPlayer(i).takeButton();
-            _currentPlaying    = &_game.getPlayer(i);
-            _currentPlayingNum = i;
+            _currentPlaying       = &_game.getPlayer(i);
+            _currentPlayingNum    = i;
+            _lastWaitingActionImg = _scraper.getPlayerActionImg(screenshot, _currentPlayingNum);
 
             return;
         }
 
         LOG_ERROR(Logger::getLogger(), "Could not determine button position");
+    }
+
+    auto Session::_isNextActionTriggered(const cv::Mat& screenshot) -> bool {
+        return _ocr->isSimilar(_scraper.getPlayerActionImg(screenshot, _currentPlayingNum), _lastWaitingActionImg);
     }
 }  // namespace GameSession
