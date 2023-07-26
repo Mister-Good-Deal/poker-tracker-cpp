@@ -22,5 +22,5 @@ TEST(RoundActionTest, jsonRepresentationShouldBeCorrect) {
         }
     )"_json;
 
-    EXPECT_EQ(RoundAction(BET, Player("player_1"), seconds(11), 1500).toJson(), expectedJson);
+    EXPECT_EQ(RoundAction(BET, Player("player_1", 1), seconds(11), 1500).toJson(), expectedJson);
 }

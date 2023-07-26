@@ -3,7 +3,9 @@
 #include <game_handler/CardFactory.hpp>
 #include <game_handler/Round.hpp>
 
+using GameHandler::Blinds;
 using GameHandler::Board;
+using GameHandler::Hand;
 using GameHandler::Player;
 using GameHandler::Round;
 using GameHandler::seconds;
@@ -13,38 +15,37 @@ class RoundTest : public ::testing::Test {};
 
 // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
 TEST(RoundTest, jsonRepresentationShouldBeCorrect) {
-    Round  round;
-    Player player1("player_1", true);
-    Player player2("player_2");
-    Player player3("player_3");
+    auto blinds = Blinds{50, 100};
+    auto hand   = Hand(card("AH"), card("KH"));
+
+    Player player1("player_1", 1);
+    Player player2("player_2", 2);
+    Player player3("player_3", 3);
+
+    std::array<Player, 3> players = {player1, player2, player3};
+
+    Round round(hand, blinds, players);
 
     // Run a scenario
 
     // Pre-flop
-    round.start();
-    round.setBlinds({50, 100});
-    player1.setHand(card("AH"), card("KH"));
-    round.setHand(player1.getHand());
     std::this_thread::sleep_for(seconds(2));
-    round.check(player1);
+    round.check(1);
     std::this_thread::sleep_for(seconds(1));
-    round.bet(player2, 100);
+    round.bet(2, 100);
     std::this_thread::sleep_for(seconds(3));
-    round.fold(player3);
-    round.call(player1, 100);
-    round.endStreet();
+    round.fold(3);
+    round.call(1, 100);
     // Flop
     round.getBoard().setFlop({card("AS"), card("AC"), card("3C")});
     std::this_thread::sleep_for(seconds(3));
-    round.check(player1);
+    round.check(1);
     std::this_thread::sleep_for(seconds(1));
-    round.bet(player2, 200);
+    round.bet(2, 200);
     std::this_thread::sleep_for(seconds(1));
-    round.bet(player1, 600);
+    round.bet(1, 600);
     std::this_thread::sleep_for(seconds(4));
-    round.fold(player2);
-    round.setWinner(player1);
-    round.end();
+    round.fold(2);
 
     // language=json
     auto expectedJson = R"(

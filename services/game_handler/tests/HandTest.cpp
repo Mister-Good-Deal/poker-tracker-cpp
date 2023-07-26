@@ -2,17 +2,7 @@
 
 #include <game_handler/CardFactory.hpp>
 #include <game_handler/Hand.hpp>
-
-#define EXPECT_THROW_WITH_MESSAGE(code, exception_type, expected_message) \
-    do                                                                    \
-    {                                                                     \
-        EXPECT_THROW(                                                     \
-            try { code; } catch (const exception_type& e) {               \
-                EXPECT_STREQ(e.what(), expected_message);                 \
-                throw;                                                    \
-            },                                                            \
-            exception_type);                                              \
-    } while (0)
+#include <utilities/Macros.hpp>
 
 using GameHandler::Card;
 using GameHandler::Hand;

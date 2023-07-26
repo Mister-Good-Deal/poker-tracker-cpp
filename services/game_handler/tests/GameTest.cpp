@@ -3,8 +3,10 @@
 #include <game_handler/CardFactory.hpp>
 #include <game_handler/Game.hpp>
 
+using GameHandler::Blinds;
 using GameHandler::Board;
 using GameHandler::Game;
+using GameHandler::Hand;
 using GameHandler::Player;
 using GameHandler::seconds;
 using GameHandler::Factory::card;
@@ -19,62 +21,54 @@ TEST(GameTest, jsonRepresentationShouldBeCorrect) {
     game.setMultipliers(3);
     game.init("player_1", "player_2", "player_3");
 
-    // Shortcuts for players names
-    Player& player1 = game.getPlayer1();
-    Player& player2 = game.getPlayer2();
-    Player& player3 = game.getPlayer3();
-
     // Run a scenario
 
     // Round 1
-    auto& round1 = game.getCurrentRound();
+    {
+        auto blinds = Blinds{50, 100};
+        auto hand   = Hand(card("AH"), card("KH"));
 
-    // Pre-flop
-    round1.start();
-    round1.setBlinds({50, 100});
-    player1.setHand(card("AH"), card("KH"));
-    round1.setHand(player1.getHand());
-    round1.check(player1);
-    round1.bet(player2, 100);
-    round1.fold(player3);
-    round1.call(player1, 100);
-    round1.endStreet();
-    // Flop
-    round1.getBoard().setFlop({card("AS"), card("AC"), card("3C")});
-    round1.check(player1);
-    round1.bet(player2, 200);
-    round1.bet(player1, 600);
-    round1.fold(player2);
-    round1.setWinner(player1);
-    round1.end();
+        game.newRound(hand, blinds);
+
+        auto& round1 = game.getCurrentRound();
+
+        // Pre-flop
+        round1.check(1);
+        round1.bet(2, 100);
+        round1.fold(3);
+        round1.call(1, 100);
+        // Flop
+        round1.getBoard().setFlop({card("AS"), card("AC"), card("3C")});
+        round1.check(1);
+        round1.bet(2, 200);
+        round1.bet(1, 600);
+        round1.fold(2);
+    }
 
     // Round 2
+    {
+        auto blinds = Blinds{100, 200};
+        auto hand   = Hand(card("AH"), card("AS"));
 
-    game.newRound();
+        game.newRound(hand, blinds);
 
-    auto& round2 = game.getCurrentRound();
+        auto& round2 = game.getCurrentRound();
 
-    // Pre-flop
-    round2.start();
-    round2.setBlinds({100, 200});
-    player1.setHand(card("AH"), card("AS"));
-    round2.setHand(player1.getHand());
-    round2.bet(player1, 200);
-    round2.bet(player2, 5000);
-    round2.bet(player3, 5000);
-    round2.call(player1, 4800);
-    round2.endStreet();
-    // Flop
-    round2.getBoard().setFlop({card("AS"), card("KS"), card("KH")});
-    // Turn
-    round2.getBoard().setTurn(card("8C"));
-    // River
-    round2.getBoard().setRiver(card("7C"));
-    round2.setWinner(player1);
-    round2.end();
+        // Pre-flop
+        round2.bet(1, 200);
+        round2.bet(2, 5000);
+        round2.bet(3, 5000);
+        round2.call(1, 4800);
+        // Flop
+        round2.getBoard().setFlop({card("AS"), card("KS"), card("KH")});
+        // Turn
+        round2.getBoard().setTurn(card("8C"));
+        // River
+        round2.getBoard().setRiver(card("7C"));
+    }
 
-    // End game
-    game.setWinner(player1);
+    // End game @todo automate this
+    game.setWinner(game.getPlayer1());
     game.end();
 
     // language=json
