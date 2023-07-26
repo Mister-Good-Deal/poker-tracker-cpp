@@ -9,7 +9,7 @@ namespace GameHandler {
 
     class RoundAction {
         public:
-            enum class ActionType : int8_t { CHECK = 0, CALL, BET, FOLD };
+            enum class ActionType : int8_t { CHECK = 0, CALL, BET, FOLD, NONE };
 
             static constexpr auto actionToString(ActionType action) -> std::string {
                 switch (action)
@@ -18,6 +18,7 @@ namespace GameHandler {
                     case ActionType::CALL: return "Call";
                     case ActionType::BET: return "Bet";
                     case ActionType::FOLD: return "Fold";
+                    case ActionType::NONE: return "None";
                     default: throw std::invalid_argument("The given action is invalid");
                 }
             }
