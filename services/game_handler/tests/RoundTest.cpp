@@ -24,7 +24,9 @@ TEST(RoundTest, jsonRepresentationShouldBeCorrect) {
 
     std::array<Player, 3> players = {player1, player2, player3};
 
-    Round round(hand, blinds, players);
+    players[0].setHand(hand);
+
+    Round round(blinds, players);
 
     // Run a scenario
 
@@ -76,13 +78,15 @@ TEST(RoundTest, jsonRepresentationShouldBeCorrect) {
                 { "shortName": "KH", "rank": "King", "suit": "Heart" }
             ],
             "pot": 1000,
-            "bet": 700,
             "blinds": { "small": 50, "big": 100 },
             "won": true,
-            "winner": "player_1"
+            "ranking": [["player_1"], ["player_2"], ["player_3"]]
         }
     )"_json;
 
     EXPECT_EQ(round.toJson(), expectedJson);
 }
+
+//  @todo add all-in scenario and showdown case
+
 // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)

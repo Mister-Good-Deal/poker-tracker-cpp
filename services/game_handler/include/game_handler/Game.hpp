@@ -42,7 +42,7 @@ namespace GameHandler {
             auto setComplete(bool complete) -> void { _complete = complete; }
 
             auto init(const std::string& player1Name, const std::string& player2Name, const std::string& player3Name) -> void;
-            auto newRound(const Hand& hand, const Blinds& blinds) -> void;
+            auto newRound(const Blinds& blinds) -> void;
             auto end() -> void;
 
             [[nodiscard]] auto toJson() const -> json;
@@ -52,7 +52,7 @@ namespace GameHandler {
             std::array<Player, 3>    _players;  // Player 1 is the Hero, others are Villains
             time_point<system_clock> _startTime;
             time_point<system_clock> _endTime;
-            const Player*            _winner         = nullptr;
+            const Player*            _winner         = nullptr;  // @todo ranking like Round class
             const Player*            _currentPlaying = nullptr;
             int32_t                  _buyIn          = 0;
             int32_t                  _multipliers    = 2;
