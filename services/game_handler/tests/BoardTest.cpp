@@ -10,7 +10,11 @@ using enum GameHandler::HandRank;
 
 class BoardTest : public ::testing::Test {};
 
-// --------------------- Board check ---------------------//
+/**
+ ╔═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+ ║                                                  Board combo check                                                  ║
+ ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+ */
 
 TEST(BoardTest, hasPossibleStraightShouldBeCorrect) {
     EXPECT_FALSE(Board({card("2S"), card("3H"), card("7D")}).hasPossibleStraight());
@@ -89,7 +93,11 @@ TEST(BoardTest, hasStraightFlushShouldBeCorrect) {
     EXPECT_TRUE(Board({card("AH"), card("QH"), card("JH"), card("TH"), card("KH")}).hasStraightFlush());
 }
 
-// --------------------- Hand check ---------------------//
+/**
+ ╔═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+ ║                                              Board + hand combo check                                               ║
+ ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+ */
 
 TEST(BoardTest, handRankHighCardShouldBeCorrect) {
     EXPECT_EQ(Board({card("2S"), card("3H"), card("7D")}).getHandRank({card("9D"), card("4D")}), HIGH_CARD);
@@ -153,6 +161,97 @@ TEST(BoardTest, handRankStraightFlushShouldBeCorrect) {
     EXPECT_EQ(Board({card("2S"), card("8S"), card("7S"), card("6S")}).getHandRank({card("9D"), card("TS")}), STRAIGHT_FLUSH);
     EXPECT_EQ(Board({card("AS"), card("AD"), card("KD"), card("QS"), card("QD")}).getHandRank({card("TD"), card("JD")}),
               STRAIGHT_FLUSH);
+}
+
+/**
+ ╔═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+ ║                                                  Winner hand check                                                  ║
+ ╚═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+ */
+
+// @todo test all the winner hands scenarios (with the board and the players hands)
+TEST(BoardTest, pairHandComparisonShouldBeCorrect) {
+    Board board_1({card("2S"), card("5C"), card("9H"), card("TC"), card("JC")});
+    Board board_2({card("2S"), card("2H"), card("9C"), card("TC"), card("JC")});
+
+    // Winner hands
+    EXPECT_EQ(board_1.compareHands({card("2C"), card("3D")}, {card("4H"), card("6D")}), 1);  // Pair vs high card
+    EXPECT_EQ(board_1.compareHands({card("9C"), card("3D")}, {card("5H"), card("6D")}), 1);  // Pair vs pair inferior
+    EXPECT_EQ(board_1.compareHands({card("8C"), card("8D")}, {card("5H"), card("6D")}), 1);  // Pair vs pair inferior
+    EXPECT_EQ(board_1.compareHands({card("7C"), card("JD")}, {card("6H"), card("JH")}), 1);  // Pair vs pair down card
+    // Equal hands
+    EXPECT_EQ(board_1.compareHands({card("2C"), card("3D")}, {card("2H"), card("4D")}), 0);  // Pair vs pair
+    EXPECT_EQ(board_1.compareHands({card("JH"), card("3D")}, {card("JD"), card("4D")}), 0);  // Pair vs pair
+    EXPECT_EQ(board_1.compareHands({card("2C"), card("6D")}, {card("2H"), card("7D")}), 0);  // Pair vs pair
+    // Loser hands
+    EXPECT_EQ(board_1.compareHands({card("2C"), card("3D")}, {card("2H"), card("QD")}), -1);  // Pair vs pair over card
+    EXPECT_EQ(board_1.compareHands({card("3C"), card("TD")}, {card("QH"), card("QD")}), -1);  // Pair vs pair superior
+    EXPECT_EQ(board_1.compareHands({card("3C"), card("TD")}, {card("2H"), card("9D")}), -1);  // Pair vs two pairs
+    EXPECT_EQ(board_1.compareHands({card("3C"), card("TD")}, {card("2H"), card("2D")}), -1);  // Pair vs trips
+    EXPECT_EQ(board_1.compareHands({card("3C"), card("TD")}, {card("QH"), card("KD")}), -1);  // Pair vs straight
+    EXPECT_EQ(board_2.compareHands({card("3C"), card("8D")}, {card("4C"), card("8C")}), -1);  // Pair vs flush
+    EXPECT_EQ(board_2.compareHands({card("3C"), card("8D")}, {card("9H"), card("9D")}), -1);  // Pair vs full
+    EXPECT_EQ(board_2.compareHands({card("3C"), card("8D")}, {card("2C"), card("2D")}), -1);  // Pair vs quads
+    EXPECT_EQ(board_2.compareHands({card("3C"), card("8D")}, {card("8C"), card("QC")}), -1);  // Pair vs straight flush
+}
+
+TEST(BoardTest, twoPairsHandComparisonShouldBeCorrect) {
+    Board board_1({card("2S"), card("5C"), card("9H"), card("TC"), card("JC")});
+    Board board_2({card("2S"), card("2H"), card("9C"), card("TC"), card("JC")});
+    Board board_3({card("2S"), card("2H"), card("9C"), card("9D"), card("JC")});
+
+    // Winner hands
+    EXPECT_EQ(board_1.compareHands({card("2C"), card("5D")}, {card("4H"), card("6D")}), 1);  // Two pairs vs high card
+    EXPECT_EQ(board_1.compareHands({card("9C"), card("TD")}, {card("4H"), card("JD")}), 1);  // Two pairs vs pair
+    EXPECT_EQ(board_1.compareHands({card("9C"), card("TD")}, {card("QH"), card("QD")}), 1);  // Two pairs vs pair
+    EXPECT_EQ(board_2.compareHands({card("8C"), card("9D")}, {card("QH"), card("AD")}), 1);  // Two pairs vs pair
+    EXPECT_EQ(board_1.compareHands({card("5D"), card("TD")}, {card("5H"), card("9H")}), 1);  // Two pairs vs two pairs inferior
+    EXPECT_EQ(board_2.compareHands({card("3C"), card("JD")}, {card("4H"), card("TD")}), 1);  // Two pairs vs two pairs inferior
+    EXPECT_EQ(board_2.compareHands({card("9D"), card("JD")}, {card("9H"), card("TD")}), 1);  // Two pairs vs two pairs inferior
+    EXPECT_EQ(board_3.compareHands({card("JD"), card("KD")}, {card("JH"), card("QD")}), 1);  // Two pairs vs two pairs inferior
+    EXPECT_EQ(board_3.compareHands({card("JD"), card("KD")}, {card("TH"), card("TD")}), 1);  // Two pairs vs two pairs inferior
+    EXPECT_EQ(board_2.compareHands({card("9D"), card("AD")}, {card("9H"), card("KC")}), 1);  // Two pairs vs two pairs down card
+    EXPECT_EQ(board_3.compareHands({card("3C"), card("QD")}, {card("4C"), card("8C")}), 1);  // Two pairs vs two pairs down card
+    // Equal hands
+    EXPECT_EQ(board_1.compareHands({card("2C"), card("5D")}, {card("2H"), card("5H")}), 0);  // Two pairs vs two pairs
+    EXPECT_EQ(board_1.compareHands({card("TH"), card("JD")}, {card("TD"), card("JH")}), 0);  // Two pairs vs two pairs
+    EXPECT_EQ(board_2.compareHands({card("8C"), card("9D")}, {card("9H"), card("3D")}), 0);  // Two pairs vs two pairs
+    EXPECT_EQ(board_3.compareHands({card("3C"), card("8D")}, {card("3H"), card("TC")}), 0);  // Two pairs vs two pairs
+    // Loser hands
+    EXPECT_EQ(board_1.compareHands({card("2C"), card("TD")}, {card("2H"), card("JD")}), -1);  // Two pair vs two pairs superior
+    EXPECT_EQ(board_1.compareHands({card("2C"), card("TD")}, {card("2H"), card("2D")}), -1);  // Two pair vs trips
+    EXPECT_EQ(board_1.compareHands({card("2C"), card("TD")}, {card("QH"), card("KD")}), -1);  // Two pair vs straight
+    EXPECT_EQ(board_2.compareHands({card("3C"), card("TD")}, {card("4C"), card("8C")}), -1);  // Two pair vs flush
+    EXPECT_EQ(board_2.compareHands({card("3C"), card("TD")}, {card("9H"), card("9D")}), -1);  // Two pair vs full
+    EXPECT_EQ(board_2.compareHands({card("3C"), card("TD")}, {card("2C"), card("2D")}), -1);  // Two pair vs quads
+    EXPECT_EQ(board_2.compareHands({card("3C"), card("TD")}, {card("8C"), card("QC")}), -1);  // Two pair vs straight flush
+}
+
+TEST(BoardTest, tripsHandComparisonShouldBeCorrect) {
+    Board board_1({card("2S"), card("5C"), card("9H"), card("TC"), card("JC")});
+    Board board_2({card("2S"), card("2H"), card("9C"), card("TC"), card("JC")});
+    Board board_3({card("2S"), card("9H"), card("9C"), card("9D"), card("JC")});
+
+    // Winner hands
+    EXPECT_EQ(board_1.compareHands({card("2C"), card("2D")}, {card("4H"), card("6D")}), 1);  // Trips vs high card
+    EXPECT_EQ(board_1.compareHands({card("9C"), card("9D")}, {card("QH"), card("QD")}), 1);  // Trips vs pair
+    EXPECT_EQ(board_2.compareHands({card("2C"), card("AD")}, {card("QH"), card("AD")}), 1);  // Trips vs pair
+    EXPECT_EQ(board_1.compareHands({card("5D"), card("5H")}, {card("5S"), card("9C")}), 1);  // Trips vs two pairs
+    EXPECT_EQ(board_2.compareHands({card("2C"), card("8D")}, {card("4H"), card("JD")}), 1);  // Trips vs two pairs
+    EXPECT_EQ(board_2.compareHands({card("2C"), card("8D")}, {card("KH"), card("KD")}), 1);  // Trips vs two pairs
+    EXPECT_EQ(board_1.compareHands({card("TH"), card("TD")}, {card("9C"), card("9D")}), 1);  // Trips vs trips inferior
+    EXPECT_EQ(board_2.compareHands({card("2C"), card("QD")}, {card("2D"), card("8D")}), 1);  // Trips vs trips down card
+    // Equal hands
+    EXPECT_EQ(board_2.compareHands({card("2C"), card("5D")}, {card("2D"), card("5H")}), 0);  // Trips vs trips
+    EXPECT_EQ(board_2.compareHands({card("2C"), card("8D")}, {card("2D"), card("7H")}), 0);  // Trips vs trips
+    EXPECT_EQ(board_3.compareHands({card("6D"), card("4H")}, {card("5D"), card("6S")}), 0);  // Trips vs trips
+    // Loser hands
+    EXPECT_EQ(board_2.compareHands({card("2D"), card("AH")}, {card("9D"), card("9S")}), -1);  // Trips vs trips superior
+    EXPECT_EQ(board_1.compareHands({card("2C"), card("2D")}, {card("QH"), card("KD")}), -1);  // Trips vs straight
+    EXPECT_EQ(board_2.compareHands({card("2C"), card("8D")}, {card("4C"), card("8C")}), -1);  // Trips vs flush
+    EXPECT_EQ(board_2.compareHands({card("2C"), card("AD")}, {card("2D"), card("9D")}), -1);  // Trips vs full
+    EXPECT_EQ(board_3.compareHands({card("TD"), card("AH")}, {card("9S"), card("3D")}), -1);  // Trips vs quads
+    EXPECT_EQ(board_2.compareHands({card("2C"), card("8D")}, {card("8C"), card("QC")}), -1);  // Trips vs straight flush
 }
 
 TEST(BoardTest, jsonRepresentationShouldBeCorrect) {

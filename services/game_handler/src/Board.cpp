@@ -6,14 +6,15 @@ namespace GameHandler {
     using std::ranges::count_if;
     using std::ranges::for_each;
     using std::ranges::max_element;
+    using std::ranges::sort;
     using std::views::counted;
 
     using enum Card::Rank;
+    using enum Card::Suit;
     using enum HandRank;
 
     auto Board::operator=(Board&& other) noexcept -> Board& {
-        if (this != &other)
-        {
+        if (this != &other) {
             _cards             = std::move(other._cards);
             _rankFrequencies   = other._rankFrequencies;
             _suitFrequencies   = other._suitFrequencies;
@@ -100,8 +101,7 @@ namespace GameHandler {
         if (rank1 < rank2) { return -1; }
 
         // Assuming that cards of the best hand are sorted by rank in descending order
-        for (int i = 0; i < COMPARISON_CARDS_NUMBER; ++i)
-        {
+        for (int i = 0; i < COMPARISON_CARDS_NUMBER; ++i) {
             if (bestHand1.at(i).getRank() > bestHand2.at(i).getRank()) { return 1; }
             if (bestHand1.at(i).getRank() < bestHand2.at(i).getRank()) { return -1; }
         }
@@ -148,8 +148,7 @@ namespace GameHandler {
 
         copy(_cards.begin(), _cards.end(), cards.begin());
 
-        if (hand != std::nullopt)
-        {
+        if (hand != std::nullopt) {
             const auto& handCards = hand.value().getCards();
 
             copy(handCards.begin(), handCards.end(), cards.begin() + BOARD_CARDS_NUMBER);
@@ -170,8 +169,7 @@ namespace GameHandler {
 
         copy(_cards.begin(), _cards.end(), cards.begin());
 
-        if (hand != std::nullopt)
-        {
+        if (hand != std::nullopt) {
             const auto& handCards = hand.value().getCards();
 
             copy(handCards.begin(), handCards.end(), cards.begin() + BOARD_CARDS_NUMBER);
@@ -195,13 +193,13 @@ namespace GameHandler {
 
         const int8_t WINDOW_SIZE = 5;
 
-        for (int8_t i = 0; i < static_cast<int8_t>(rankFrequencies.size() - WINDOW_SIZE + 1); ++i)
-        {
+        for (int8_t i = 0; i < static_cast<int8_t>(rankFrequencies.size() - WINDOW_SIZE + 1); ++i) {
             auto window = counted(rankFrequencies.begin() + i, WINDOW_SIZE);
 
             if (count_if(window.begin(), window.end(), [](const auto& value) { return value >= 1; })
-                >= STRAIGHT_SIZE - additionalCards)
-            { possibleStraights++; }
+                >= STRAIGHT_SIZE - additionalCards) {
+                possibleStraights++;
+            }
         }
 
         // Reset special Ace case
@@ -241,41 +239,50 @@ namespace GameHandler {
     auto Board::_extractComboFromStraightOrFlush(const all_cards_t& cards, HandRank rank, rank_frequencies_t& rankFrequencies,
                                                  suit_frequencies_t& suitFrequencies) -> combo_t {
         std::vector<Card> combo;
-        int32_t           index = BOARD_CARDS_NUMBER - 1;
+        int8_t            index = 0;
+        Card::Suit        suit  = Card::Suit::UNKNOWN;
 
         // Special Ace case
         rankFrequencies[0] = rankFrequencies[ACE];
 
-        auto match = [](const auto& cards) {
-            return count_if(cards.begin(), cards.end(), [](const auto& value) { return value >= 1; }) >= STRAIGHT_SIZE;
+        auto isRankEndIndex = [](const auto& window) {
+            return count_if(window.begin(), window.end(), [](const auto& value) { return value >= 1; }) >= STRAIGHT_SIZE;
         };
 
-        auto windowStraight = counted(rankFrequencies.begin() + index, STRAIGHT_SIZE);
-        auto windowFlush    = counted(suitFrequencies.begin() + index, FLUSH_SIZE);
+        auto flushSuit = [](const suit_frequencies_t& cards) {
+            return static_cast<Card::Suit>(
+                *std::find_if(cards.begin(), cards.end(), [](const auto& value) { return value >= FLUSH_SIZE; }));
+        };
 
-        switch (rank)
-        {
-            case HandRank::STRAIGHT:
-                while (!match(windowStraight))
-                { windowStraight = counted(rankFrequencies.begin() + index--, STRAIGHT_SIZE); }
+        auto window = counted(rankFrequencies.end() - index - STRAIGHT_SIZE, STRAIGHT_SIZE);
+
+        switch (rank) {
+            case STRAIGHT:
+                while (!isRankEndIndex(window)) { window = counted(rankFrequencies.end() - index-- - STRAIGHT_SIZE, STRAIGHT_SIZE); }
+
+                for (const auto& card : cards) {
+                    if (card.getRank() <= index || card.getRank() >= index - STRAIGHT_SIZE) { combo.push_back(card); }
+                }
                 break;
-            case HandRank::FLUSH:
-                while (!match(windowFlush))
-                { windowFlush = counted(suitFrequencies.begin() + index--, FLUSH_SIZE); }
+            case FLUSH:
+                suit = flushSuit(suitFrequencies);
+
+                for (const auto& card : cards) {
+                    if (card.getSuit() == suit) { combo.push_back(card); }
+                }
                 break;
-            case HandRank::STRAIGHT_FLUSH:
-                while (!match(windowStraight) && !match(windowFlush))
-                {
-                    windowStraight = counted(rankFrequencies.begin() + index, STRAIGHT_SIZE);
-                    windowFlush    = counted(suitFrequencies.begin() + index--, STRAIGHT_SIZE);
+            case STRAIGHT_FLUSH:
+                while (!isRankEndIndex(window)) { window = counted(rankFrequencies.end() - index-- - STRAIGHT_SIZE, STRAIGHT_SIZE); }
+                suit = flushSuit(suitFrequencies);
+
+                for (const auto& card : cards) {
+                    if ((card.getRank() <= index || card.getRank() >= index - STRAIGHT_SIZE) && card.getSuit() == suit) {
+                        combo.push_back(card);
+                    }
                 }
                 break;
             default: throw std::invalid_argument("The given hand rank is invalid");
         }
-
-        combo = {cards[index], cards[index - 1], cards[index - 2], cards[index - 3], cards[index - 4]};
-        // Reset special Ace case
-        rankFrequencies[0] = 0;
 
         return combo;
     }
@@ -284,21 +291,20 @@ namespace GameHandler {
         std::vector<Card> combo;
 
         auto extractCombo = [&](int value) {
-            for (const auto& card : cards)
-            {
+            for (const auto& card : cards) {
                 if (rankFrequencies[card.getRank()] == value) { combo.push_back(card); }
             }
         };
 
-        switch (rank)
-        {
+        switch (rank) {
+            case HIGH_CARD: break;
             case PAIR: extractCombo(PAIR_SIZE); break;
             case TWO_PAIR:
                 extractCombo(PAIR_SIZE);
                 _trimCombo(TWO_PAIR, combo);
                 break;
             case TRIPS:
-                extractCombo(FULL_SIZE);
+                extractCombo(TRIPS_SIZE);
                 _trimCombo(TRIPS, combo);
                 break;
             case FULL:
@@ -315,29 +321,28 @@ namespace GameHandler {
 
     auto Board::_trimCombo(HandRank rank, combo_t& combo) -> void {
         // Order cards
-        std::ranges::sort(combo, [](const Card& A, const Card& B) { return A.getRank() > B.getRank(); });
+        sort(combo, [](const Card& A, const Card& B) { return A.getRank() > B.getRank(); });
         // Trims the combo to the correct size
-        switch (rank)
-        {
-            case HandRank::TWO_PAIR: combo.erase(combo.begin() + TWO_PAIR_SIZE, combo.end()); break;
-            case HandRank::TRIPS: combo.erase(combo.begin() + TRIPS_SIZE, combo.end()); break;
-            case HandRank::FULL: combo.erase(combo.begin() + FULL_SIZE, combo.end()); break;
+        switch (rank) {
+            case TWO_PAIR: combo.erase(combo.begin() + TWO_PAIR_SIZE, combo.end()); break;
+            case TRIPS: combo.erase(combo.begin() + TRIPS_SIZE, combo.end()); break;
+            case FULL: combo.erase(combo.begin() + FULL_SIZE, combo.end()); break;
             default: throw std::invalid_argument("The given hand rank is invalid");
         }
     }
 
     auto Board::_extractCombo(const all_cards_t& cards, HandRank rank, rank_frequencies_t& rankF, suit_frequencies_t& suitF)
         -> combo_t {
-        switch (rank)
-        {
-            case HandRank::STRAIGHT:
-            case HandRank::FLUSH:
-            case HandRank::STRAIGHT_FLUSH: return _extractComboFromStraightOrFlush(cards, rank, rankF, suitF);
-            case HandRank::PAIR:
-            case HandRank::TWO_PAIR:
-            case HandRank::TRIPS:
-            case HandRank::FULL:
-            case HandRank::QUADS: return _extractComboFromPairsLike(cards, rank, rankF);
+        switch (rank) {
+            case STRAIGHT:
+            case FLUSH:
+            case STRAIGHT_FLUSH: return _extractComboFromStraightOrFlush(cards, rank, rankF, suitF);
+            case HIGH_CARD:
+            case PAIR:
+            case TWO_PAIR:
+            case TRIPS:
+            case FULL:
+            case QUADS: return _extractComboFromPairsLike(cards, rank, rankF);
             default: throw std::invalid_argument("The given hand rank is invalid");
         }
     }
@@ -349,19 +354,18 @@ namespace GameHandler {
         int         highestCardIndex = 0;
 
         // Fill the higher cards array with the combo cards
-        std::copy(combo.begin(), combo.end(), higherCards.begin());
+        copy(combo.begin(), combo.end(), higherCards.begin());
         // Sort the cards by rank in descending order
-        std::ranges::sort(cards, [](const Card& A, const Card& B) { return A.getRank() > B.getRank(); });
+        sort(cards, [](const Card& A, const Card& B) { return A.getRank() > B.getRank(); });
 
-        while (currentSize < COMPARISON_CARDS_NUMBER)
-        {
+        while (currentSize < COMPARISON_CARDS_NUMBER) {
             auto& highestCard = cards[highestCardIndex++];
             // If the card is not in the combo, add it to the higher cards array
-            if (std::find(combo.begin(), combo.end(), highestCard) == combo.end()) { higherCards[currentSize++] = highestCard; }
+            if (std::ranges::find(combo, highestCard) == combo.end()) { higherCards[currentSize++] = highestCard; }
         }
 
         // Sort the higher cards by rank in descending order
-        std::ranges::sort(higherCards, [](const Card& A, const Card& B) { return A.getRank() > B.getRank(); });
+        sort(higherCards, [](const Card& A, const Card& B) { return A.getRank() > B.getRank(); });
 
         return higherCards;
     }
@@ -386,9 +390,9 @@ namespace GameHandler {
 
         // Combine board cards with hand cards
         all_cards_t cards;
-        std::copy(_cards.begin(), _cards.end(), cards.begin());
+        copy(_cards.begin(), _cards.end(), cards.begin());
         const auto& handCards = hand.getCards();
-        std::copy(handCards.begin(), handCards.end(), cards.begin() + BOARD_CARDS_NUMBER);
+        copy(handCards.begin(), handCards.end(), cards.begin() + BOARD_CARDS_NUMBER);
 
         return {rank, _extractHigherCards(cards, _extractCombo(cards, rank, rankFrequencies, suitFrequencies))};
     }
