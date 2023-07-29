@@ -12,8 +12,7 @@ namespace OCR {
         _cardsSkin(cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards_skins/" + DEFAULT_CARD_SKIN)), _buttonImg(getButtonImg()) {}
 
     auto WinamaxOcr::operator=(WinamaxOcr&& other) noexcept -> WinamaxOcr& {
-        if (this != &other)
-        {
+        if (this != &other) {
             _cardsSkin = std::move(other._cardsSkin);
             _buttonImg = std::move(other._buttonImg);
         }
@@ -42,8 +41,7 @@ namespace OCR {
         auto middlePixelColorG = static_cast<int32_t>(middlePixelColor[1]);
         auto middlePixelColorR = static_cast<int32_t>(middlePixelColor[2]);
 
-        if (abs(middlePixelColorR - HEART_COLOR[2]) <= EPSILON)
-        {
+        if (abs(middlePixelColorR - HEART_COLOR[2]) <= EPSILON) {
             suit = HEART;
         } else if (abs(middlePixelColorB - DIAMOND_COLOR[0]) <= EPSILON) {
             suit = DIAMOND;

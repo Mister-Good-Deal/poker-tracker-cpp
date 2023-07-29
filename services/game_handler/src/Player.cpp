@@ -2,8 +2,7 @@
 
 namespace GameHandler {
     auto Player::operator=(Player&& other) noexcept -> Player& {
-        if (this != &other)
-        {
+        if (this != &other) {
             _name       = std::move(other._name);
             _hand       = std::move(other._hand);
             _number     = other._number;

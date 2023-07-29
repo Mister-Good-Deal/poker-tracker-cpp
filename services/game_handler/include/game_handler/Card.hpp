@@ -26,8 +26,7 @@ namespace GameHandler {
             static constexpr std::array<Card::Rank, BROADWAY_NUMBER> BROADWAY = {TEN, JACK, QUEEN, KING, ACE};
 
             static constexpr auto rankToString(Rank rank) -> std::string {
-                switch (rank)
-                {
+                switch (rank) {
                     case Rank::TWO: return "Two";
                     case Rank::THREE: return "Three";
                     case Rank::FOUR: return "Four";
@@ -46,8 +45,7 @@ namespace GameHandler {
             }
 
             static constexpr auto rankToShortString(Rank rank) -> std::string {
-                switch (rank)
-                {
+                switch (rank) {
                     case Rank::TWO: return "2";
                     case Rank::THREE: return "3";
                     case Rank::FOUR: return "4";
@@ -67,8 +65,7 @@ namespace GameHandler {
 
             // @todo put constexpr when c++23
             static auto charToRank(char rank) -> Rank {
-                switch (rank)
-                {
+                switch (rank) {
                     case '2': return Rank::TWO;
                     case '3': return Rank::THREE;
                     case '4': return Rank::FOUR;
@@ -90,8 +87,7 @@ namespace GameHandler {
             }
 
             static constexpr auto suitToString(Suit suit) -> std::string {
-                switch (suit)
-                {
+                switch (suit) {
                     case Suit::HEART: return "Heart";
                     case Suit::DIAMOND: return "Diamond";
                     case Suit::CLUB: return "Club";

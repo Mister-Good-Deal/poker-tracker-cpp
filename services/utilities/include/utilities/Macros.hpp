@@ -6,8 +6,7 @@
 
 #ifdef DISPLAY_OPENCV_IMG
     #define DISPLAY_IMAGE(windowTitle, src)                             \
-        do                                                              \
-        {                                                               \
+        do {                                                            \
             cv::imshow(windowTitle + std::to_string(std::rand()), src); \
             cv::waitKey(0);                                             \
         } while (0)
@@ -16,8 +15,7 @@
 #endif
 
 #define EXPECT_THROW_WITH_MESSAGE(code, exception_type, expected_message) \
-    do                                                                    \
-    {                                                                     \
+    do {                                                                  \
         EXPECT_THROW(                                                     \
             try { code; } catch (const exception_type& e) {               \
                 EXPECT_STREQ(e.what(), expected_message);                 \

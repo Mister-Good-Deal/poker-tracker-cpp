@@ -5,8 +5,7 @@ namespace GameHandler {
     using std::ranges::for_each;
 
     auto Game::operator=(Game&& other) noexcept -> Game& {
-        if (this != &other)
-        {
+        if (this != &other) {
             _rounds         = std::move(other._rounds);
             _players        = std::move(other._players);
             _startTime      = other._startTime;
@@ -25,8 +24,7 @@ namespace GameHandler {
     auto Game::init(const std::string& player1Name, const std::string& player2Name, const std::string& player3Name) -> void {
         auto nameList = {player1Name, player2Name, player3Name};
 
-        if (any_of(nameList, [](const auto& name) { return name.empty(); }))
-        {
+        if (any_of(nameList, [](const auto& name) { return name.empty(); })) {
             throw invalid_player_name(fmt::format("A player's name is empty, player_1 `{}`, player_2 `{}`, player_3 `{}`", player1Name,
                                                   player2Name, player3Name));
         }

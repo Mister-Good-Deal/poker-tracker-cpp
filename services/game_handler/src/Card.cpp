@@ -9,8 +9,7 @@ namespace GameHandler {
     using enum Card::Suit;
 
     auto Card::operator=(Card&& other) noexcept -> Card& {
-        if (this != &other)
-        {
+        if (this != &other) {
             _rank = other._rank;
             _suit = other._suit;
         }

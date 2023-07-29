@@ -12,8 +12,7 @@ namespace Scraper {
     using Logger = Logger::Quill;
 
     auto Model::operator=(Model&& other) noexcept -> Model& {
-        if (this != &other)
-        {
+        if (this != &other) {
             _activeWindows = std::move(other._activeWindows);
             _roomName      = std::move(other._roomName);
             _windowSize    = std::move(other._windowSize);
@@ -55,8 +54,7 @@ namespace Scraper {
         LOG_DEBUG(Logger::getLogger(), "Enter _parseActiveWindows");
         HWND hwnd = nullptr;
         LOG_DEBUG(Logger::getLogger(), "Call FindWindowEx");
-        while ((hwnd = FindWindowEx(nullptr, hwnd, nullptr, nullptr)) != nullptr)
-        {
+        while ((hwnd = FindWindowEx(nullptr, hwnd, nullptr, nullptr)) != nullptr) {
             LOG_DEBUG(Logger::getLogger(), "Call GetWindowTextLength");
             auto titleLength = GetWindowTextLength(hwnd);
             LOG_DEBUG(Logger::getLogger(), "Call VirtualAlloc");
@@ -64,8 +62,7 @@ namespace Scraper {
             LOG_DEBUG(Logger::getLogger(), "Call GetWindowText");
             auto titleSize = GetWindowText(hwnd, title, titleLength);
 
-            if (titleSize == 0)
-            {
+            if (titleSize == 0) {
                 LOG_DEBUG(Logger::getLogger(), "The windows's title could not be retrieved\n\n{}", GetLastError());
             } else {
                 WindowInfo window(title, hwnd);
@@ -82,20 +79,16 @@ namespace Scraper {
         XWindowAttributes attributes;
         uint32_t          childrenNumber = 0;
 
-        if (XQueryTree(display, DefaultRootWindow(display), &root, &parent, &children, &childrenNumber))
-        {
+        if (XQueryTree(display, DefaultRootWindow(display), &root, &parent, &children, &childrenNumber)) {
             // C++ way to avoid pointer arithmetic use
             auto childrenArray = std::span(children, childrenNumber);
 
-            for (uint32_t i = 0; i < childrenNumber; ++i)
-            {
-                if (XGetWindowAttributes(display, childrenArray[i], &attributes) && attributes.map_state == IsViewable)
-                {
+            for (uint32_t i = 0; i < childrenNumber; ++i) {
+                if (XGetWindowAttributes(display, childrenArray[i], &attributes) && attributes.map_state == IsViewable) {
                     char*         title = nullptr;
                     XTextProperty windowName;
 
-                    if (XFetchName(display, childrenArray[i], &title))
-                    {
+                    if (XFetchName(display, childrenArray[i], &title)) {
                         WindowInfo window(title, childrenArray[i]);
 
                         // Core dump on mutter guard window manager when trying to get the screenshot
@@ -126,8 +119,9 @@ namespace Scraper {
     auto Model::getScreenshot(uint64_t windowId) -> cv::Mat {
         _parseActiveWindows();
 
-        if (!_activeWindows.contains(windowId))
-        { throw std::invalid_argument(fmt::format("The window's ID {} is not found", windowId)); }
+        if (!_activeWindows.contains(windowId)) {
+            throw std::invalid_argument(fmt::format("The window's ID {} is not found", windowId));
+        }
 
         auto window = _activeWindows.at(windowId);
 
@@ -195,15 +189,13 @@ namespace Scraper {
             getPlayer3BetCoord(),   getPlayer2HandCoord(),  getPlayer3HandCoord(),   getPlayer2ActionCoord(), getPlayer3ActionCoord(),
             getBlindLevelCoord(),   getBlindAmountCoord(),  getGameTimeCoord()};
 
-        for (const auto& element : elements)
-        { cv::rectangle(elementsView, element, cv::Scalar(0, 255, 0), 2); }
+        for (const auto& element : elements) { cv::rectangle(elementsView, element, cv::Scalar(0, 255, 0), 2); }
 
         return elementsView;
     }
 
     auto Model::getPlayerHandCoord(uint8_t playerNum) const -> const cv::Rect& {
-        switch (playerNum)
-        {
+        switch (playerNum) {
             case 2: return _player2HandCoord;
             case 3: return _player3HandCoord;
             default: throw std::invalid_argument("Invalid player number");
@@ -211,8 +203,7 @@ namespace Scraper {
     }
 
     auto Model::getPlayerActionCoord(uint8_t playerNum) const -> const cv::Rect& {
-        switch (playerNum)
-        {
+        switch (playerNum) {
             case 2: return _player2ActionCoord;
             case 3: return _player3ActionCoord;
             default: throw std::invalid_argument("Invalid player number");
@@ -220,8 +211,7 @@ namespace Scraper {
     }
 
     auto Model::getPlayerBetCoord(uint8_t playerNum) const -> const cv::Rect& {
-        switch (playerNum)
-        {
+        switch (playerNum) {
             case 2: return _player2BetCoord;
             case 3: return _player3BetCoord;
             default: throw std::invalid_argument("Invalid player number");
@@ -229,8 +219,7 @@ namespace Scraper {
     }
 
     auto Model::getPlayerStackCoord(uint8_t playerNum) const -> const cv::Rect& {
-        switch (playerNum)
-        {
+        switch (playerNum) {
             case 1: return _player1StackCoord;
             case 2: return _player2StackCoord;
             case 3: return _player3StackCoord;
@@ -239,8 +228,7 @@ namespace Scraper {
     }
 
     auto Model::getPlayerButtonCoord(uint8_t playerNum) const -> const cv::Rect& {
-        switch (playerNum)
-        {
+        switch (playerNum) {
             case 1: return _player1ButtonCoord;
             case 2: return _player2ButtonCoord;
             case 3: return _player3ButtonCoord;

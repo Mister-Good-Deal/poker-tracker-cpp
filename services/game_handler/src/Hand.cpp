@@ -18,8 +18,7 @@ namespace GameHandler {
     }
 
     auto Hand::operator=(const Hand& other) -> Hand& {
-        if (this != &other)
-        {
+        if (this != &other) {
             _firstCard  = other._firstCard;
             _secondCard = other._secondCard;
             _cards      = {&_firstCard, &_secondCard};
@@ -34,8 +33,7 @@ namespace GameHandler {
     }
 
     auto Hand::operator=(Hand&& other) noexcept -> Hand& {
-        if (this != &other)
-        {
+        if (this != &other) {
             _firstCard  = std::move(other._firstCard);
             _secondCard = std::move(other._secondCard);
             _cards      = {&_firstCard, &_secondCard};

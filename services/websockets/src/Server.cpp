@@ -20,8 +20,7 @@ namespace Websockets {
         _server
             .listen(SERVER_LISTENING_PORT,
                     [](auto* listenSocket) {
-                        if (listenSocket)
-                        {
+                        if (listenSocket) {
                             LOG_INFO(Logger::getLogger(), "Websocket server listening on port {} ...", SERVER_LISTENING_PORT);
                         } else {
                             LOG_ERROR(Logger::getLogger(), "Websocket server failed to bind to port {}", SERVER_LISTENING_PORT);

@@ -155,8 +155,9 @@ namespace OCR {
         // Determine smaller image, then crop the bigger one to the size of the smaller one. First image is the bigger one.
         if (secondImage.cols > firstImage.cols || secondImage.rows > firstImage.rows) { std::swap(firstImage, secondImage); }
 
-        if (firstImage.cols < secondImage.cols || firstImage.rows < secondImage.rows)
-        { throw std::runtime_error("The first image must be bigger than the second one."); }
+        if (firstImage.cols < secondImage.cols || firstImage.rows < secondImage.rows) {
+            throw std::runtime_error("The first image must be bigger than the second one.");
+        }
 
         auto colsBorder = (firstImage.cols - secondImage.cols) / 2;
         auto rowsBorder = (firstImage.rows - secondImage.rows) / 2;
@@ -179,8 +180,7 @@ namespace OCR {
         cv::Mat firstImageCopy  = firstImage;
         cv::Mat secondImageCopy = secondImage;
 
-        if (firstImage.rows != secondImage.rows || firstImage.cols != secondImage.cols)
-        {
+        if (firstImage.rows != secondImage.rows || firstImage.cols != secondImage.cols) {
             LOG_DEBUG(Logger::getLogger(),
                       "The images size are not equals in similarity images computation ({}x{} != {}x{}), cropping the bigger one.",
                       firstImage.rows, firstImage.cols, secondImage.rows, secondImage.cols);

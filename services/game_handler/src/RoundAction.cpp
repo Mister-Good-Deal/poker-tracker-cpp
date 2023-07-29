@@ -4,8 +4,7 @@ namespace GameHandler {
     using enum RoundAction::ActionType;
 
     auto RoundAction::operator=(RoundAction&& other) noexcept -> RoundAction& {
-        if (this != &other)
-        {
+        if (this != &other) {
             _action = other._action;
             _player = std::move(other._player);
             _time   = other._time;
