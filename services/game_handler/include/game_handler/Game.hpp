@@ -28,7 +28,7 @@ namespace GameHandler {
             auto getPlayer1() -> Player& { return _players[0]; };
             auto getPlayer2() -> Player& { return _players[1]; };
             auto getPlayer3() -> Player& { return _players[2]; };
-            auto getPlayer(uint8_t playerNum) -> Player&;
+            auto getPlayer(uint32_t playerNum) -> Player&;
             auto getPlayers() -> std::array<Player, 3>& { return _players; };
 
             [[nodiscard]] auto isInitialized() const -> bool { return _initialized; };

@@ -9,7 +9,7 @@ namespace GameHandler {
 
     class RoundAction {
         public:
-            enum class ActionType : int8_t { CHECK = 0, CALL, BET, FOLD, NONE };
+            enum class ActionType : int32_t { CHECK = 0, CALL, BET, FOLD, NONE };
 
             static constexpr auto actionToString(ActionType action) -> std::string {
                 switch (action) {

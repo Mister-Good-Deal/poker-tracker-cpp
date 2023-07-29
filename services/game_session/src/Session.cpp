@@ -87,7 +87,7 @@ namespace GameSession {
         // Wait for the pot to be initialized with ante or blinds
         if (pot == 0) { throw PotNotInitializedException("Pot is not initialized"); }
         // Get player stacks
-        for (uint8_t i = 1; i <= 3; i++) {
+        for (uint32_t i = 1; i <= 3; i++) {
             _game.getPlayer(i).setStack(_ocr->readIntNumbers(_scraper.getPlayerStackImg(screenshot, i)));
         }
         // Get button position
@@ -107,7 +107,7 @@ namespace GameSession {
         } catch (const PotNotInitializedException& error) { LOG_INFO(Logger::getLogger(), "{}", error.what()); }
     }
 
-    auto Session::_determinePlayerAction(const cv::Mat& screenshot, Player& player, uint8_t playerNum) -> void {
+    auto Session::_determinePlayerAction(const cv::Mat& screenshot, Player& player, uint32_t playerNum) -> void {
         if (playerNum != 2 && playerNum != 3) {
             throw WrongCurrentPlayingPlayerException("Current playing player must be either player 2 or 3");
         }
@@ -149,7 +149,7 @@ namespace GameSession {
     }
 
     auto Session::_assignButton(const cv::Mat& screenshot) -> void {
-        for (uint8_t i = 1; i <= 3; i++) {
+        for (uint32_t i = 1; i <= 3; i++) {
             if (!_ocr->isSimilar(_scraper.getPlayerButtonImg(screenshot, i), _ocr->getButtonImg())) { continue; }
 
             _game.getPlayer(i).takeButton();

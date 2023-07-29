@@ -194,7 +194,7 @@ namespace Scraper {
         return elementsView;
     }
 
-    auto Model::getPlayerHandCoord(uint8_t playerNum) const -> const cv::Rect& {
+    auto Model::getPlayerHandCoord(uint32_t playerNum) const -> const cv::Rect& {
         switch (playerNum) {
             case 2: return _player2HandCoord;
             case 3: return _player3HandCoord;
@@ -202,7 +202,7 @@ namespace Scraper {
         }
     }
 
-    auto Model::getPlayerActionCoord(uint8_t playerNum) const -> const cv::Rect& {
+    auto Model::getPlayerActionCoord(uint32_t playerNum) const -> const cv::Rect& {
         switch (playerNum) {
             case 2: return _player2ActionCoord;
             case 3: return _player3ActionCoord;
@@ -210,7 +210,7 @@ namespace Scraper {
         }
     }
 
-    auto Model::getPlayerBetCoord(uint8_t playerNum) const -> const cv::Rect& {
+    auto Model::getPlayerBetCoord(uint32_t playerNum) const -> const cv::Rect& {
         switch (playerNum) {
             case 2: return _player2BetCoord;
             case 3: return _player3BetCoord;
@@ -218,7 +218,7 @@ namespace Scraper {
         }
     }
 
-    auto Model::getPlayerStackCoord(uint8_t playerNum) const -> const cv::Rect& {
+    auto Model::getPlayerStackCoord(uint32_t playerNum) const -> const cv::Rect& {
         switch (playerNum) {
             case 1: return _player1StackCoord;
             case 2: return _player2StackCoord;
@@ -227,7 +227,7 @@ namespace Scraper {
         }
     }
 
-    auto Model::getPlayerButtonCoord(uint8_t playerNum) const -> const cv::Rect& {
+    auto Model::getPlayerButtonCoord(uint32_t playerNum) const -> const cv::Rect& {
         switch (playerNum) {
             case 1: return _player1ButtonCoord;
             case 2: return _player2ButtonCoord;

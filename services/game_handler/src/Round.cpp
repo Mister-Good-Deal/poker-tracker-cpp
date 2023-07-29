@@ -38,7 +38,7 @@ namespace GameHandler {
         return *this;
     }
 
-    auto Round::call(uint8_t playerNum, int32_t amount) -> void {
+    auto Round::call(uint32_t playerNum, int32_t amount) -> void {
         auto& player = _getPlayer(playerNum);
 
         _actions.at(_currentStreet).emplace_back(CALL, player, _getAndResetLastActionTime(), amount);
@@ -47,7 +47,7 @@ namespace GameHandler {
         _processStreet(CALL);
     }
 
-    auto Round::bet(uint8_t playerNum, int32_t amount) -> void {
+    auto Round::bet(uint32_t playerNum, int32_t amount) -> void {
         auto& player = _getPlayer(playerNum);
 
         _actions.at(_currentStreet).emplace_back(BET, player, _getAndResetLastActionTime(), amount);
@@ -56,7 +56,7 @@ namespace GameHandler {
         _pot += amount;
     }
 
-    auto Round::check(uint8_t playerNum) -> void {
+    auto Round::check(uint32_t playerNum) -> void {
         auto& player = _getPlayer(playerNum);
 
         _actions.at(_currentStreet).emplace_back(CHECK, player, _getAndResetLastActionTime());
@@ -64,7 +64,7 @@ namespace GameHandler {
         _processStreet(CHECK);
     }
 
-    auto Round::fold(uint8_t playerNum) -> void {
+    auto Round::fold(uint32_t playerNum) -> void {
         auto& player = _getPlayer(playerNum);
 
         _actions.at(_currentStreet).emplace_back(FOLD, player, _getAndResetLastActionTime());
@@ -114,13 +114,13 @@ namespace GameHandler {
                 {"ranking", _toJson(_ranking)}};
     }
 
-    auto Round::_getPlayer(uint8_t playerNum) -> Player& {
+    auto Round::_getPlayer(uint32_t playerNum) -> Player& {
         if (playerNum <= 0 || playerNum > 3) { throw std::invalid_argument("The given player number is invalid"); }
 
         return _players->at(playerNum - 1);
     }
 
-    auto Round::_getPlayerStatus(uint8_t playerNum) -> PlayerStatus& {
+    auto Round::_getPlayerStatus(uint32_t playerNum) -> PlayerStatus& {
         if (playerNum <= 0 || playerNum > 3) { throw std::invalid_argument("The given player number is invalid"); }
 
         return _playersStatus->at(playerNum - 1);

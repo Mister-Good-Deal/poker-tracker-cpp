@@ -15,7 +15,7 @@ namespace GameSession {
 
     static const uint32_t TICK_RATE = 500;
 
-    enum GameStages : int8_t { STARTING = 0, IN_PROGRESS, ENDED };
+    enum GameStages : int32_t { STARTING = 0, IN_PROGRESS, ENDED };
 
     class PotNotInitializedException : public std::runtime_error {
         public:
@@ -46,7 +46,7 @@ namespace GameSession {
             auto _harvestGameInfo(const cv::Mat& screenshot) -> void;
             auto _initCurrentRound(const cv::Mat& screenshot) -> void;
             auto _trackCurrentRound(const cv::Mat& screenshot) -> void;
-            auto _determinePlayerAction(const cv::Mat& screenshot, Player& player, uint8_t playerNum) -> void;
+            auto _determinePlayerAction(const cv::Mat& screenshot, Player& player, uint32_t playerNum) -> void;
             auto _isNextActionTriggered(const cv::Mat& screenshot) -> bool;
             auto _determineGameOver() -> void;
 
@@ -60,7 +60,7 @@ namespace GameSession {
             GameStages                    _gameStage = GameStages::STARTING;
             cv::Mat                       _currentScreenshot;
             Player*                       _currentPlaying    = nullptr;
-            uint8_t                       _currentPlayingNum = 0;
+            uint32_t                      _currentPlayingNum = 0;
             cv::Mat                       _lastWaitingActionImg;
 
             auto _assignButton(const cv::Mat& screenshot) -> void;

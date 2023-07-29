@@ -11,7 +11,7 @@ namespace GameHandler {
 
     using ActionType = RoundAction::ActionType;
 
-    static const int8_t STREET_NUMBER = 5;
+    static const int32_t STREET_NUMBER = 5;
 
     struct Blinds {
         public:
@@ -27,7 +27,7 @@ namespace GameHandler {
 
     struct PlayerStatus {
         public:
-            uint8_t    playerNum        = 0;
+            uint32_t   playerNum        = 0;
             ActionType lastAction       = ActionType::NONE;
             int32_t    lastActionAmount = 0;
             int32_t    totalBet         = 0;
@@ -72,7 +72,7 @@ namespace GameHandler {
             using players_status_t   = std::array<PlayerStatus, 3>;
             using players_status_ptr = std::unique_ptr<players_status_t>;
 
-            enum Street : int8_t { PREFLOP = 0, FLOP, TURN, RIVER, SHOWDOWN };
+            enum Street : int32_t { PREFLOP = 0, FLOP, TURN, RIVER, SHOWDOWN };
 
             Round(const Blinds& blinds, std::array<Player, 3>& players);
             Round(const Round& other) = delete;
@@ -88,10 +88,10 @@ namespace GameHandler {
             [[nodiscard]] auto isInProgress() const -> bool { return !_ended; }
             [[nodiscard]] auto isInitialized() const -> bool { return _initialized; }
 
-            auto call(uint8_t playerNum, int32_t amount) -> void;
-            auto bet(uint8_t playerNum, int32_t amount) -> void;
-            auto check(uint8_t playerNum) -> void;
-            auto fold(uint8_t playerNum) -> void;
+            auto call(uint32_t playerNum, int32_t amount) -> void;
+            auto bet(uint32_t playerNum, int32_t amount) -> void;
+            auto check(uint32_t playerNum) -> void;
+            auto fold(uint32_t playerNum) -> void;
             auto showdown() -> void;
 
             [[nodiscard]] auto toJson() const -> json;
@@ -114,8 +114,8 @@ namespace GameHandler {
             [[nodiscard]] auto _hasWon() const -> bool;
             [[nodiscard]] auto _toJson(const ranking_t& ranking) const -> json;
 
-            auto _getPlayer(uint8_t playerNum) -> Player&;
-            auto _getPlayerStatus(uint8_t playerNum) -> PlayerStatus&;
+            auto _getPlayer(uint32_t playerNum) -> Player&;
+            auto _getPlayerStatus(uint32_t playerNum) -> PlayerStatus&;
             auto _getAndResetLastActionTime() -> seconds;
             auto _processStreet(const ActionType& currentPlayerAction) -> void;
             auto _determineRoundOver() -> void;

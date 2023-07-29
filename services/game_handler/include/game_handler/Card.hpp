@@ -12,18 +12,15 @@ namespace GameHandler {
     using json   = nlohmann::json;
     using Logger = Logger::Quill;
 
-    static const int8_t RANK_CARDS_NUMBER = 13;
-    static const int8_t SUIT_CARDS_NUMBER = 4;
+    static const int32_t RANK_CARDS_NUMBER = 13;
+    static const int32_t SUIT_CARDS_NUMBER = 4;
+    static const int32_t BROADWAY_NUMBER   = 5;
 
     class Card {
         public:
-            enum Rank : int8_t { TWO = 1, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING, ACE, UNDEFINED };
+            enum Rank : int32_t { TWO = 1, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING, ACE, UNDEFINED };
 
-            enum Suit : int8_t { HEART = 0, DIAMOND, CLUB, SPADE, UNKNOWN };
-
-            static constexpr int8_t BROADWAY_NUMBER = 5;
-
-            static constexpr std::array<Card::Rank, BROADWAY_NUMBER> BROADWAY = {TEN, JACK, QUEEN, KING, ACE};
+            enum Suit : int32_t { HEART = 0, DIAMOND, CLUB, SPADE, UNKNOWN };
 
             static constexpr auto rankToString(Rank rank) -> std::string {
                 switch (rank) {
@@ -123,4 +120,8 @@ namespace GameHandler {
             Rank _rank;
             Suit _suit;
     };
+
+    using enum Card::Rank;
+
+    static constexpr std::array<Card::Rank, BROADWAY_NUMBER> BROADWAY = {TEN, JACK, QUEEN, KING, ACE};
 }  // namespace GameHandler

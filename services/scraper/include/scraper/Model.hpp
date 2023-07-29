@@ -153,17 +153,17 @@ namespace Scraper {
             auto getGameTimeImg(const cv::Mat& img) -> cv::Mat { return img(getGameTimeCoord()); };
 
             // Convenient methods to get coordinates with a player number
-            auto getPlayerHandCoord(uint8_t playerNum) const -> const cv::Rect&;
-            auto getPlayerActionCoord(uint8_t playerNum) const -> const cv::Rect&;
-            auto getPlayerBetCoord(uint8_t playerNum) const -> const cv::Rect&;
-            auto getPlayerStackCoord(uint8_t playerNum) const -> const cv::Rect&;
-            auto getPlayerButtonCoord(uint8_t playerNum) const -> const cv::Rect&;
+            auto getPlayerHandCoord(uint32_t playerNum) const -> const cv::Rect&;
+            auto getPlayerActionCoord(uint32_t playerNum) const -> const cv::Rect&;
+            auto getPlayerBetCoord(uint32_t playerNum) const -> const cv::Rect&;
+            auto getPlayerStackCoord(uint32_t playerNum) const -> const cv::Rect&;
+            auto getPlayerButtonCoord(uint32_t playerNum) const -> const cv::Rect&;
             // For the image extraction
-            auto getPlayerCardsImg(const cv::Mat& img, uint8_t playerNum) -> cv::Mat { return img(getPlayerHandCoord(playerNum)); }
-            auto getPlayerActionImg(const cv::Mat& img, uint8_t playerNum) -> cv::Mat { return img(getPlayerActionCoord(playerNum)); }
-            auto getPlayerBetImg(const cv::Mat& img, uint8_t playerNum) -> cv::Mat { return img(getPlayerBetCoord(playerNum)); }
-            auto getPlayerStackImg(const cv::Mat& img, uint8_t playerNum) -> cv::Mat { return img(getPlayerStackCoord(playerNum)); }
-            auto getPlayerButtonImg(const cv::Mat& img, uint8_t playerNum) -> cv::Mat { return img(getPlayerButtonCoord(playerNum)); }
+            auto getPlayerCardsImg(const cv::Mat& img, uint32_t playerNum) -> cv::Mat { return img(getPlayerHandCoord(playerNum)); }
+            auto getPlayerActionImg(const cv::Mat& img, uint32_t playerNum) -> cv::Mat { return img(getPlayerActionCoord(playerNum)); }
+            auto getPlayerBetImg(const cv::Mat& img, uint32_t playerNum) -> cv::Mat { return img(getPlayerBetCoord(playerNum)); }
+            auto getPlayerStackImg(const cv::Mat& img, uint32_t playerNum) -> cv::Mat { return img(getPlayerStackCoord(playerNum)); }
+            auto getPlayerButtonImg(const cv::Mat& img, uint32_t playerNum) -> cv::Mat { return img(getPlayerButtonCoord(playerNum)); }
 
             auto getActiveWindows() -> windows_t;
             auto getScreenshot(uint64_t windowId) -> cv::Mat;

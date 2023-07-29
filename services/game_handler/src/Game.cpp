@@ -45,7 +45,7 @@ namespace GameHandler {
 
     auto Game::newRound(const Blinds& blinds) -> void { _rounds.emplace_back(blinds, _players); }
 
-    auto Game::getPlayer(uint8_t playerNum) -> Player& {
+    auto Game::getPlayer(uint32_t playerNum) -> Player& {
         if (playerNum <= 0 || playerNum > 3) { throw std::invalid_argument("The given player number is invalid"); }
 
         return _players.at(playerNum - 1);

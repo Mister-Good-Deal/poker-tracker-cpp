@@ -3,27 +3,27 @@
 #include <game_handler/Hand.hpp>
 
 namespace GameHandler {
-    static const int8_t BOARD_CARDS_NUMBER      = 5;
-    static const int8_t COMPARISON_CARDS_NUMBER = 5;
-    static const int8_t FLOP_CARDS_NUMBER       = 3;
-    static const int8_t STRAIGHT_SIZE           = 5;
-    static const int8_t FLUSH_SIZE              = 5;
-    static const int8_t QUADS_SIZE              = 4;
-    static const int8_t FULL_SIZE               = 5;
-    static const int8_t TRIPS_SIZE              = 3;
-    static const int8_t TWO_PAIR_SIZE           = 4;
-    static const int8_t PAIR_SIZE               = 2;
-    static const int8_t TOTAL_CARDS_SIZE        = BOARD_CARDS_NUMBER + HAND_CARDS_NUMBER;
+    static const int32_t BOARD_CARDS_NUMBER      = 5;
+    static const int32_t COMPARISON_CARDS_NUMBER = 5;
+    static const int32_t FLOP_CARDS_NUMBER       = 3;
+    static const int32_t STRAIGHT_SIZE           = 5;
+    static const int32_t FLUSH_SIZE              = 5;
+    static const int32_t QUADS_SIZE              = 4;
+    static const int32_t FULL_SIZE               = 5;
+    static const int32_t TRIPS_SIZE              = 3;
+    static const int32_t TWO_PAIR_SIZE           = 4;
+    static const int32_t PAIR_SIZE               = 2;
+    static const int32_t TOTAL_CARDS_SIZE        = BOARD_CARDS_NUMBER + HAND_CARDS_NUMBER;
 
-    enum class HandRank : int8_t { HIGH_CARD = 0, PAIR, TWO_PAIR, TRIPS, STRAIGHT, FLUSH, FULL, QUADS, STRAIGHT_FLUSH };
+    enum class HandRank : int32_t { HIGH_CARD = 0, PAIR, TWO_PAIR, TRIPS, STRAIGHT, FLUSH, FULL, QUADS, STRAIGHT_FLUSH };
 
     class Board {
         public:
             using board_t            = std::array<Card, BOARD_CARDS_NUMBER>;
             using best_hand_t        = std::array<Card, COMPARISON_CARDS_NUMBER>;
             using all_cards_t        = std::array<Card, TOTAL_CARDS_SIZE>;
-            using rank_frequencies_t = std::array<int8_t, RANK_CARDS_NUMBER + 1>;  // +1 for the ace in the straight
-            using suit_frequencies_t = std::array<int8_t, SUIT_CARDS_NUMBER>;
+            using rank_frequencies_t = std::array<int32_t, RANK_CARDS_NUMBER + 1>;  // +1 for the ace in the straight
+            using suit_frequencies_t = std::array<int32_t, SUIT_CARDS_NUMBER>;
             using combo_t            = std::vector<Card>;
 
             Board()                   = default;
@@ -77,7 +77,7 @@ namespace GameHandler {
             bool               _quads             = false;
             bool               _straightFlush     = false;
 
-            auto _countPossibleStraights(int8_t otherCards, std::optional<rank_frequencies_t> frequencies = std::nullopt) -> int8_t;
+            auto _countPossibleStraights(int32_t otherCards, std::optional<rank_frequencies_t> frequencies = std::nullopt) -> int32_t;
             auto _computeRankFrequencies(std::optional<Hand> hand = std::nullopt) -> rank_frequencies_t;
             auto _computeSuitFrequencies(std::optional<Hand> hand = std::nullopt) -> suit_frequencies_t;
 
