@@ -47,14 +47,14 @@ namespace GameHandler {
     }
 
     auto Board::setTurn(const Card& card) -> void {
-        constexpr int8_t TURN_CARD_INDEX = 3;
+        constexpr int32_t TURN_CARD_INDEX = 3;
 
         _cards[TURN_CARD_INDEX] = card;
 
         _updateStats();
     }
     auto Board::setRiver(const Card& card) -> void {
-        constexpr int8_t RIVER_CARD_INDEX = 4;
+        constexpr int32_t RIVER_CARD_INDEX = 4;
 
         _cards[RIVER_CARD_INDEX] = card;
 
@@ -184,16 +184,16 @@ namespace GameHandler {
     }
 
     // @todo check std::views::adjacent_transform compilers implementation status
-    auto Board::_countPossibleStraights(int8_t additionalCards, std::optional<rank_frequencies_t> rankFrequenciesOpt) -> int8_t {
-        int8_t              possibleStraights = 0;
+    auto Board::_countPossibleStraights(int32_t additionalCards, std::optional<rank_frequencies_t> rankFrequenciesOpt) -> int32_t {
+        int32_t             possibleStraights = 0;
         rank_frequencies_t& rankFrequencies   = rankFrequenciesOpt == std::nullopt ? _rankFrequencies : rankFrequenciesOpt.value();
 
         // Special Ace case
         rankFrequencies[0] = rankFrequencies[ACE];
 
-        const int8_t WINDOW_SIZE = 5;
+        const int32_t WINDOW_SIZE = 5;
 
-        for (int8_t i = 0; i < static_cast<int8_t>(rankFrequencies.size() - WINDOW_SIZE + 1); ++i) {
+        for (int32_t i = 0; i < static_cast<int32_t>(rankFrequencies.size() - WINDOW_SIZE + 1); ++i) {
             auto window = counted(rankFrequencies.begin() + i, WINDOW_SIZE);
 
             if (count_if(window.begin(), window.end(), [](const auto& value) { return value >= 1; })
@@ -239,14 +239,14 @@ namespace GameHandler {
     auto Board::_extractComboFromStraightOrFlush(const all_cards_t& cards, HandRank rank, rank_frequencies_t& rankFrequencies,
                                                  suit_frequencies_t& suitFrequencies) -> combo_t {
         std::vector<Card> combo;
-        int8_t            index = 0;
+        int32_t           index = 0;
         Card::Suit        suit  = Card::Suit::UNKNOWN;
 
         // Special Ace case
         rankFrequencies[0] = rankFrequencies[ACE];
 
         auto isRankEndIndex = [](const auto& window) {
-            return count_if(window.begin(), window.end(), [](const auto& value) { return value >= 1; }) >= STRAIGHT_SIZE;
+            return count_if(window.begin(), window.end(), [](const auto& value) { return value >= 1; }) == STRAIGHT_SIZE;
         };
 
         auto flushSuit = [](const suit_frequencies_t& cards) {
@@ -254,14 +254,19 @@ namespace GameHandler {
                 *std::find_if(cards.begin(), cards.end(), [](const auto& value) { return value >= FLUSH_SIZE; }));
         };
 
-        auto window = counted(rankFrequencies.end() - index - STRAIGHT_SIZE, STRAIGHT_SIZE);
+        auto inStraightRange = [&](const Card& card, int32_t index) {
+            return card.getRank() >= rankFrequencies.size() - index
+                && card.getRank() <= rankFrequencies.size() - index + STRAIGHT_SIZE;
+        };
+
+        auto window = counted(rankFrequencies.end() - index, STRAIGHT_SIZE);
 
         switch (rank) {
             case STRAIGHT:
-                while (!isRankEndIndex(window)) { window = counted(rankFrequencies.end() - index-- - STRAIGHT_SIZE, STRAIGHT_SIZE); }
+                while (!isRankEndIndex(window)) { window = counted(rankFrequencies.end() - ++index, STRAIGHT_SIZE); }
 
                 for (const auto& card : cards) {
-                    if (card.getRank() <= index || card.getRank() >= index - STRAIGHT_SIZE) { combo.push_back(card); }
+                    if (inStraightRange(card, index)) { combo.push_back(card); }
                 }
                 break;
             case FLUSH:
@@ -272,13 +277,11 @@ namespace GameHandler {
                 }
                 break;
             case STRAIGHT_FLUSH:
-                while (!isRankEndIndex(window)) { window = counted(rankFrequencies.end() - index-- - STRAIGHT_SIZE, STRAIGHT_SIZE); }
+                while (!isRankEndIndex(window)) { window = counted(rankFrequencies.end() - ++index, STRAIGHT_SIZE); }
                 suit = flushSuit(suitFrequencies);
 
                 for (const auto& card : cards) {
-                    if ((card.getRank() <= index || card.getRank() >= index - STRAIGHT_SIZE) && card.getSuit() == suit) {
-                        combo.push_back(card);
-                    }
+                    if (inStraightRange(card, index) && card.getSuit() == suit) { combo.push_back(card); }
                 }
                 break;
             default: throw std::invalid_argument("The given hand rank is invalid");

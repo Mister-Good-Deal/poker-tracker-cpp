@@ -254,6 +254,27 @@ TEST(BoardTest, tripsHandComparisonShouldBeCorrect) {
     EXPECT_EQ(board_2.compareHands({card("2C"), card("8D")}, {card("8C"), card("QC")}), -1);  // Trips vs straight flush
 }
 
+TEST(BoardTest, straightHandComparisonShouldBeCorrect) {
+    Board board_1({card("2S"), card("5C"), card("9H"), card("TC"), card("JC")});
+    Board board_2({card("2S"), card("2H"), card("9C"), card("TC"), card("JC")});
+
+    // Winner hands
+    EXPECT_EQ(board_1.compareHands({card("8C"), card("QD")}, {card("4H"), card("6D")}), 1);  // Straight vs high card
+    EXPECT_EQ(board_1.compareHands({card("8C"), card("QD")}, {card("QH"), card("QC")}), 1);  // Straight vs pair
+    EXPECT_EQ(board_1.compareHands({card("8C"), card("QD")}, {card("5S"), card("9C")}), 1);  // Straight vs two pairs
+    EXPECT_EQ(board_1.compareHands({card("8C"), card("QD")}, {card("9C"), card("9D")}), 1);  // Straight vs trips
+    EXPECT_EQ(board_1.compareHands({card("QC"), card("KD")}, {card("8C"), card("QS")}), 1);  // Straight vs straight inferior
+    // Equal hands
+    EXPECT_EQ(board_1.compareHands({card("QC"), card("KD")}, {card("QD"), card("KS")}), 0);  // Straight vs straight
+    EXPECT_EQ(board_1.compareHands({card("8C"), card("QD")}, {card("8D"), card("QS")}), 0);  // Straight vs straight
+    // Loser hands
+    EXPECT_EQ(board_1.compareHands({card("8C"), card("QS")}, {card("QC"), card("KD")}), -1);  // Straight vs straight superior
+    EXPECT_EQ(board_2.compareHands({card("QC"), card("KD")}, {card("4C"), card("8C")}), -1);  // Straight vs flush
+    EXPECT_EQ(board_2.compareHands({card("QC"), card("KD")}, {card("2D"), card("9D")}), -1);  // Straight vs full
+    EXPECT_EQ(board_2.compareHands({card("QC"), card("KD")}, {card("2C"), card("2D")}), -1);  // Straight vs quads
+    EXPECT_EQ(board_2.compareHands({card("QD"), card("KD")}, {card("8C"), card("QC")}), -1);  // Straight vs straight flush
+}
+
 TEST(BoardTest, jsonRepresentationShouldBeCorrect) {
     // language=json
     auto expectedJson = R"(
