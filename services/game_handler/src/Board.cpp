@@ -1,9 +1,14 @@
 #include "game_handler/Board.hpp"
 
 namespace GameHandler {
+    using std::ranges::all_of;
+    using std::ranges::any_of;
     using std::ranges::copy;
     using std::ranges::count;
     using std::ranges::count_if;
+    using std::ranges::distance;
+    using std::ranges::find;
+    using std::ranges::find_if;
     using std::ranges::for_each;
     using std::ranges::max_element;
     using std::ranges::sort;
@@ -41,7 +46,7 @@ namespace GameHandler {
     }
 
     auto Board::setFlop(const std::array<Card, FLOP_CARDS_NUMBER>& cards) -> void {
-        copy(cards.begin(), cards.end(), _cards.begin());
+        copy(cards, _cards.begin());
 
         _updateStats();
     }
@@ -66,24 +71,30 @@ namespace GameHandler {
     }
 
     auto Board::getHandRank(const Hand& hand) -> HandRank {
-        HandRank rank            = HIGH_CARD;
-        auto     rankFrequencies = _computeRankFrequencies(hand);
-        auto     suitFrequencies = _computeSuitFrequencies(hand);
-        bool     straight        = _straight || _countPossibleStraights(0, rankFrequencies) >= 1;
+        HandRank rank     = HIGH_CARD;
+        auto     rankF    = _computeRankFrequencies(hand);
+        auto     suitF    = _computeSuitFrequencies(hand);
+        bool     straight = _straight || _countPossibleStraights(0, rankF) >= 1;
 
-        if (_pair || count(rankFrequencies, 2) == 1) { rank = PAIR; }
-        if (_twoPair || count(rankFrequencies, 2) == 2) { rank = TWO_PAIR; }
-        if (_trips || count(rankFrequencies, 3) == 1) { rank = TRIPS; }
+        // Combine board cards with hand cards
+        all_cards_t cards;
+        copy(_cards, cards.begin());
+        const auto& handCards = hand.getCards();
+        copy(handCards, cards.begin() + BOARD_CARDS_NUMBER);
+
+        if (_pair || count(rankF, 2) == 1) { rank = PAIR; }
+        if (_twoPair || count(rankF, 2) == 2) { rank = TWO_PAIR; }
+        if (_trips || count(rankF, 3) == 1) { rank = TRIPS; }
         if (straight) { rank = STRAIGHT; }
-        if (_flush || count(suitFrequencies, FLUSH_SIZE) >= 1) { rank = FLUSH; }
-        if (_full || (rank == TRIPS && count(rankFrequencies, 2) == 1)) { rank = FULL; }
-        if (_quads || count(rankFrequencies, 4) == 1) { rank = QUADS; }
-        if (_straightFlush || (rank == FLUSH && straight)) { rank = STRAIGHT_FLUSH; }
+        if (_flush || any_of(suitF, [](const auto& value) { return value >= FLUSH_SIZE; })) { rank = FLUSH; }
+        if (_full || (count(rankF, 3) == 2 || (count(rankF, 3) == 1 && count(rankF, 2) >= 1))) { rank = FULL; }
+        if (_quads || count(rankF, 4) == 1) { rank = QUADS; }
+        if (_straightFlush || (rank == FLUSH && straight && _isStraightFlush(cards, rankF, suitF))) { rank = STRAIGHT_FLUSH; }
 
         return rank;
     }
 
-    auto GameHandler::Board::compareHands(const Hand& hand1, const Hand& hand2) -> int {
+    auto Board::compareHands(const Hand& hand1, const Hand& hand2) -> int {
         if (!hand1.isSet() && !hand2.isSet()) { throw std::invalid_argument("Both hands are not set"); }
         if (!hand1.isSet()) { return -1; }
         if (!hand2.isSet()) { return 1; }
@@ -141,17 +152,17 @@ namespace GameHandler {
                   {"straightFlush", _straightFlush}}}};
     }
 
-    auto Board::_computeRankFrequencies(std::optional<Hand> hand) -> rank_frequencies_t {
-        rank_frequencies_t frequences{};
+    auto Board::_computeRankFrequencies(std::optional<Hand> hand) -> rank_f_t {
+        rank_f_t frequences{};
 
-        std::array<Card, BOARD_CARDS_NUMBER + HAND_CARDS_NUMBER> cards;
+        all_cards_t cards;
 
-        copy(_cards.begin(), _cards.end(), cards.begin());
+        copy(_cards, cards.begin());
 
         if (hand != std::nullopt) {
             const auto& handCards = hand.value().getCards();
 
-            copy(handCards.begin(), handCards.end(), cards.begin() + BOARD_CARDS_NUMBER);
+            copy(handCards, cards.begin() + BOARD_CARDS_NUMBER);
         }
 
         // Construct cards rank frequences sequence
@@ -162,17 +173,17 @@ namespace GameHandler {
         return frequences;
     }
 
-    auto Board::_computeSuitFrequencies(std::optional<Hand> hand) -> suit_frequencies_t {
-        suit_frequencies_t frequences{};
+    auto Board::_computeSuitFrequencies(std::optional<Hand> hand) -> suit_f_t {
+        suit_f_t frequences{};
 
         std::array<Card, BOARD_CARDS_NUMBER + HAND_CARDS_NUMBER> cards;
 
-        copy(_cards.begin(), _cards.end(), cards.begin());
+        copy(_cards, cards.begin());
 
         if (hand != std::nullopt) {
             const auto& handCards = hand.value().getCards();
 
-            copy(handCards.begin(), handCards.end(), cards.begin() + BOARD_CARDS_NUMBER);
+            copy(handCards, cards.begin() + BOARD_CARDS_NUMBER);
         }
 
         // Construct cards suit frequences sequence
@@ -184,9 +195,9 @@ namespace GameHandler {
     }
 
     // @todo check std::views::adjacent_transform compilers implementation status
-    auto Board::_countPossibleStraights(int32_t additionalCards, std::optional<rank_frequencies_t> rankFrequenciesOpt) -> int32_t {
-        int32_t             possibleStraights = 0;
-        rank_frequencies_t& rankFrequencies   = rankFrequenciesOpt == std::nullopt ? _rankFrequencies : rankFrequenciesOpt.value();
+    auto Board::_countPossibleStraights(int32_t additionalCards, std::optional<rank_f_t> rankFrequenciesOpt) -> int32_t {
+        int32_t   possibleStraights = 0;
+        rank_f_t& rankFrequencies   = rankFrequenciesOpt == std::nullopt ? _rankFrequencies : rankFrequenciesOpt.value();
 
         // Special Ace case
         rankFrequencies[0] = rankFrequencies[ACE];
@@ -196,8 +207,7 @@ namespace GameHandler {
         for (int32_t i = 0; i < static_cast<int32_t>(rankFrequencies.size() - WINDOW_SIZE + 1); ++i) {
             auto window = counted(rankFrequencies.begin() + i, WINDOW_SIZE);
 
-            if (count_if(window.begin(), window.end(), [](const auto& value) { return value >= 1; })
-                >= STRAIGHT_SIZE - additionalCards) {
+            if (count_if(window, [](const auto& value) { return value >= 1; }) >= STRAIGHT_SIZE - additionalCards) {
                 possibleStraights++;
             }
         }
@@ -236,52 +246,88 @@ namespace GameHandler {
         _straightFlush     = _straight && _flush;
     }
 
-    auto Board::_extractComboFromStraightOrFlush(const all_cards_t& cards, HandRank rank, rank_frequencies_t& rankFrequencies,
-                                                 suit_frequencies_t& suitFrequencies) -> combo_t {
-        std::vector<Card> combo;
-        int32_t           index = 0;
-        Card::Suit        suit  = Card::Suit::UNKNOWN;
+    auto Board::_isStraightFlush(const all_cards_t& cards, rank_f_t& rankF, suit_f_t& suitF) -> bool {
+        auto suit = static_cast<Card::Suit>(distance(suitF.begin(), find_if(suitF, [](int32_t val) { return val >= STRAIGHT_SIZE; })));
+
+        auto extractCards = [&](int32_t index, std::vector<Card>& extractedCards) {
+            for (const auto& card : cards) {
+                if (card.getRank() == index) { extractedCards.emplace_back(card); }
+            }
+        };
 
         // Special Ace case
-        rankFrequencies[0] = rankFrequencies[ACE];
+        rankF[0] = rankF[ACE];
+
+        for (int32_t i = 0; i < static_cast<int32_t>(rankF.size() - STRAIGHT_SIZE + 1); ++i) {
+            auto window = counted(rankF.begin() + i, STRAIGHT_SIZE);
+
+            if (count_if(window, [](const auto& value) { return value >= 1; }) >= STRAIGHT_SIZE) {
+                bool    isStraightFlush = true;
+                int32_t j               = 0;
+
+                while (isStraightFlush && j < STRAIGHT_SIZE) {
+                    std::vector<Card> straightCards;
+
+                    extractCards(i + j++, straightCards);
+
+                    if (all_of(straightCards, [&](const auto& card) { return card.getSuit() != suit; })) { isStraightFlush = false; }
+                }
+
+                if (isStraightFlush) { return true; }
+            }
+        }
+
+        // Reset special Ace case
+        rankF[0] = 0;
+
+        return false;
+    }
+
+    auto Board::_extractComboFromStraightOrFlush(const all_cards_t& cards, HandRank rank, rank_f_t& rankF, suit_f_t& suitF)
+        -> combo_t {
+        std::vector<Card> combo;
+        int32_t           index               = STRAIGHT_SIZE;
+        auto              rankFrequenciesSize = static_cast<int32_t>(rankF.size());
+        Card::Suit        suit                = Card::Suit::UNKNOWN;
+
+        // Special Ace case
+        rankF[0] = rankF[ACE];
 
         auto isRankEndIndex = [](const auto& window) {
-            return count_if(window.begin(), window.end(), [](const auto& value) { return value >= 1; }) == STRAIGHT_SIZE;
+            return count_if(window, [](const auto& value) { return value >= 1; }) == STRAIGHT_SIZE;
         };
 
-        auto flushSuit = [](const suit_frequencies_t& cards) {
-            return static_cast<Card::Suit>(
-                *std::find_if(cards.begin(), cards.end(), [](const auto& value) { return value >= FLUSH_SIZE; }));
+        auto flushSuitIndex = [](const suit_f_t& frequencies) {
+            return distance(frequencies.begin(), find_if(frequencies, [](int32_t val) { return val >= STRAIGHT_SIZE; }));
         };
 
-        auto inStraightRange = [&](const Card& card, int32_t index) {
-            return card.getRank() >= rankFrequencies.size() - index
-                && card.getRank() <= rankFrequencies.size() - index + STRAIGHT_SIZE;
+        auto inStraightRange = [&](const Card& card, int32_t startRank) {
+            return card.getRank() >= startRank && card.getRank() <= startRank + STRAIGHT_SIZE;
         };
 
-        auto window = counted(rankFrequencies.end() - index, STRAIGHT_SIZE);
+        auto window = counted(rankF.end() - index, STRAIGHT_SIZE);
 
         switch (rank) {
             case STRAIGHT:
-                while (!isRankEndIndex(window)) { window = counted(rankFrequencies.end() - ++index, STRAIGHT_SIZE); }
+                while (!isRankEndIndex(window)) { window = counted(rankF.end() - ++index, STRAIGHT_SIZE); }
 
                 for (const auto& card : cards) {
-                    if (inStraightRange(card, index)) { combo.push_back(card); }
+                    if (inStraightRange(card, rankFrequenciesSize - index)) { combo.push_back(card); }
                 }
                 break;
             case FLUSH:
-                suit = flushSuit(suitFrequencies);
+                suit = static_cast<Card::Suit>(flushSuitIndex(suitF));
 
                 for (const auto& card : cards) {
                     if (card.getSuit() == suit) { combo.push_back(card); }
                 }
                 break;
             case STRAIGHT_FLUSH:
-                while (!isRankEndIndex(window)) { window = counted(rankFrequencies.end() - ++index, STRAIGHT_SIZE); }
-                suit = flushSuit(suitFrequencies);
+                while (!isRankEndIndex(window)) { window = counted(rankF.end() - ++index, STRAIGHT_SIZE); }
+                suit = static_cast<Card::Suit>(flushSuitIndex(suitF));
 
                 for (const auto& card : cards) {
-                    if (inStraightRange(card, index) && card.getSuit() == suit) { combo.push_back(card); }
+                    if (inStraightRange(card, rankFrequenciesSize - index) && card.getSuit() == suit) { combo.push_back(card); }
                 }
                 break;
             default: throw std::invalid_argument("The given hand rank is invalid");
@@ -290,8 +336,8 @@ namespace GameHandler {
         return combo;
     }
 
-    auto Board::_extractComboFromPairsLike(const all_cards_t& cards, HandRank rank, rank_frequencies_t& rankFrequencies) -> combo_t {
-        std::vector<Card> combo;
+    auto Board::_extractComboFromPairsLike(const all_cards_t& cards, HandRank rank, rank_f_t& rankFrequencies) -> combo_t {
+        combo_t combo;
 
         auto extractCombo = [&](int value) {
             for (const auto& card : cards) {
@@ -311,8 +357,8 @@ namespace GameHandler {
                 _trimCombo(TRIPS, combo);
                 break;
             case FULL:
-                extractCombo(PAIR_SIZE);
                 extractCombo(TRIPS_SIZE);
+                extractCombo(PAIR_SIZE);
                 _trimCombo(FULL, combo);
                 break;
             case QUADS: extractCombo(QUADS_SIZE); break;
@@ -334,8 +380,7 @@ namespace GameHandler {
         }
     }
 
-    auto Board::_extractCombo(const all_cards_t& cards, HandRank rank, rank_frequencies_t& rankF, suit_frequencies_t& suitF)
-        -> combo_t {
+    auto Board::_extractCombo(const all_cards_t& cards, HandRank rank, rank_f_t& rankF, suit_f_t& suitF) -> combo_t {
         switch (rank) {
             case STRAIGHT:
             case FLUSH:
@@ -351,24 +396,30 @@ namespace GameHandler {
     }
 
     // Find the highest cards that are not in the combo
-    auto Board::_extractHigherCards(all_cards_t& cards, const combo_t& combo) -> best_hand_t {
+    auto Board::_extractHigherCards(all_cards_t& cards, HandRank rank, const combo_t& combo) -> best_hand_t {
         best_hand_t higherCards;
         auto        currentSize      = combo.size();
         int         highestCardIndex = 0;
 
         // Fill the higher cards array with the combo cards
-        copy(combo.begin(), combo.end(), higherCards.begin());
-        // Sort the cards by rank in descending order
+        copy(combo, higherCards.begin());
+        // Sort the all the cards by rank in descending order
         sort(cards, [](const Card& A, const Card& B) { return A.getRank() > B.getRank(); });
-
+        // Sort the higher cards by rank in descending order for needed hand ranks
+        if (rank == TWO_PAIR || rank == STRAIGHT || rank == FLUSH || rank == FULL || rank == STRAIGHT_FLUSH) {
+            sort(higherCards, [](const Card& A, const Card& B) { return A.getRank() > B.getRank(); });
+            // Put trips cards in the first 3 positions
+            if (rank == FULL && count(combo, higherCards.front()) != TRIPS_SIZE) {
+                std::swap(higherCards[0], higherCards[4]);
+                std::swap(higherCards[1], higherCards[3]);
+            }
+        }
+        // Add additional higher rank cards to the higher cards array
         while (currentSize < COMPARISON_CARDS_NUMBER) {
             auto& highestCard = cards[highestCardIndex++];
             // If the card is not in the combo, add it to the higher cards array
-            if (std::ranges::find(combo, highestCard) == combo.end()) { higherCards[currentSize++] = highestCard; }
+            if (find(combo, highestCard) == combo.end()) { higherCards[currentSize++] = highestCard; }
         }
-
-        // Sort the higher cards by rank in descending order
-        sort(higherCards, [](const Card& A, const Card& B) { return A.getRank() > B.getRank(); });
 
         return higherCards;
     }
@@ -381,22 +432,22 @@ namespace GameHandler {
         auto              suitFrequencies = _computeSuitFrequencies(hand);
         bool              straight        = _countPossibleStraights(0, rankFrequencies) >= 1;
 
+        // Combine board cards with hand cards
+        all_cards_t cards;
+        copy(_cards, cards.begin());
+        const auto& handCards = hand.getCards();
+        copy(handCards, cards.begin() + BOARD_CARDS_NUMBER);
+
         // Determine the hand rank
         if (count(rankFrequencies, 2) == 1) { rank = PAIR; }
         if (count(rankFrequencies, 2) >= 2) { rank = TWO_PAIR; }
         if (count(rankFrequencies, 3) == 1) { rank = TRIPS; }
         if (straight) { rank = STRAIGHT; }
-        if (count(suitFrequencies, FLUSH_SIZE) >= 1) { rank = FLUSH; }
+        if (any_of(suitFrequencies, [](const auto& value) { return value >= FLUSH_SIZE; })) { rank = FLUSH; }
         if (count(rankFrequencies, 3) == 2 || (count(rankFrequencies, 3) == 1 && count(rankFrequencies, 2) >= 1)) { rank = FULL; }
         if (count(rankFrequencies, 4) == 1) { rank = QUADS; }
-        if (rank == FLUSH && straight) { rank = STRAIGHT_FLUSH; }
+        if (rank == FLUSH && straight && _isStraightFlush(cards, rankFrequencies, suitFrequencies)) { rank = STRAIGHT_FLUSH; }
 
-        // Combine board cards with hand cards
-        all_cards_t cards;
-        copy(_cards.begin(), _cards.end(), cards.begin());
-        const auto& handCards = hand.getCards();
-        copy(handCards.begin(), handCards.end(), cards.begin() + BOARD_CARDS_NUMBER);
-
-        return {rank, _extractHigherCards(cards, _extractCombo(cards, rank, rankFrequencies, suitFrequencies))};
+        return {rank, _extractHigherCards(cards, rank, _extractCombo(cards, rank, rankFrequencies, suitFrequencies))};
     }
 }  // namespace GameHandler
