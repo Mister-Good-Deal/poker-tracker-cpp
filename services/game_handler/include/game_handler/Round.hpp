@@ -27,42 +27,53 @@ namespace GameHandler {
 
     struct PlayerStatus {
         public:
-            uint32_t   playerNum        = 0;
-            ActionType lastAction       = ActionType::NONE;
-            int32_t    lastActionAmount = 0;
-            int32_t    totalBet         = 0;
-            int32_t    initialStack     = 0;
-            bool       inRound          = true;
-            bool       isAllIn          = false;
+            uint32_t   playerNum      = 0;
+            ActionType lastAction     = ActionType::NONE;
+            int32_t    totalBet       = 0;
+            int32_t    totalStreetBet = 0;
+            int32_t    maxWinnable    = 0;
+            int32_t    won            = 0;
+            int32_t    initialStack   = 0;
+            bool       inRound        = true;
+            bool       isAllIn        = false;
 
             explicit PlayerStatus(const Player& player) :
                 playerNum(player.getNumber()), initialStack(player.getStack()), inRound(!player.isEliminated()){};
 
+            auto payBlind(int32_t amount) -> void {
+                // @todo what if player cannot pay the blind?
+                auto payAmount = std::min(amount, initialStack);
+
+                isAllIn = payAmount == initialStack;
+                totalBet += payAmount;
+                totalStreetBet += payAmount;
+            }
+
             auto hasBet(int32_t amount) -> void {
+                isAllIn = (amount + totalBet) == initialStack;
                 totalBet += amount;
-                lastActionAmount = amount;
-                isAllIn          = (amount + totalBet) == initialStack;
-                lastAction       = ActionType::BET;
+                totalStreetBet += amount;
+                lastAction = ActionType::BET;
             }
 
             auto hasCalled(int32_t amount) -> void {
+                isAllIn = (amount + totalBet) == initialStack;
                 totalBet += amount;
-                lastActionAmount = amount;
-                isAllIn          = (amount + totalBet) == initialStack;
-                lastAction       = ActionType::CALL;
+                totalStreetBet += amount;
+                lastAction = ActionType::CALL;
             }
 
-            auto hasChecked() -> void {
-                lastActionAmount = 0;
-                lastAction       = ActionType::CHECK;
-            }
+            auto hasChecked() -> void { lastAction = ActionType::CHECK; }
 
             auto hasFolded() -> void {
                 inRound    = false;
                 lastAction = ActionType::FOLD;
             }
 
-            //@todo: check if a player is all in at round start
+            auto streetReset() -> void {
+                totalStreetBet = 0;
+                lastAction     = ActionType::NONE;
+            }
     };
 
     class Round {
@@ -103,6 +114,8 @@ namespace GameHandler {
             Hand                     _hand;
             Blinds                   _blinds         = Blinds(0, 0);
             int32_t                  _pot            = 0;
+            int32_t                  _streePot       = 0;
+            int32_t                  _frozenPot      = 0;
             Street                   _currentStreet  = Street::PREFLOP;
             time_point<system_clock> _lastActionTime = system_clock::now();
             std::array<Player, 3>*   _players        = nullptr;  // The Game class owns the players, so we use a pointer here
@@ -113,13 +126,19 @@ namespace GameHandler {
 
             [[nodiscard]] auto _hasWon() const -> bool;
             [[nodiscard]] auto _toJson(const ranking_t& ranking) const -> json;
+            [[nodiscard]] auto _getStacksVariation() const -> json;
+            [[nodiscard]] auto _getPlayerStatus(uint32_t playerNum) const -> PlayerStatus;
 
             auto _getPlayer(uint32_t playerNum) -> Player&;
+            auto _getNextPlayerNum(uint32_t playerNum) -> uint32_t;
             auto _getPlayerStatus(uint32_t playerNum) -> PlayerStatus&;
             auto _getAndResetLastActionTime() -> seconds;
-            auto _processStreet(const ActionType& currentPlayerAction) -> void;
+            auto _determineStreetOver(const ActionType& currentPlayerAction) -> void;
             auto _determineRoundOver() -> void;
             auto _processRanking() -> void;
+            auto _updateStacks() -> void;
+            auto _payBlinds() -> void;
+            auto _updatePlayersMaxWinnable() -> void;
             auto _endStreet() -> void;
     };
 }  // namespace GameHandler

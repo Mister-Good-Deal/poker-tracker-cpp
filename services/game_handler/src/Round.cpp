@@ -7,6 +7,7 @@
 namespace GameHandler {
     using std::chrono::duration_cast;
     using std::chrono::seconds;
+    using std::ranges::any_of;
     using std::ranges::find_if;
     using std::ranges::for_each;
     using std::ranges::sort;
@@ -17,7 +18,9 @@ namespace GameHandler {
     Round::Round(const Blinds& blinds, std::array<Player, 3>& players) :
         _blinds(blinds), _players(&players), _lastActionTime(system_clock::now()), _hand((players)[0].getHand()),
         _playersStatus(std::make_unique<players_status_t>(
-            players_status_t{{PlayerStatus{players[0]}, PlayerStatus{players[1]}, PlayerStatus{players[2]}}})) {}
+            players_status_t{{PlayerStatus{players[0]}, PlayerStatus{players[1]}, PlayerStatus{players[2]}}})) {
+        _payBlinds();
+    }
 
     auto Round::operator=(Round&& other) noexcept -> Round& {
         if (this != &other) {
@@ -44,7 +47,8 @@ namespace GameHandler {
         _actions.at(_currentStreet).emplace_back(CALL, player, _getAndResetLastActionTime(), amount);
         _getPlayerStatus(playerNum).hasCalled(amount);
         _pot += amount;
-        _processStreet(CALL);
+        _streePot += amount;
+        _determineStreetOver(CALL);
     }
 
     auto Round::bet(uint32_t playerNum, int32_t amount) -> void {
@@ -54,6 +58,7 @@ namespace GameHandler {
         _getPlayerStatus(playerNum).hasBet(amount);
         _lastAction = BET;
         _pot += amount;
+        _streePot += amount;
     }
 
     auto Round::check(uint32_t playerNum) -> void {
@@ -61,7 +66,7 @@ namespace GameHandler {
 
         _actions.at(_currentStreet).emplace_back(CHECK, player, _getAndResetLastActionTime());
         _getPlayerStatus(playerNum).hasChecked();
-        _processStreet(CHECK);
+        _determineStreetOver(CHECK);
     }
 
     auto Round::fold(uint32_t playerNum) -> void {
@@ -70,26 +75,18 @@ namespace GameHandler {
         _actions.at(_currentStreet).emplace_back(FOLD, player, _getAndResetLastActionTime());
         _getPlayerStatus(playerNum).hasFolded();
         _ranking.emplace(std::vector<Player>{player});
-        _processStreet(FOLD);
+        _determineStreetOver(FOLD);
         _determineRoundOver();
     }
 
     auto Round::showdown() -> void {
-        // @todo Implement showdown
-        Hand bestHand = Hand();
+        if (_currentStreet != SHOWDOWN) { throw std::runtime_error("The round is not over yet"); }
 
-        //        for_each(_playersStatus.begin(), _playersStatus.end(), [&](const PlayerStatus& playerStatus) {
-        //            if (playerStatus.inRound) { hands[playerStatus.playerNum] = _getPlayer(playerStatus.playerNum).getHand(); }
-        //        });
-        //
-        //        auto haveHandSet  = [&](const auto& pair) { return pair.second.isSet(); };
-        //        auto winnerFinder = [&](const auto& pair) { return pair.second > hands.at(_winner->getNumber()); };
-        //
-        //        if (!std::all_of(hands.begin(), hands.end(), haveHandSet)) { throw std::runtime_error("Not all players have set their
-        //        hand"); }
-        //
-        //        _winner = &_getPlayer(std::max_element(hands.begin(), hands.end(), winnerFinder)->first);
-        //        _ended  = true;
+        _endStreet();
+        // @todo put this in a function
+        _processRanking();
+        _updateStacks();
+        _ended = true;
     }
 
     auto Round::toJson() const -> json {
@@ -99,18 +96,21 @@ namespace GameHandler {
         auto flopActions    = json::array();
         auto turnActions    = json::array();
         auto riverActions   = json::array();
+        auto hands          = json::object();
 
         for_each(_actions[PREFLOP], [&](const RoundAction& action) { preFlopActions.emplace_back(action.toJson()); });
         for_each(_actions[FLOP], [&](const RoundAction& action) { flopActions.emplace_back(action.toJson()); });
         for_each(_actions[TURN], [&](const RoundAction& action) { turnActions.emplace_back(action.toJson()); });
         for_each(_actions[RIVER], [&](const RoundAction& action) { riverActions.emplace_back(action.toJson()); });
+        for_each(*_players, [&](const Player& player) { hands.emplace(player.getName(), player.getHand().toJson()); });
 
         return {{"actions", {{"pre_flop", preFlopActions}, {"flop", flopActions}, {"turn", turnActions}, {"river", riverActions}}},
                 {"board", _board.toJson()},
-                {"hand", _hand.toJson()},
+                {"hands", hands},
                 {"blinds", {{"small", _blinds.SB()}, {"big", _blinds.BB()}}},
                 {"pot", _pot},
                 {"won", _hasWon()},
+                {"stacks", _getStacksVariation()},
                 {"ranking", _toJson(_ranking)}};
     }
 
@@ -120,7 +120,27 @@ namespace GameHandler {
         return _players->at(playerNum - 1);
     }
 
+    auto Round::_getNextPlayerNum(uint32_t playerNum) -> uint32_t {
+        if (playerNum <= 0 || playerNum > 3) { throw std::invalid_argument("The given player number is invalid"); }
+
+        uint32_t nextPlayerNum = (playerNum % 3) + 1;
+
+        while (nextPlayerNum != playerNum) {
+            if (_getPlayerStatus(nextPlayerNum).inRound) { return nextPlayerNum; }
+
+            nextPlayerNum = (nextPlayerNum % 3) + 1;
+        }
+
+        throw std::runtime_error("No next player found");
+    }
+
     auto Round::_getPlayerStatus(uint32_t playerNum) -> PlayerStatus& {
+        if (playerNum <= 0 || playerNum > 3) { throw std::invalid_argument("The given player number is invalid"); }
+
+        return _playersStatus->at(playerNum - 1);
+    }
+
+    auto Round::_getPlayerStatus(uint32_t playerNum) const -> PlayerStatus {
         if (playerNum <= 0 || playerNum > 3) { throw std::invalid_argument("The given player number is invalid"); }
 
         return _playersStatus->at(playerNum - 1);
@@ -145,9 +165,9 @@ namespace GameHandler {
      * @param currentPlayerAction The action taken by the current player.
      * @return void
      */
-    auto Round::_processStreet(const ActionType& currentPlayerAction) -> void {
+    auto Round::_determineStreetOver(const ActionType& currentPlayerAction) -> void {
         auto IsInRound  = [](const PlayerStatus& playerStatus) { return playerStatus.inRound; };
-        auto hasChecked = [](const PlayerStatus& playerStatus) { return playerStatus.lastAction == CHECK; };
+        auto hasChecked = [](const PlayerStatus& playerStatus) { return !playerStatus.inRound || playerStatus.lastAction == CHECK; };
         auto hasPlayed  = [](const PlayerStatus& playerStatus) {
             return !playerStatus.inRound || playerStatus.isAllIn || playerStatus.lastAction != NONE;
         };
@@ -156,7 +176,7 @@ namespace GameHandler {
 
         bool currentPlayerCalled = currentPlayerAction == CALL;
 
-        if ((currentPlayerCalled && roundPlayersCount == 2 && allPlayersPlayed)
+        if (roundPlayersCount == 1 || (currentPlayerCalled && roundPlayersCount == 2 && allPlayersPlayed)
             || (currentPlayerCalled && roundPlayersCount == 3 && allPlayersPlayed && _lastAction == CALL)
             || std::all_of(_playersStatus->begin(), _playersStatus->end(), hasChecked)) {
             _endStreet();
@@ -165,16 +185,21 @@ namespace GameHandler {
         }
     }
 
+    // @todo Regarder si _determineRoundOver ne peut pas être appelé dans _endStreet
     auto Round::_determineRoundOver() -> void {
         auto winnerFinder = [](const PlayerStatus& playerStatus) { return playerStatus.inRound; };
 
         if (std::count_if(_playersStatus->begin(), _playersStatus->end(), winnerFinder) == 1) {
+            // @todo put this in a function
             _processRanking();
+            _updateStacks();
             _ended = true;
         }
     }
 
     auto Round::_endStreet() -> void {
+        _updatePlayersMaxWinnable();
+
         switch (_currentStreet) {
             case PREFLOP: _currentStreet = FLOP; break;
             case FLOP: _currentStreet = TURN; break;
@@ -182,6 +207,12 @@ namespace GameHandler {
             case RIVER: _currentStreet = SHOWDOWN; break;
             case SHOWDOWN: break;
         }
+
+        _lastAction = NONE;
+        _streePot   = 0;
+        _frozenPot  = _pot;
+
+        for (auto& playerStatus : *_playersStatus) { playerStatus.streetReset(); }
     }
 
     auto Round::_hasWon() const -> bool {
@@ -210,6 +241,71 @@ namespace GameHandler {
         }
     }
 
+    auto Round::_payBlinds() -> void {
+        auto dealer = find_if(*_players, [&](const Player& player) { return player.isDealer(); });
+
+        if (dealer == _players->end()) { throw std::runtime_error("No dealer found"); }
+
+        auto  dealerNum = dealer->getNumber();
+        auto& SBPlayer  = _getPlayerStatus(_getNextPlayerNum(dealerNum));
+        auto& BBPlayer  = _getPlayerStatus(_getNextPlayerNum(SBPlayer.playerNum));  // Can be the dealer if there are only 2 players
+
+        SBPlayer.payBlind(_blinds.SB());
+        BBPlayer.payBlind(_blinds.BB());
+        // @todo check the rule for all in players when paying blinds
+        _streePot += SBPlayer.totalBet + BBPlayer.totalBet;
+        _pot = _streePot;
+    }
+
+    auto Round::_updateStacks() -> void {
+        // Use a copy of _ranking and _pot because it will be modified
+        auto ranking = _ranking;
+        auto pot     = _pot;
+        // Add pot to winner(s) stack
+        while (!ranking.empty()) {
+            auto& players = ranking.top();
+            // Sort players by stacks asc and pay players by this order
+            sort(players, [&](const Player& p1, const Player& p2) { return p1.getStack() < p2.getStack(); });
+            // Number of remaining players to share the pot
+            auto remainingPlayers = static_cast<int32_t>(players.size());
+
+            for (auto& player : players) {
+                auto& playerStatus = _getPlayerStatus(player.getNumber());
+                auto  winAmount    = std::min(playerStatus.maxWinnable, pot / remainingPlayers--);
+
+                playerStatus.won = winAmount;
+                player.winStack(winAmount);
+                pot -= winAmount;
+            }
+
+            ranking.pop();
+        }
+
+        // Retrieve players round bets to their stack
+        for (const auto& playerStatus : *_playersStatus) {
+            _getPlayer(playerStatus.playerNum).loseStack(playerStatus.totalBet - playerStatus.won);
+        }
+    }
+
+    /**
+     * @brief Update the max winnable amount for each player at the end of a street
+     */
+    auto Round::_updatePlayersMaxWinnable() -> void {
+        for (auto& playerStatus : *_playersStatus) {
+            if (!playerStatus.isAllIn) {
+                playerStatus.maxWinnable = _frozenPot + _streePot;
+            } else if (playerStatus.totalStreetBet != 0) {
+                int32_t streetWinnable = 0;
+
+                for (const auto& player : *_playersStatus) {
+                    streetWinnable += std::min(player.totalStreetBet, playerStatus.totalStreetBet);
+                }
+
+                playerStatus.maxWinnable = _frozenPot + streetWinnable;
+            }
+        }
+    }
+
     auto Round::_toJson(const ranking_t& ranking) const -> json {
         auto rankingJson = json::array();
         auto rankingCopy = ranking;
@@ -225,5 +321,18 @@ namespace GameHandler {
         }
 
         return rankingJson;
+    }
+
+    auto Round::_getStacksVariation() const -> json {
+        auto playersStack = json::array();
+
+        for (const auto& player : *_players) {
+            playersStack.emplace_back(
+                json::object({{"player", player.getName()},
+                              {"stack", player.getStack()},
+                              {"balance", player.getStack() - _getPlayerStatus(player.getNumber()).initialStack}}));
+        }
+
+        return playersStack;
     }
 }  // namespace GameHandler
