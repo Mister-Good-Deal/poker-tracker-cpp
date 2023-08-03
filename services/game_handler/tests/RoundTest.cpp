@@ -268,11 +268,107 @@ TEST(RoundTest, case2JsonRepresentationShouldBeCorrect) {
             "pot": 1700,            
             "blinds": { "small": 50, "big": 100 },
             "won": true,
-            "ranking": [["player_2", "player_1"], ["player_3"]],
+            "ranking": [["player_1", "player_2"], ["player_3"]],
             "stacks": [
                 { "player": "player_1", "stack": 1050, "balance": 50 },
                 { "player": "player_2", "stack": 1050, "balance": 50 },
                 { "player": "player_3", "stack": 900, "balance": -100 }
+            ]
+        }
+    )"_json;
+
+    EXPECT_EQ(round.toJson(), expectedJson);
+}
+
+TEST(RoundTest, case3JsonRepresentationShouldBeCorrect) {
+    Player player1("player_1", 1);
+    Player player2("player_2", 2);
+    Player player3("player_3", 3);
+
+    player1.setStack(500);
+    player2.setStack(1000);
+    player3.setStack(1500);
+
+    player2.setDealer(true);
+    player1.setHand({card("7C"), card("8C")});
+
+    std::array<Player, 3> players = {player1, player2, player3};
+
+    Round round(Blinds{50, 100}, players);
+
+    // Run a scenario
+
+    // Pre-flop
+    round.check(2);
+    round.bet(3, 150);
+    round.call(1, 100);
+    round.call(2, 200);
+    // Flop
+    round.getBoard().setFlop({card("AS"), card("KC"), card("JC")});
+    round.check(2);
+    round.bet(3, 500);
+    round.call(1, 300);
+    round.call(2, 500);
+    // Turn
+    round.getBoard().setTurn(card("9C"));
+    round.check(2);
+    round.bet(3, 800);
+    round.fold(2);
+    // River
+    round.getBoard().setRiver(card("8D"));
+    // Showdown
+    players[2].setHand({card("AD"), card("KC")});
+    round.showdown();
+
+    // language=json
+    auto expectedJson = R"(
+        {
+            "actions": {
+                "pre_flop": [
+                    { "action": "Check", "player_name": "player_2", "elapsed_time": 0 },
+                    { "action": "Bet", "player_name": "player_3", "elapsed_time": 0, "amount": 150 },
+                    { "action": "Call", "player_name": "player_1", "elapsed_time": 0, "amount": 100 },
+                    { "action": "Call", "player_name": "player_2", "elapsed_time": 0, "amount": 200 }
+                ],
+                "flop": [
+                    { "action": "Check", "player_name": "player_2", "elapsed_time": 0 },
+                    { "action": "Bet", "player_name": "player_3", "elapsed_time": 0, "amount": 500 },
+                    { "action": "Call", "player_name": "player_1", "elapsed_time": 0, "amount": 300 },
+                    { "action": "Call", "player_name": "player_2", "elapsed_time": 0, "amount": 500 }
+                ],
+                "turn": [
+                    { "action": "Check", "player_name": "player_2", "elapsed_time": 0 },
+                    { "action": "Bet", "player_name": "player_3", "elapsed_time": 0, "amount": 800 },
+                    { "action": "Fold", "player_name": "player_2", "elapsed_time": 0 }
+                ],
+                "river": []
+            },
+            "board": [
+                { "shortName": "AS", "rank": "Ace", "suit": "Spade" },
+                { "shortName": "KC", "rank": "King", "suit": "Club" },
+                { "shortName": "JC", "rank": "Jack", "suit": "Club" },
+                { "shortName": "9C", "rank": "Nine", "suit": "Club" },
+                { "shortName": "8D", "rank": "Eight", "suit": "Diamond" }
+            ],
+            "hands": {
+                "player_1": [
+                    { "shortName": "7C", "rank": "Seven", "suit": "Club" },
+                    { "shortName": "8C", "rank": "Eight", "suit": "Club" }
+                ],
+                "player_2": [],
+                "player_3": [                
+                    { "shortName": "AD", "rank": "Ace", "suit": "Diamond" },
+                    { "shortName": "KC", "rank": "King", "suit": "Club" }                    
+                ]
+            },
+            "pot": 2700,            
+            "blinds": { "small": 50, "big": 100 },
+            "won": true,
+            "ranking": [["player_1"], ["player_3"], ["player_2"]],
+            "stacks": [
+                { "player": "player_1", "stack": 1500, "balance": 1000 },
+                { "player": "player_2", "stack": 300, "balance": -700 },
+                { "player": "player_3", "stack": 1200, "balance": -300 }
             ]
         }
     )"_json;

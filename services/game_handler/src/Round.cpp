@@ -80,13 +80,8 @@ namespace GameHandler {
     }
 
     auto Round::showdown() -> void {
-        if (_currentStreet != SHOWDOWN) { throw std::runtime_error("The round is not over yet"); }
-
         _endStreet();
-        // @todo put this in a function
-        _processRanking();
-        _updateStacks();
-        _ended = true;
+        _endRound();
     }
 
     auto Round::toJson() const -> json {
@@ -189,12 +184,7 @@ namespace GameHandler {
     auto Round::_determineRoundOver() -> void {
         auto winnerFinder = [](const PlayerStatus& playerStatus) { return playerStatus.inRound; };
 
-        if (std::count_if(_playersStatus->begin(), _playersStatus->end(), winnerFinder) == 1) {
-            // @todo put this in a function
-            _processRanking();
-            _updateStacks();
-            _ended = true;
-        }
+        if (std::count_if(_playersStatus->begin(), _playersStatus->end(), winnerFinder) == 1) { _endRound(); }
     }
 
     auto Round::_endStreet() -> void {
@@ -215,6 +205,13 @@ namespace GameHandler {
         for (auto& playerStatus : *_playersStatus) { playerStatus.streetReset(); }
     }
 
+    auto Round::_endRound() -> void {
+        _processRanking();
+        _updateStacks();
+
+        _ended = true;
+    }
+
     auto Round::_hasWon() const -> bool {
         auto rankFirst = _ranking.top();
 
@@ -232,7 +229,7 @@ namespace GameHandler {
         sort(players, [&](const Player& p1, const Player& p2) { return _board.compareHands(p1.getHand(), p2.getHand()); });
 
         // iterate through the players from last to first and add them to the _ranking stack
-        for (auto& player : std::ranges::reverse_view(players)) {
+        for (auto& player : players) {
             if (_ranking.empty() || _board.compareHands(player.getHand(), _ranking.top().front().getHand()) == 0) {
                 _ranking.top().emplace_back(player);
             } else {
@@ -273,17 +270,11 @@ namespace GameHandler {
                 auto& playerStatus = _getPlayerStatus(player.getNumber());
                 auto  winAmount    = std::min(playerStatus.maxWinnable, pot / remainingPlayers--);
 
-                playerStatus.won = winAmount;
-                player.winStack(winAmount);
+                _getPlayer(playerStatus.playerNum).updateStack(winAmount - playerStatus.totalBet);
                 pot -= winAmount;
             }
 
             ranking.pop();
-        }
-
-        // Retrieve players round bets to their stack
-        for (const auto& playerStatus : *_playersStatus) {
-            _getPlayer(playerStatus.playerNum).loseStack(playerStatus.totalBet - playerStatus.won);
         }
     }
 

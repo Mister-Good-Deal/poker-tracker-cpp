@@ -32,7 +32,6 @@ namespace GameHandler {
             int32_t    totalBet       = 0;
             int32_t    totalStreetBet = 0;
             int32_t    maxWinnable    = 0;
-            int32_t    won            = 0;
             int32_t    initialStack   = 0;
             bool       inRound        = true;
             bool       isAllIn        = false;
@@ -140,5 +139,6 @@ namespace GameHandler {
             auto _payBlinds() -> void;
             auto _updatePlayersMaxWinnable() -> void;
             auto _endStreet() -> void;
+            auto _endRound() -> void;
     };
 }  // namespace GameHandler
