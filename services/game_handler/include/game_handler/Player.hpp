@@ -28,8 +28,7 @@ namespace GameHandler {
             auto setHand(const Card& firstCard, const Card& secondCard) -> void { _hand = Hand(firstCard, secondCard); }
             auto setHand(const Hand& hand) -> void { _hand = hand; }
             auto setStack(int32_t stack) -> void { _stack = stack; }
-            auto loseStack(int32_t amount) -> void { _stack -= amount; }
-            auto winStack(int32_t amount) -> void { _stack += amount; }
+            auto updateStack(int32_t amount) -> void { _stack += amount; }
             auto setDealer(bool dealer) -> void { _dealer = dealer; }
             auto takeButton() -> void { setDealer(true); }
             auto bust() -> void { _eliminated = true; }

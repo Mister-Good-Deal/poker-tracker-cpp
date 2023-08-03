@@ -22,6 +22,7 @@ namespace GameHandler {
             _firstCard  = other._firstCard;
             _secondCard = other._secondCard;
             _cards      = {&_firstCard, &_secondCard};
+            _cardsConst = {_firstCard, _secondCard};
             _suited     = other._suited;
             _broadway   = other._broadway;
             _plur       = other._plur;
@@ -36,7 +37,8 @@ namespace GameHandler {
         if (this != &other) {
             _firstCard  = std::move(other._firstCard);
             _secondCard = std::move(other._secondCard);
-            _cards      = {&_firstCard, &_secondCard};
+            _cards      = other._cards;
+            _cardsConst = std::move(other._cardsConst);
             _suited     = other._suited;
             _broadway   = other._broadway;
             _plur       = other._plur;
@@ -93,7 +95,7 @@ namespace GameHandler {
     }
 
     auto Hand::_isConnected() -> bool {
-        return std::abs(_firstCard.getRank() - _secondCard.getRank()) <= 1
+        return std::abs(_firstCard.getRank() - _secondCard.getRank()) == 1
             || (_firstCard.getRank() == ACE && _secondCard.getRank() == TWO)
             || (_secondCard.getRank() == ACE && _firstCard.getRank() == TWO);
     }

@@ -435,8 +435,7 @@ namespace GameHandler {
         // Combine board cards with hand cards
         all_cards_t cards;
         copy(_cards, cards.begin());
-        const auto& handCards = hand.getCards();
-        copy(handCards, cards.begin() + BOARD_CARDS_NUMBER);
+        copy(hand.getCards(), cards.begin() + BOARD_CARDS_NUMBER);
 
         // Determine the hand rank
         if (count(rankFrequencies, 2) == 1) { rank = PAIR; }
