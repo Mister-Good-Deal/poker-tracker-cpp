@@ -12,8 +12,7 @@ class ScraperTest : public ::testing::Test {};
 TEST(ModelTest, displayScreenshot) {
     Model scraper("Winamax", {3840, 1080});
 
-    for (const auto& [id, window] : scraper.getActiveWindows())
-    {
+    for (const auto& [id, window] : scraper.getActiveWindows()) {
         fmt::print("({}) - {}\n", id, window.title);
         //        cv::imshow(window.title, scraper.getScreenshot(id));
     }
@@ -34,14 +33,12 @@ TEST(ModelTest, displayAllElements) {
     cv::Mat screenshot_5 = cv::imread(std::string(WINAMAX_DIR) + "/screen_5.png");
     cv::Mat screenshot_6 = cv::imread(std::string(WINAMAX_DIR) + "/screen_6.png");
 
-    cv::imshow("screen_1", scraper.getWindowElementsView(screenshot_1));
-    cv::imshow("screen_2", scraper.getWindowElementsView(screenshot_2));
+    //    cv::imshow("screen_1", scraper.getWindowElementsView(screenshot_1));
+    //    cv::imshow("screen_2", scraper.getWindowElementsView(screenshot_2));
     cv::imshow("screen_3", scraper.getWindowElementsView(screenshot_3));
-    cv::imshow("screen_4", scraper.getWindowElementsView(screenshot_4));
-    cv::imshow("screen_5", scraper.getWindowElementsView(screenshot_5));
-    cv::imshow("screen_6", scraper.getWindowElementsView(screenshot_6));
-    //    cv::imshow("screen_6_player_1", scraper.getPlayer1NameImg(screenshot_6));
-    //    cv::imshow("screen_6_player_2", scraper.getPlayer2NameImg(screenshot_6));
+    //    cv::imshow("screen_4", scraper.getWindowElementsView(screenshot_4));
+    //    cv::imshow("screen_5", scraper.getWindowElementsView(screenshot_5));
+    //    cv::imshow("screen_6", scraper.getWindowElementsView(screenshot_6));
 
     cv::waitKey(-1);
 }
@@ -49,18 +46,17 @@ TEST(ModelTest, displayAllElements) {
 TEST(ModelTest, checkPlayerButtonScapping) {
     Model scraper("Winamax", {3840, 1080});
 
-    cv::Mat screenshot = cv::imread(std::string(WINAMAX_DIR) + "/screen_2.png");
-    cv::Mat img_1      = scraper.getGameTimeImg(screenshot);
-    //    cv::Mat img_2      = scraper.getPlayer2BetImg(screenshot);
-    //    cv::Mat img_3 = scraper.getPlayer3ButtonImg(screenshot);
+    std::ifstream fileReader(std::string(WINAMAX_DIR) + "/3840x1080x8_coordinates.json");
+    scraper.loadFromJson(json::parse(fileReader));
+
+    cv::Mat screenshot = cv::imread(std::string(WINAMAX_DIR) + "/screen_3.png");
+    cv::Mat img_1      = scraper.getPlayer2ActionImg(screenshot);
 
     cv::imshow("img_1", img_1);
-    //    cv::imshow("img_2", img_2);
-    //    cv::imshow("img_3", img_3);
-    cv::waitKey(1);
 
-    cv::imwrite(std::string(WINAMAX_DIR) + "/58s.png", img_1);
-    //    cv::imwrite(std::string(WINAMAX_DIR) + "/betAmount_2.png", img_2);
+    cv::waitKey(0);
+
+    cv::imwrite(std::string(WINAMAX_DIR) + "/raises_to_3_bb.png", img_1);
 }
 
 TEST(ModelTest, jsonRepresentationShouldBeCorrect) {
