@@ -5,6 +5,7 @@
 #include <ranges>
 
 namespace GameHandler {
+    using fmt::format;
     using std::chrono::duration_cast;
     using std::chrono::seconds;
     using std::ranges::any_of;
@@ -15,10 +16,12 @@ namespace GameHandler {
     using enum Round::Street;
     using enum RoundAction::ActionType;
 
-    Round::Round(const Blinds& blinds, std::array<Player, 3>& players) :
-        _blinds(blinds), _players(&players), _lastActionTime(system_clock::now()), _hand((players)[0].getHand()),
+    Round::Round(const Blinds& blinds, std::array<Player, 3>& players, Hand hand, int32_t dealerNumber) :
+        _blinds(blinds), _players(&players), _lastActionTime(system_clock::now()),
         _playersStatus(std::make_unique<players_status_t>(
-            players_status_t{{PlayerStatus{players[0]}, PlayerStatus{players[1]}, PlayerStatus{players[2]}}})) {
+            players_status_t{{PlayerStatus{players[0], dealerNumber}, PlayerStatus{players[1], dealerNumber},
+                              PlayerStatus{players[2], dealerNumber}}})) {
+        _getPlayerStatus(1).hand = std::move(hand);
         _payBlinds();
     }
 
@@ -27,7 +30,6 @@ namespace GameHandler {
             _actions        = std::move(other._actions);
             _board          = std::move(other._board);
             _ranking        = std::move(other._ranking);
-            _hand           = std::move(other._hand);
             _playersStatus  = std::move(other._playersStatus);
             _blinds         = other._blinds;
             _pot            = other._pot;
@@ -47,7 +49,7 @@ namespace GameHandler {
         _actions.at(_currentStreet).emplace_back(CALL, player, _getAndResetLastActionTime(), amount);
         _getPlayerStatus(playerNum).hasCalled(amount);
         _pot += amount;
-        _streePot += amount;
+        _streetPot += amount;
         _determineStreetOver(CALL);
     }
 
@@ -58,7 +60,7 @@ namespace GameHandler {
         _getPlayerStatus(playerNum).hasBet(amount);
         _lastAction = BET;
         _pot += amount;
-        _streePot += amount;
+        _streetPot += amount;
     }
 
     auto Round::check(uint32_t playerNum) -> void {
@@ -91,12 +93,18 @@ namespace GameHandler {
         auto turnActions    = json::array();
         auto riverActions   = json::array();
         auto hands          = json::object();
+        auto positions      = json::object();
 
         for_each(_actions[PREFLOP], [&](const RoundAction& action) { preFlopActions.emplace_back(action.toJson()); });
         for_each(_actions[FLOP], [&](const RoundAction& action) { flopActions.emplace_back(action.toJson()); });
         for_each(_actions[TURN], [&](const RoundAction& action) { turnActions.emplace_back(action.toJson()); });
         for_each(_actions[RIVER], [&](const RoundAction& action) { riverActions.emplace_back(action.toJson()); });
-        for_each(*_players, [&](const Player& player) { hands.emplace(player.getName(), player.getHand().toJson()); });
+
+        for (const auto& player : *_playersStatus) {
+            positions.emplace(format("{}", player.position), format("player_{}", player.number));
+        }
+
+        for (const auto& player : *_playersStatus) { hands.emplace(format("player_{}", player.number), player.hand.toJson()); }
 
         return {{"actions", {{"pre_flop", preFlopActions}, {"flop", flopActions}, {"turn", turnActions}, {"river", riverActions}}},
                 {"board", _board.toJson()},
@@ -104,6 +112,7 @@ namespace GameHandler {
                 {"blinds", {{"small", _blinds.SB()}, {"big", _blinds.BB()}}},
                 {"pot", _pot},
                 {"won", _hasWon()},
+                {"positions", positions},
                 {"stacks", _getStacksVariation()},
                 {"ranking", _toJson(_ranking)}};
     }
@@ -197,7 +206,7 @@ namespace GameHandler {
         }
 
         _lastAction = NONE;
-        _streePot   = 0;
+        _streetPot  = 0;
         _frozenPot  = _pot;
 
         for (auto& playerStatus : *_playersStatus) { playerStatus.streetReset(); }
@@ -219,39 +228,39 @@ namespace GameHandler {
     }
 
     auto Round::_processRanking() -> void {
-        std::vector<Player> players;
+        std::vector<PlayerStatus> players;
         players.reserve(_playersStatus->size());
 
         for (const auto& playerStatus : *_playersStatus) {
-            if (playerStatus.inRound) { players.push_back(_getPlayer(playerStatus.playerNum)); }
+            if (playerStatus.inRound) { players.push_back(playerStatus); }
         }
 
-        sort(players, [&](const Player& p1, const Player& p2) { return _board.compareHands(p1.getHand(), p2.getHand()); });
+        sort(players, [&](const PlayerStatus& p1, const PlayerStatus& p2) { return _board.compareHands(p1.hand, p2.hand); });
 
         // iterate through the players from last to first and add them to the _ranking stack
         for (auto& player : players) {
-            if (_ranking.empty() || _board.compareHands(player.getHand(), _ranking.top().front().getHand()) == 0) {
-                _ranking.top().emplace_back(player);
+            if (_ranking.empty() || _board.compareHands(player.hand, _getPlayerStatus(_ranking.top().front().getNumber()).hand) == 0) {
+                _ranking.top().emplace_back(_getPlayer(player.number));
             } else {
-                _ranking.emplace(std::vector<Player>{player});
+                _ranking.emplace(std::vector<Player>{_getPlayer(player.number)});
             }
         }
     }
 
     auto Round::_payBlinds() -> void {
-        auto dealer = find_if(*_players, [&](const Player& player) { return player.isDealer(); });
+        auto dealer = find_if(*_playersStatus, [&](const PlayerStatus& player) { return player.position == DEALER; });
 
-        if (dealer == _players->end()) { throw std::runtime_error("No dealer found"); }
+        if (dealer == _playersStatus->end()) { throw std::runtime_error("No dealer found"); }
 
-        auto  dealerNum = dealer->getNumber();
+        auto  dealerNum = dealer->number;
         auto& SBPlayer  = _getPlayerStatus(_getNextPlayerNum(dealerNum));
-        auto& BBPlayer  = _getPlayerStatus(_getNextPlayerNum(SBPlayer.playerNum));  // Can be the dealer if there are only 2 players
+        auto& BBPlayer  = _getPlayerStatus(_getNextPlayerNum(SBPlayer.number));  // Can be the dealer if there are only 2 players
 
         SBPlayer.payBlind(_blinds.SB());
         BBPlayer.payBlind(_blinds.BB());
         // @todo check the rule for all in players when paying blinds
-        _streePot += SBPlayer.totalBet + BBPlayer.totalBet;
-        _pot = _streePot;
+        _streetPot += SBPlayer.totalBet + BBPlayer.totalBet;
+        _pot = _streetPot;
     }
 
     auto Round::_updateStacks() -> void {
@@ -270,7 +279,7 @@ namespace GameHandler {
                 auto& playerStatus = _getPlayerStatus(player.getNumber());
                 auto  winAmount    = std::min(playerStatus.maxWinnable, pot / remainingPlayers--);
 
-                _getPlayer(playerStatus.playerNum).updateStack(winAmount - playerStatus.totalBet);
+                _getPlayer(playerStatus.number).updateStack(winAmount - playerStatus.totalBet);
                 pot -= winAmount;
             }
 
@@ -284,7 +293,7 @@ namespace GameHandler {
     auto Round::_updatePlayersMaxWinnable() -> void {
         for (auto& playerStatus : *_playersStatus) {
             if (!playerStatus.isAllIn) {
-                playerStatus.maxWinnable = _frozenPot + _streePot;
+                playerStatus.maxWinnable = _frozenPot + _streetPot;
             } else if (playerStatus.totalStreetBet != 0) {
                 int32_t streetWinnable = 0;
 

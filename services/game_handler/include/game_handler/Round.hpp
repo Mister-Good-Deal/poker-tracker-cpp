@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stack>
+#include <utility>
 
 #include <game_handler/Board.hpp>
 #include <game_handler/RoundAction.hpp>
@@ -12,6 +13,8 @@ namespace GameHandler {
     using ActionType = RoundAction::ActionType;
 
     static const int32_t STREET_NUMBER = 5;
+
+    enum Position : int32_t { DEALER = 0, SMALL_BLIND, BIG_BLIND };
 
     struct Blinds {
         public:
@@ -27,7 +30,7 @@ namespace GameHandler {
 
     struct PlayerStatus {
         public:
-            uint32_t   playerNum      = 0;
+            uint32_t   number         = 0;
             ActionType lastAction     = ActionType::NONE;
             int32_t    totalBet       = 0;
             int32_t    totalStreetBet = 0;
@@ -35,9 +38,12 @@ namespace GameHandler {
             int32_t    initialStack   = 0;
             bool       inRound        = true;
             bool       isAllIn        = false;
+            Hand       hand           = Hand();
+            Position   position;
 
-            explicit PlayerStatus(const Player& player) :
-                playerNum(player.getNumber()), initialStack(player.getStack()), inRound(!player.isEliminated()){};
+            explicit PlayerStatus(const Player& player, int32_t dealerNumber) :
+                position(static_cast<Position>((player.getNumber() - dealerNumber + 3) % 3)), number(player.getNumber()),
+                initialStack(player.getStack()), inRound(!player.isEliminated()){};
 
             auto payBlind(int32_t amount) -> void {
                 // @todo what if player cannot pay the blind?
@@ -84,7 +90,7 @@ namespace GameHandler {
 
             enum Street : int32_t { PREFLOP = 0, FLOP, TURN, RIVER, SHOWDOWN };
 
-            Round(const Blinds& blinds, std::array<Player, 3>& players);
+            Round(const Blinds& blinds, std::array<Player, 3>& players, Hand hand, int32_t dealerNumber);
             Round(const Round& other) = delete;
             Round(Round&& other) noexcept { *this = std::move(other); };
 
@@ -103,6 +109,8 @@ namespace GameHandler {
             auto check(uint32_t playerNum) -> void;
             auto fold(uint32_t playerNum) -> void;
             auto showdown() -> void;
+            auto setPlayer2Hand(Hand hand) -> void { _getPlayerStatus(2).hand = std::move(hand); }
+            auto setPlayer3Hand(Hand hand) -> void { _getPlayerStatus(3).hand = std::move(hand); }
 
             [[nodiscard]] auto toJson() const -> json;
 
@@ -110,10 +118,9 @@ namespace GameHandler {
             round_actions_t          _actions;
             Board                    _board;
             ranking_t                _ranking;
-            Hand                     _hand;
             Blinds                   _blinds         = Blinds(0, 0);
             int32_t                  _pot            = 0;
-            int32_t                  _streePot       = 0;
+            int32_t                  _streetPot      = 0;
             int32_t                  _frozenPot      = 0;
             Street                   _currentStreet  = Street::PREFLOP;
             time_point<system_clock> _lastActionTime = system_clock::now();
@@ -142,3 +149,25 @@ namespace GameHandler {
             auto _endRound() -> void;
     };
 }  // namespace GameHandler
+
+// Custom formatter for Position
+namespace fmt {
+    using GameHandler::Position;
+
+    template<>
+    struct formatter<Position> : formatter<string_view> {
+            // parse is inherited from formatter<string_view>.
+            template<typename FormatContext>
+            auto format(Position position, FormatContext& ctx) const {
+                string_view name = "unknown";
+
+                switch (position) {
+                    case Position::DEALER: name = "dealer"; break;
+                    case Position::SMALL_BLIND: name = "small_blind"; break;
+                    case Position::BIG_BLIND: name = "big_blind"; break;
+                }
+
+                return formatter<string_view>::format(name, ctx);
+            }
+    };
+}  // namespace fmt

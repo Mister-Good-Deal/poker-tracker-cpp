@@ -27,12 +27,9 @@ TEST(RoundTest, DISABLED_jsonRepresentationWithTimingsShouldBeCorrect) {
     player2.setStack(1000);
     player3.setStack(1000);
 
-    player1.setDealer(true);
-    player1.setHand(hand);
-
     std::array<Player, 3> players = {player1, player2, player3};
 
-    Round round(blinds, players);
+    Round round(blinds, players, hand, 1);
 
     // Run a scenario
 
@@ -91,6 +88,11 @@ TEST(RoundTest, DISABLED_jsonRepresentationWithTimingsShouldBeCorrect) {
             "blinds": { "small": 50, "big": 100 },
             "won": true,
             "ranking": [["player_1"], ["player_2"], ["player_3"]],
+            "positions": {
+                "dealer": "player_1",
+                "small_blind": "player_2",
+                "big_blind": "player_3"
+            },
             "stacks": [
                 { "player": "player_1", "stack": 1500, "balance": 500 },
                 { "player": "player_2", "stack": 600, "balance": -400 },
@@ -103,9 +105,6 @@ TEST(RoundTest, DISABLED_jsonRepresentationWithTimingsShouldBeCorrect) {
 }
 
 TEST(RoundTest, case1JsonRepresentationShouldBeCorrect) {
-    auto blinds = Blinds{50, 100};
-    auto hand   = Hand(card("AH"), card("KH"));
-
     Player player1("player_1", 1);
     Player player2("player_2", 2);
     Player player3("player_3", 3);
@@ -114,12 +113,9 @@ TEST(RoundTest, case1JsonRepresentationShouldBeCorrect) {
     player2.setStack(1000);
     player3.setStack(1000);
 
-    player1.setDealer(true);
-    player1.setHand(hand);
-
     std::array<Player, 3> players = {player1, player2, player3};
 
-    Round round(blinds, players);
+    Round round({50, 100}, players, {card("AH"), card("KH")}, 1);
 
     // Run a scenario
 
@@ -170,6 +166,11 @@ TEST(RoundTest, case1JsonRepresentationShouldBeCorrect) {
             "pot": 1300,            
             "blinds": { "small": 50, "big": 100 },
             "won": true,
+            "positions": {
+                "dealer": "player_1",
+                "small_blind": "player_2",
+                "big_blind": "player_3"
+            },
             "ranking": [["player_1"], ["player_2"], ["player_3"]],
             "stacks": [
                 { "player": "player_1", "stack": 1500, "balance": 500 },
@@ -191,12 +192,9 @@ TEST(RoundTest, case2JsonRepresentationShouldBeCorrect) {
     player2.setStack(1000);
     player3.setStack(1000);
 
-    player1.setDealer(true);
-    player1.setHand({card("AH"), card("KH")});
-
     std::array<Player, 3> players = {player1, player2, player3};
 
-    Round round(Blinds{50, 100}, players);
+    Round round(Blinds{50, 100}, players, {card("AH"), card("KH")}, 1);
 
     // Run a scenario
 
@@ -220,7 +218,7 @@ TEST(RoundTest, case2JsonRepresentationShouldBeCorrect) {
     round.check(1);
     round.check(2);
     // Showdown
-    players[1].setHand({card("AD"), card("KC")});
+    round.setPlayer2Hand({card("AD"), card("KC")});
     round.showdown();
 
     // language=json
@@ -269,6 +267,11 @@ TEST(RoundTest, case2JsonRepresentationShouldBeCorrect) {
             "pot": 1700,            
             "blinds": { "small": 50, "big": 100 },
             "won": true,
+            "positions": {
+                "dealer": "player_1",
+                "small_blind": "player_2",
+                "big_blind": "player_3"
+            },
             "ranking": [["player_1", "player_2"], ["player_3"]],
             "stacks": [
                 { "player": "player_1", "stack": 1050, "balance": 50 },
@@ -290,12 +293,9 @@ TEST(RoundTest, case3JsonRepresentationShouldBeCorrect) {
     player2.setStack(1000);
     player3.setStack(1500);
 
-    player2.setDealer(true);
-    player1.setHand({card("7C"), card("8C")});
-
     std::array<Player, 3> players = {player1, player2, player3};
 
-    Round round(Blinds{50, 100}, players);
+    Round round(Blinds{50, 100}, players, {card("7C"), card("8C")}, 2);
 
     // Run a scenario
 
@@ -318,7 +318,7 @@ TEST(RoundTest, case3JsonRepresentationShouldBeCorrect) {
     // River
     round.getBoard().setRiver(card("8D"));
     // Showdown
-    players[2].setHand({card("AD"), card("KC")});
+    round.setPlayer3Hand({card("AD"), card("KC")});
     round.showdown();
 
     // language=json
@@ -365,6 +365,11 @@ TEST(RoundTest, case3JsonRepresentationShouldBeCorrect) {
             "pot": 2700,            
             "blinds": { "small": 50, "big": 100 },
             "won": true,
+            "positions": {
+                "dealer": "player_2",
+                "small_blind": "player_3",
+                "big_blind": "player_1"
+            },
             "ranking": [["player_1"], ["player_3"], ["player_2"]],
             "stacks": [
                 { "player": "player_1", "stack": 1500, "balance": 1000 },
