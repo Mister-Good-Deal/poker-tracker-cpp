@@ -76,7 +76,6 @@ namespace GameHandler {
         _getPlayerStatus(playerNum).hasFolded();
         _ranking.emplace(std::vector<Player>{player});
         _determineStreetOver(FOLD);
-        _determineRoundOver();
     }
 
     auto Round::showdown() -> void {
@@ -180,7 +179,6 @@ namespace GameHandler {
         }
     }
 
-    // @todo Regarder si _determineRoundOver ne peut pas être appelé dans _endStreet
     auto Round::_determineRoundOver() -> void {
         auto winnerFinder = [](const PlayerStatus& playerStatus) { return playerStatus.inRound; };
 
@@ -203,6 +201,8 @@ namespace GameHandler {
         _frozenPot  = _pot;
 
         for (auto& playerStatus : *_playersStatus) { playerStatus.streetReset(); }
+
+        _determineRoundOver();
     }
 
     auto Round::_endRound() -> void {

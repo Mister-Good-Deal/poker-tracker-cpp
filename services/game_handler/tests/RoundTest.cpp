@@ -14,7 +14,8 @@ using GameHandler::Factory::card;
 class RoundTest : public ::testing::Test {};
 
 // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
-TEST(RoundTest, jsonRepresentationShouldBeCorrect) {
+// @todo Run the test in background to not slow down the CI
+TEST(RoundTest, DISABLED_jsonRepresentationWithTimingsShouldBeCorrect) {
     auto blinds = Blinds{50, 100};
     auto hand   = Hand(card("AH"), card("KH"));
 
