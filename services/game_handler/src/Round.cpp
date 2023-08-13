@@ -62,6 +62,16 @@ namespace GameHandler {
         _streetPot += amount;
     }
 
+    auto Round::raise(uint32_t playerNum, int32_t amount) -> void {
+        auto& player = _getPlayerStatus(playerNum);
+
+        _actions.at(_currentStreet).emplace_back(RAISE, player, _getAndResetLastActionTime(), amount);
+        player.hasRaised(amount);
+        _lastAction = RAISE;
+        _pot += amount;
+        _streetPot += amount;
+    }
+    
     auto Round::check(uint32_t playerNum) -> void {
         auto& player = _getPlayerStatus(playerNum);
 

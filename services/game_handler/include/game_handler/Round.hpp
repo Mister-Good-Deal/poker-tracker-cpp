@@ -59,6 +59,13 @@ namespace GameHandler {
                 totalStreetBet += amount;
                 lastAction = ActionType::BET;
             }
+            
+            auto hasRaised(int32_t amount) -> void {
+                isAllIn = (amount + totalBet) == getStack();
+                totalBet += amount;
+                totalStreetBet += amount;
+                lastAction = ActionType::RAISE;
+            }
 
             auto hasCalled(int32_t amount) -> void {
                 isAllIn = (amount + totalBet) == getStack();
@@ -104,6 +111,7 @@ namespace GameHandler {
 
             auto call(uint32_t playerNum, int32_t amount) -> void;
             auto bet(uint32_t playerNum, int32_t amount) -> void;
+            auto raise(uint32_t playerNum, int32_t amount) -> void;
             auto check(uint32_t playerNum) -> void;
             auto fold(uint32_t playerNum) -> void;
             auto showdown() -> void;

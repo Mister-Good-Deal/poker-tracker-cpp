@@ -121,14 +121,14 @@ TEST(RoundTest, case1JsonRepresentationShouldBeCorrect) {
 
     // Pre-flop
     round.check(1);
-    round.bet(2, 150);
+    round.raise(2, 150);
     round.fold(3);
     round.call(1, 200);
     // Flop
     round.getBoard().setFlop({card("AS"), card("AC"), card("3C")});
     round.check(1);
-    round.bet(2, 200);
-    round.bet(1, 600);
+    round.raise(2, 200);
+    round.raise(1, 600);
     round.fold(2);
 
     // language=json
@@ -137,14 +137,14 @@ TEST(RoundTest, case1JsonRepresentationShouldBeCorrect) {
             "actions": {
                 "pre_flop": [
                     { "action": "Check", "player_name": "player_1", "elapsed_time": 0 },
-                    { "action": "Bet", "player_name": "player_2", "elapsed_time": 0, "amount": 150 },
+                    { "action": "Raise", "player_name": "player_2", "elapsed_time": 0, "amount": 150 },
                     { "action": "Fold", "player_name": "player_3", "elapsed_time": 0 },
                     { "action": "Call", "player_name": "player_1", "elapsed_time": 0, "amount": 200 }
                 ],
                 "flop": [
                     { "action": "Check", "player_name": "player_1", "elapsed_time": 0 },
-                    { "action": "Bet", "player_name": "player_2", "elapsed_time": 0, "amount": 200 },
-                    { "action": "Bet", "player_name": "player_1", "elapsed_time": 0, "amount": 600 },
+                    { "action": "Raise", "player_name": "player_2", "elapsed_time": 0, "amount": 200 },
+                    { "action": "Raise", "player_name": "player_1", "elapsed_time": 0, "amount": 600 },
                     { "action": "Fold", "player_name": "player_2", "elapsed_time": 0 }
                 ],
                 "turn": [],
@@ -200,14 +200,14 @@ TEST(RoundTest, case2JsonRepresentationShouldBeCorrect) {
 
     // Pre-flop
     round.check(1);
-    round.bet(2, 150);
+    round.raise(2, 150);
     round.fold(3);
     round.call(1, 200);
     // Flop
     round.getBoard().setFlop({card("AS"), card("AC"), card("3C")});
     round.check(1);
-    round.bet(2, 200);
-    round.bet(1, 600);
+    round.raise(2, 200);
+    round.raise(1, 600);
     round.call(2, 400);
     // Turn
     round.getBoard().setTurn(card("4C"));
@@ -227,14 +227,14 @@ TEST(RoundTest, case2JsonRepresentationShouldBeCorrect) {
             "actions": {
                 "pre_flop": [
                     { "action": "Check", "player_name": "player_1", "elapsed_time": 0 },
-                    { "action": "Bet", "player_name": "player_2", "elapsed_time": 0, "amount": 150 },
+                    { "action": "Raise", "player_name": "player_2", "elapsed_time": 0, "amount": 150 },
                     { "action": "Fold", "player_name": "player_3", "elapsed_time": 0 },
                     { "action": "Call", "player_name": "player_1", "elapsed_time": 0, "amount": 200 }
                 ],
                 "flop": [
                     { "action": "Check", "player_name": "player_1", "elapsed_time": 0 },
-                    { "action": "Bet", "player_name": "player_2", "elapsed_time": 0, "amount": 200 },
-                    { "action": "Bet", "player_name": "player_1", "elapsed_time": 0, "amount": 600 },
+                    { "action": "Raise", "player_name": "player_2", "elapsed_time": 0, "amount": 200 },
+                    { "action": "Raise", "player_name": "player_1", "elapsed_time": 0, "amount": 600 },
                     { "action": "Call", "player_name": "player_2", "elapsed_time": 0, "amount": 400 }
                 ],
                 "turn": [
@@ -301,19 +301,19 @@ TEST(RoundTest, case3JsonRepresentationShouldBeCorrect) {
 
     // Pre-flop
     round.check(2);
-    round.bet(3, 150);
+    round.raise(3, 150);
     round.call(1, 100);
     round.call(2, 200);
     // Flop
     round.getBoard().setFlop({card("AS"), card("KC"), card("JC")});
     round.check(2);
-    round.bet(3, 500);
+    round.raise(3, 500);
     round.call(1, 300);
     round.call(2, 500);
     // Turn
     round.getBoard().setTurn(card("9C"));
     round.check(2);
-    round.bet(3, 800);
+    round.raise(3, 800);
     round.fold(2);
     // River
     round.getBoard().setRiver(card("8D"));
@@ -327,19 +327,19 @@ TEST(RoundTest, case3JsonRepresentationShouldBeCorrect) {
             "actions": {
                 "pre_flop": [
                     { "action": "Check", "player_name": "player_2", "elapsed_time": 0 },
-                    { "action": "Bet", "player_name": "player_3", "elapsed_time": 0, "amount": 150 },
+                    { "action": "Raise", "player_name": "player_3", "elapsed_time": 0, "amount": 150 },
                     { "action": "Call", "player_name": "player_1", "elapsed_time": 0, "amount": 100 },
                     { "action": "Call", "player_name": "player_2", "elapsed_time": 0, "amount": 200 }
                 ],
                 "flop": [
                     { "action": "Check", "player_name": "player_2", "elapsed_time": 0 },
-                    { "action": "Bet", "player_name": "player_3", "elapsed_time": 0, "amount": 500 },
+                    { "action": "Raise", "player_name": "player_3", "elapsed_time": 0, "amount": 500 },
                     { "action": "Call", "player_name": "player_1", "elapsed_time": 0, "amount": 300 },
                     { "action": "Call", "player_name": "player_2", "elapsed_time": 0, "amount": 500 }
                 ],
                 "turn": [
                     { "action": "Check", "player_name": "player_2", "elapsed_time": 0 },
-                    { "action": "Bet", "player_name": "player_3", "elapsed_time": 0, "amount": 800 },
+                    { "action": "Raise", "player_name": "player_3", "elapsed_time": 0, "amount": 800 },
                     { "action": "Fold", "player_name": "player_2", "elapsed_time": 0 }
                 ],
                 "river": []
