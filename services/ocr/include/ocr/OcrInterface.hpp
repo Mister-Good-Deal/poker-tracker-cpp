@@ -10,9 +10,11 @@ namespace OCR {
     using cv::text::OCRTesseract;
     using GameHandler::Blinds;
     using GameHandler::Card;
+    using GameHandler::RoundAction;
     using std::chrono::seconds;
 
-    using intRange = std::pair<int32_t, int32_t>;
+    using ActionType = RoundAction::ActionType;
+    using intRange   = std::pair<int32_t, int32_t>;
 
     class OcrInterface {
         public:
@@ -36,7 +38,7 @@ namespace OCR {
             [[nodiscard]] virtual auto readCardRank(const cv::Mat& rankImage) const -> Card::Rank            = 0;
             [[nodiscard]] virtual auto readCardSuit(const cv::Mat& suitImage) const -> Card::Suit            = 0;
             [[nodiscard]] virtual auto readPlayerName(const cv::Mat& playerNameImage) const -> std::string   = 0;
-            [[nodiscard]] virtual auto readGameAction(const cv::Mat& actionImage) const -> std::string       = 0;
+            [[nodiscard]] virtual auto readGameAction(const cv::Mat& actionImage) const -> ActionType        = 0;
             [[nodiscard]] virtual auto readPlayerBet(const cv::Mat& playerBetImage) const -> int32_t         = 0;
             [[nodiscard]] virtual auto readPlayerBetInBB(const cv::Mat& playerBetInBBImage) const -> double  = 0;
             [[nodiscard]] virtual auto readPot(const cv::Mat& potImage) const -> int32_t                     = 0;

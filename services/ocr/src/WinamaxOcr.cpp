@@ -7,6 +7,7 @@ namespace OCR {
     using Logger = Logger::Quill;
 
     using enum GameHandler::Card::Suit;
+    using enum ActionType;
 
     WinamaxOcr::WinamaxOcr() :
         _cardsSkin(cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards_skins/" + DEFAULT_CARD_SKIN)), _buttonImg(getButtonImg()) {}
@@ -70,8 +71,26 @@ namespace OCR {
         return {range.first, range.second};
     }
 
-    auto WinamaxOcr::readGameAction(const cv::Mat& gameActionImage) const -> std::string {
-        return readWord(_extractYellowText(gameActionImage));
+    auto WinamaxOcr::readGameAction(const cv::Mat& gameActionImage) const -> ActionType {
+        auto action = readWord(_extractYellowText(gameActionImage));
+        
+        if (action == "CALL") {
+            return CALL;
+        } else if (action == "CHECK") {
+            return CHECK;
+        } else if (action == "FOLD") {
+            return FOLD;
+        } else if (action.starts_with("RAISES")) {
+            return RAISE;
+        } else if (action.starts_with("SMALL")) {
+            return PAY_SMALL_BLIND;
+        } else if (action.starts_with("BIG")) {
+            // @fixme Read BIG BUND instead of BIG BLIND, L and I are merged into a U
+            return PAY_BIG_BLIND;
+        } else {
+            LOG_ERROR(Logger::getLogger(), "The action {} is not recognized", action);
+            return NONE;
+        }
     }
 
     auto WinamaxOcr::readPlayerBet(const cv::Mat& playerBetImage) const -> int32_t {

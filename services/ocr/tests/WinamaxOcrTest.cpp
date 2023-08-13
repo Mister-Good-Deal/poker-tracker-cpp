@@ -10,6 +10,7 @@ using OCR::WinamaxOcr;
 
 using enum GameHandler::Card::Suit;
 using enum GameHandler::Card::Rank;
+using enum GameHandler::RoundAction::ActionType;
 
 /**
  * Avoid to load the OCR model for each test, it takes a lot of time (~1s).
@@ -86,10 +87,9 @@ TEST(WinamaxOcrTest, readActionShouldWork) {
     auto bigBlindTxt   = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/actions/big_blind.png");
     auto smallBlindTxt = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/actions/small_blind.png");
 
-    EXPECT_STREQ(Env::winamaxOcr().readGameAction(raisesTxt).c_str(), "RAISES TO 3 BB");
-    EXPECT_STREQ(Env::winamaxOcr().readGameAction(smallBlindTxt).c_str(), "SMALL BLIND");
-    // @fixme Read BIG BUND instead of BIG BLIND, L and I are merged into a U
-    // EXPECT_STREQ(Env::winamaxOcr().readGameAction(bigBlindTxt).c_str(), "BIG BLIND");
+    EXPECT_EQ(Env::winamaxOcr().readGameAction(raisesTxt), RAISE);
+    EXPECT_EQ(Env::winamaxOcr().readGameAction(smallBlindTxt), PAY_SMALL_BLIND);
+    EXPECT_EQ(Env::winamaxOcr().readGameAction(bigBlindTxt), PAY_BIG_BLIND);
 }
 
 TEST(WinamaxOcrTest, readPlayerNameShouldWork) {
