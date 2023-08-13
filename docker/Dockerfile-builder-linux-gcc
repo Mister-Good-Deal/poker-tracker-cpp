@@ -22,8 +22,7 @@ ARG MAX_CPU_CORES
 ENV CMAKE_COMMON_OPTION="-DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON"
 
 # Install from APK
-RUN apk add --no-cache bash make gcc=~${GCC_VERSION} g++=~${GCC_VERSION} cmake=~${CMAKE_VERSION} libx11-dev libxext-dev \
-    gtk+3.0-dev libcanberra-gtk3 dbus-dev
+RUN apk add --no-cache bash make gcc=~${GCC_VERSION} g++=~${GCC_VERSION} cmake=~${CMAKE_VERSION} libx11-dev libxext-dev
 
 # Install zlib with the given ZLIB_VERSION version from https://github.com/madler/zlib
 RUN wget https://github.com/madler/zlib/archive/refs/tags/v${ZLIB_VERSION}.tar.gz \
@@ -89,13 +88,13 @@ RUN mkdir -p ${TESSDATA_PREFIX} && \
     wget https://github.com/tesseract-ocr/tessdata_best/raw/main/eng.traineddata -q -O ${TESSDATA_PREFIX}/eng.traineddata
 
 # Install OpenCV with the given OPENCV_VERSION from https://github.com/opencv/opencv
-RUN apk add --no-cache linux-headers && \
+RUN apk add --no-cache linux-headers gtk+3.0-dev libcanberra-gtk3 dbus-dev ffmpeg-dev ffmpeg-libavcodec && \
     wget https://github.com/opencv/opencv/archive/refs/tags/${OPENCV_VERSION}.tar.gz -q -O /tmp/opencv-${OPENCV_VERSION}.tar.gz && \
     wget https://github.com/opencv/opencv_contrib/archive/refs/tags/${OPENCV_VERSION}.tar.gz \
     -q -O /tmp/opencv_contrib-${OPENCV_VERSION}.tar.gz && \
     cd /tmp && tar -xvzf opencv-${OPENCV_VERSION}.tar.gz && tar -xvzf opencv_contrib-${OPENCV_VERSION}.tar.gz && \
     cd opencv-${OPENCV_VERSION} && \
-    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DBUILD_LIST="core,highgui,imgcodecs,text" \
+    cmake -S . -B build ${CMAKE_COMMON_OPTION} -DBUILD_LIST="core,highgui,imgcodecs,text,videoio" \
     -DOPENCV_EXTRA_MODULES_PATH="../opencv_contrib-${OPENCV_VERSION}/modules" -DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF \
     -DWITH_OPENCL=OFF -DENABLE_CXX11=ON && \
     cmake --build build -j ${MAX_CPU_CORES} && cmake --install build && \
