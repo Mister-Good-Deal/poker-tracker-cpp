@@ -98,7 +98,7 @@ TEST(WinamaxOcrTest, readPlayerNameShouldWork) {
     auto player3NameImg = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/player_name/name_3.png");
 
     EXPECT_STREQ(Env::winamaxOcr().readPlayerName(player1NameImg).c_str(), "_Mister_");
-    //    EXPECT_STREQ(Env::winamaxOcr().readPlayerName(player2NameImg).c_str(), "G00dspeed"); // @todo fixme
+    // EXPECT_STREQ(Env::winamaxOcr().readPlayerName(player2NameImg).c_str(), "G00dspeed"); // @todo fixme
     EXPECT_STREQ(Env::winamaxOcr().readPlayerName(player3NameImg).c_str(), "sucre_461406");
 }
 
@@ -153,14 +153,20 @@ TEST(WinamaxOcrTest, readBlindAmountShouldWork) {
 
 // @todo Learn tesseract on specific font https://github.com/tesseract-ocr/tesstrain https://www.youtube.com/watch?v=KE4xEzFGSU8
 // @issue https://gitlab.laneuville.me/poker-bot/backend/-/issues/31
-TEST(WinamaxOcrTest, DISABLED_readGameTimeDurationShouldWork) {
+TEST(WinamaxOcrTest, DISABLED_readBlindLevelDurationShouldWork) {
     auto oneMinute          = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/game_duration/1m.png");
     auto eighteenSeconds    = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/game_duration/18s.png");
     auto fiftyHeightSeconds = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/game_duration/58s.png");
 
-    EXPECT_EQ(Env::winamaxOcr().readGameDuration(oneMinute), std::chrono::seconds(60));
-    EXPECT_EQ(Env::winamaxOcr().readGameDuration(eighteenSeconds), std::chrono::seconds(18));
-    EXPECT_EQ(Env::winamaxOcr().readGameDuration(fiftyHeightSeconds), std::chrono::seconds(58));
+    EXPECT_EQ(Env::winamaxOcr().readBlindLevelDuration(oneMinute), std::chrono::seconds(60));
+    EXPECT_EQ(Env::winamaxOcr().readBlindLevelDuration(eighteenSeconds), std::chrono::seconds(18));
+    EXPECT_EQ(Env::winamaxOcr().readBlindLevelDuration(fiftyHeightSeconds), std::chrono::seconds(58));
+}
+
+TEST(WinamaxOcrTest, readAverageStackShouldWork) {
+    auto fourHundredAndFifty = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/average_stack/450.png");
+
+    EXPECT_EQ(Env::winamaxOcr().readAverageStack(fourHundredAndFifty), 450);
 }
 
 TEST(WinamaxOcrTest, playerHasFoldedShouldWork) {

@@ -56,8 +56,18 @@ namespace OCR {
         return suit;
     }
 
-    auto WinamaxOcr::readPlayerName(const cv::Mat& playerNameImage) const -> std::string {
-        return readWordByChar(_extractWhiteText(playerNameImage));
+    auto WinamaxOcr::readAverageStack(const cv::Mat& averageStackImage) const -> int32_t {
+        return readIntNumbers(_extractWhiteTextDarkBackground(averageStackImage));
+    }
+
+    auto WinamaxOcr::readBigBlind(const cv::Mat& blindRangeImage) const -> int32_t { return readBlindRange(blindRangeImage).BB(); }
+    auto WinamaxOcr::readBlindLevel(const cv::Mat& blindLevelImage) const -> int32_t { return readIntNumbers(blindLevelImage); }
+    auto WinamaxOcr::readBlindLevelDuration(const cv::Mat& durationImage) const -> seconds { return readDuration(durationImage); }
+
+    auto WinamaxOcr::readBlindRange(const cv::Mat& blindRangeImage) const -> Blinds {
+        auto range = readIntRange(blindRangeImage);
+
+        return {range.first, range.second};
     }
 
     auto WinamaxOcr::readGameAction(const cv::Mat& gameActionImage) const -> std::string {
@@ -72,19 +82,14 @@ namespace OCR {
         return readFloatNumbers(_extractYellowText(playerBetInBBImage));
     }
 
-    auto WinamaxOcr::readBlindRange(const cv::Mat& blindRangeImage) const -> Blinds {
-        auto range = readIntRange(blindRangeImage);
-
-        return {range.first, range.second};
+    auto WinamaxOcr::readPlayerName(const cv::Mat& playerNameImage) const -> std::string {
+        return readWordByChar(_extractWhiteTextLightBackground(playerNameImage));
     }
 
     auto WinamaxOcr::readPot(const cv::Mat& potImage) const -> int32_t { return readIntNumbers(potImage); }
     auto WinamaxOcr::readPotInBB(const cv::Mat& potInBBImage) const -> double { return readFloatNumbers(potInBBImage); }
     auto WinamaxOcr::readPrizePool(const cv::Mat& prizePoolImage) const -> int32_t { return readIntNumbers(prizePoolImage); }
-    auto WinamaxOcr::readBlindLevel(const cv::Mat& blindLevelImage) const -> int32_t { return readIntNumbers(blindLevelImage); }
     auto WinamaxOcr::readSmallBlind(const cv::Mat& blindRangeImage) const -> int32_t { return readBlindRange(blindRangeImage).SB(); }
-    auto WinamaxOcr::readBigBlind(const cv::Mat& blindRangeImage) const -> int32_t { return readBlindRange(blindRangeImage).BB(); }
-    auto WinamaxOcr::readGameDuration(const cv::Mat& gameDurationImage) const -> seconds { return readDuration(gameDurationImage); }
 
     auto WinamaxOcr::getButtonMask() const -> cv::Mat {
         auto buttonImg = getButtonImg();
@@ -106,7 +111,12 @@ namespace OCR {
         return isSimilar(buttonImage, getButtonImg(), 0.05, getButtonMask());
     }
 
-    auto WinamaxOcr::_extractWhiteText(const cv::Mat& image) const -> cv::Mat {
+    auto WinamaxOcr::_extractWhiteTextDarkBackground(const cv::Mat& image) const -> cv::Mat {
+        // Light color range because winamax uses light colors (with a mix of different color) with a dark background
+        return _colorRangeThreshold(image, {0, 0, 180}, {255, 255, 255});
+    }
+
+    auto WinamaxOcr::_extractWhiteTextLightBackground(const cv::Mat& image) const -> cv::Mat {
         return _colorRangeThreshold(image, {0, 0, 200}, {255, 55, 255});
     }
 
