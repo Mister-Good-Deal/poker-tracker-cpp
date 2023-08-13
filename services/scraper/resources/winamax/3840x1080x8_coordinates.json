@@ -85,6 +85,14 @@
       },
       "width": 51
     },
+    "player1Action": {
+      "height": 14,
+      "topLeft": {
+        "x": 263,
+        "y": 448
+      },
+      "width": 130
+    },
     "player1Bet": {
       "height": 18,
       "topLeft": {

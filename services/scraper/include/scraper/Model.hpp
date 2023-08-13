@@ -63,6 +63,7 @@ namespace Scraper {
             auto getBoardCard4Coord() const -> const cv::Rect& { return _boardCard4Coord; }
             auto getBoardCard5Coord() const -> const cv::Rect& { return _boardCard5Coord; }
             auto getFirstCardCoord() const -> const cv::Rect& { return _firstCardCoord; }
+            auto getPlayer1ActionCoord() const -> const cv::Rect& { return _player1ActionCoord; }
             auto getPlayer1BetCoord() const -> const cv::Rect& { return _player1BetCoord; }
             auto getPlayer1ButtonCoord() const -> const cv::Rect& { return _player1ButtonCoord; }
             auto getPlayer1NameCoord() const -> const cv::Rect& { return _player1NameCoord; }
@@ -95,6 +96,7 @@ namespace Scraper {
             void setBoardCard4Coord(const cv::Rect& boardCard4Coord) { _boardCard4Coord = boardCard4Coord; }
             void setBoardCard5Coord(const cv::Rect& boardCard5Coord) { _boardCard5Coord = boardCard5Coord; }
             void setFirstCardCoord(const cv::Rect& firstCardCoord) { _firstCardCoord = firstCardCoord; }
+            void setPlayer1ActionCoord(const cv::Rect& player1ActionCoord) { _player1ActionCoord = player1ActionCoord; }
             void setPlayer1BetCoord(const cv::Rect& player1BetCoord) { _player1BetCoord = player1BetCoord; }
             void setPlayer1ButtonCoord(const cv::Rect& player1ButtonCoord) { _player1ButtonCoord = player1ButtonCoord; }
             void setPlayer1NameCoord(const cv::Rect& player1NameCoord) { _player1NameCoord = player1NameCoord; }
@@ -135,6 +137,7 @@ namespace Scraper {
             auto getBoardCard3Img(const cv::Mat& img) -> cv::Mat { return img(getBoardCard3Coord()); };
             auto getBoardCard4Img(const cv::Mat& img) -> cv::Mat { return img(getBoardCard4Coord()); };
             auto getBoardCard5Img(const cv::Mat& img) -> cv::Mat { return img(getBoardCard5Coord()); };
+            auto getPlayer1ActionImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer1ActionCoord()); };
             auto getPlayer1BetImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer1BetCoord()); };
             auto getPlayer1ButtonImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer1ButtonCoord()); };
             auto getPlayer1NameImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer1NameCoord()); };
@@ -192,6 +195,7 @@ namespace Scraper {
             cv::Rect _boardCard3Coord;
             cv::Rect _boardCard4Coord;
             cv::Rect _boardCard5Coord;
+            cv::Rect _player1ActionCoord;
             cv::Rect _player1BetCoord;
             cv::Rect _player1ButtonCoord;
             cv::Rect _player1NameCoord;
