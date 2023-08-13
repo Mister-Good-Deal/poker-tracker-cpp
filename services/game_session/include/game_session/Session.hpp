@@ -13,18 +13,18 @@ namespace GameSession {
     using std::chrono::milliseconds;
     using std::chrono::seconds;
 
-    static const uint32_t TICK_RATE = 500;
+    static const milliseconds TICK_RATE = milliseconds(500);
 
-    enum GameStages : int32_t { STARTING = 0, IN_PROGRESS, ENDED };
+    enum GameStages : int32_t { STARTING = 0, GAME_INFO_SETUP, IN_PROGRESS, ENDED };
 
-    class PotNotInitializedException : public std::runtime_error {
+    class InvalidActionException : public std::runtime_error {
         public:
-            explicit PotNotInitializedException(const std::string& arg) : runtime_error(arg) {}
+            explicit InvalidActionException(const std::string& arg) : runtime_error(arg) {}
     };
 
-    class WrongCurrentPlayingPlayerException : public std::runtime_error {
+    class CannotFindButtonException : public std::runtime_error {
         public:
-            explicit WrongCurrentPlayingPlayerException(const std::string& arg) : runtime_error(arg) {}
+            explicit CannotFindButtonException(const std::string& arg) : runtime_error(arg) {}
     };
 
     class Session {
@@ -43,15 +43,10 @@ namespace GameSession {
             auto run() -> void;
 
         protected:
-            auto _harvestGameInfo(const cv::Mat& screenshot) -> void;
-            auto _initCurrentRound(const cv::Mat& screenshot) -> void;
-            auto _trackCurrentRound(const cv::Mat& screenshot) -> void;
-            auto _determinePlayerAction(const cv::Mat& screenshot, Player& player, uint32_t playerNum) -> void;
-            auto _isNextActionTriggered(const cv::Mat& screenshot) -> bool;
-            auto _determineGameOver() -> void;
+            virtual auto _getScreenshot() -> cv::Mat;
 
         private:
-            milliseconds                  _tickRate = milliseconds(TICK_RATE);
+            milliseconds                  _tickRate = TICK_RATE;
             std::string                   _roomName;
             uint64_t                      _windowId = 0;
             Scraper::Model                _scraper  = Scraper::Model(_roomName, {0, 0});
@@ -59,10 +54,17 @@ namespace GameSession {
             Game                          _game;
             GameStages                    _gameStage = GameStages::STARTING;
             cv::Mat                       _currentScreenshot;
-            Player*                       _currentPlaying    = nullptr;
-            uint32_t                      _currentPlayingNum = 0;
+            uint32_t                      _currentPlayerPlayingNum = 0;
             cv::Mat                       _lastWaitingActionImg;
 
             auto _assignButton(const cv::Mat& screenshot) -> void;
+            auto _determineGameOver() -> void;
+            auto _determinePlayerAction(const cv::Mat& screenshot, uint32_t playerNum) -> void;
+            auto _getButtonPosition(const cv::Mat& screenshot) -> int32_t;
+            auto _harvestGameInfo(const cv::Mat& screenshot) -> void;
+            auto _isNextActionTriggered(const cv::Mat& screenshot) -> bool;
+            auto _startRound(const cv::Mat& screenshot) -> void;
+            auto _trackCurrentRound(const cv::Mat& screenshot) -> void;
+            auto _waitGameStart() -> void;
     };
 }  // namespace GameSession
