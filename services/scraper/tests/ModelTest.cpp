@@ -35,10 +35,10 @@ TEST(ModelTest, displayAllElements) {
 
     //    cv::imshow("screen_1", scraper.getWindowElementsView(screenshot_1));
     //    cv::imshow("screen_2", scraper.getWindowElementsView(screenshot_2));
-    cv::imshow("screen_3", scraper.getWindowElementsView(screenshot_3));
+    //    cv::imshow("screen_3", scraper.getWindowElementsView(screenshot_3));
     //    cv::imshow("screen_4", scraper.getWindowElementsView(screenshot_4));
     //    cv::imshow("screen_5", scraper.getWindowElementsView(screenshot_5));
-    //    cv::imshow("screen_6", scraper.getWindowElementsView(screenshot_6));
+    cv::imshow("screen_6", scraper.getWindowElementsView(screenshot_6));
 
     cv::waitKey(-1);
 }
@@ -49,14 +49,14 @@ TEST(ModelTest, checkPlayerButtonScapping) {
     std::ifstream fileReader(std::string(WINAMAX_DIR) + "/3840x1080x8_coordinates.json");
     scraper.loadFromJson(json::parse(fileReader));
 
-    cv::Mat screenshot = cv::imread(std::string(WINAMAX_DIR) + "/screen_3.png");
-    cv::Mat img_1      = scraper.getPlayer2ActionImg(screenshot);
+    cv::Mat screenshot = cv::imread(std::string(WINAMAX_DIR) + "/screen_6.png");
+    cv::Mat img_1      = scraper.getAverageStackImg(screenshot);
 
     cv::imshow("img_1", img_1);
 
     cv::waitKey(0);
 
-    cv::imwrite(std::string(WINAMAX_DIR) + "/raises_to_3_bb.png", img_1);
+    cv::imwrite(std::string(WINAMAX_DIR) + "/450.png", img_1);
 }
 
 TEST(ModelTest, jsonRepresentationShouldBeCorrect) {
@@ -85,9 +85,12 @@ TEST(ModelTest, jsonRepresentationShouldBeCorrect) {
     scraper.setPlayer3BetCoord(cv::Rect(4320, 4057, 1290, 3495));
     scraper.setPlayer2HandCoord(cv::Rect(1019, 3809, 3050, 120));
     scraper.setPlayer3HandCoord(cv::Rect(1235, 3909, 4503, 2364));
+    scraper.setPlayer2ActionCoord(cv::Rect(1234, 1234, 1234, 1234));
+    scraper.setPlayer3ActionCoord(cv::Rect(1234, 1234, 1234, 1234));
     scraper.setBlindLevelCoord(cv::Rect(1859, 4706, 1248, 4687));
     scraper.setBlindAmountCoord(cv::Rect(4307, 1090, 3150, 4300));
-    scraper.setGameTimeCoord(cv::Rect(3265, 3897, 498, 2313));
+    scraper.setBlindLevelTimeCoord(cv::Rect(3265, 3897, 498, 2313));
+    scraper.setAverageStackCoord(cv::Rect(236, 892, 20, 68));
 
     // language=json
     auto jsonExpected = R"(
@@ -118,10 +121,13 @@ TEST(ModelTest, jsonRepresentationShouldBeCorrect) {
                 "player3Bet": { "topLeft": { "x": 4320, "y": 4057 }, "width": 1290, "height": 3495 },
                 "player2Hand": { "topLeft": { "x": 1019, "y": 3809 }, "width": 3050, "height": 120 },
                 "player3Hand": { "topLeft": { "x": 1235, "y": 3909 }, "width": 4503, "height": 2364 },
+                "player2Action": { "topLeft": { "x": 1234, "y": 1234 }, "width": 1234, "height": 1234 },
+                "player3Action": { "topLeft": { "x": 1234, "y": 1234 }, "width": 1234, "height": 1234 },
                 "blindLevel": { "topLeft": { "x": 1859, "y": 4706 }, "width": 1248, "height": 4687 },
                 "blindAmount": { "topLeft": { "x": 4307, "y": 1090 }, "width": 3150, "height": 4300 },
-                "gameTime": { "topLeft": { "x": 3265, "y": 3897 }, "width": 498, "height": 2313 }
-             }
+                "blindLevelTime": { "topLeft": { "x": 3265, "y": 3897 }, "width": 498, "height": 2313 },                
+                "averageStack": { "topLeft": { "x": 236, "y": 892 }, "width": 20, "height": 68 }
+            }
          }
     )"_json;
 
@@ -160,9 +166,12 @@ TEST(ModelTest, loadFromJsonShouldSetCorrectAttributes) {
                 "player3Bet": { "topLeft": { "x": 2929, "y": 3233 }, "width": 3335, "height": 3437 },
                 "player2Hand": { "topLeft": { "x": 3131, "y": 3335 }, "width": 3437, "height": 3539 },
                 "player3Hand": { "topLeft": { "x": 3233, "y": 3437 }, "width": 3621, "height": 3623 },
+                "player2Action": { "topLeft": { "x": 1234, "y": 1234 }, "width": 1234, "height": 1234 },
+                "player3Action": { "topLeft": { "x": 1234, "y": 1234 }, "width": 1234, "height": 1234 },
                 "blindLevel": { "topLeft": { "x": 3335, "y": 3539 }, "width": 3635, "height": 3637 },
                 "blindAmount": { "topLeft": { "x": 3437, "y": 3635 }, "width": 3637, "height": 3739 },
-                "gameTime": { "topLeft": { "x": 3539, "y": 3839 }, "width": 3941, "height": 4043 }
+                "blindLevelTime": { "topLeft": { "x": 3539, "y": 3839 }, "width": 3941, "height": 4043 },                
+                "averageStack": { "topLeft": { "x": 236, "y": 892 }, "width": 20, "height": 68 }
             }
         }
     )"_json;
@@ -194,8 +203,11 @@ TEST(ModelTest, loadFromJsonShouldSetCorrectAttributes) {
     EXPECT_EQ(scraper.getPlayer3BetCoord(), cv::Rect(2929, 3233, 3335, 3437));
     EXPECT_EQ(scraper.getPlayer2HandCoord(), cv::Rect(3131, 3335, 3437, 3539));
     EXPECT_EQ(scraper.getPlayer3HandCoord(), cv::Rect(3233, 3437, 3621, 3623));
+    EXPECT_EQ(scraper.getPlayer2ActionCoord(), cv::Rect(1234, 1234, 1234, 1234));
+    EXPECT_EQ(scraper.getPlayer3ActionCoord(), cv::Rect(1234, 1234, 1234, 1234));
     EXPECT_EQ(scraper.getBlindLevelCoord(), cv::Rect(3335, 3539, 3635, 3637));
     EXPECT_EQ(scraper.getBlindAmountCoord(), cv::Rect(3437, 3635, 3637, 3739));
-    EXPECT_EQ(scraper.getGameTimeCoord(), cv::Rect(3539, 3839, 3941, 4043));
+    EXPECT_EQ(scraper.getBlindLevelTimeCoord(), cv::Rect(3539, 3839, 3941, 4043));
+    EXPECT_EQ(scraper.getAverageStackCoord(), cv::Rect(236, 892, 20, 68));
 }
 // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)

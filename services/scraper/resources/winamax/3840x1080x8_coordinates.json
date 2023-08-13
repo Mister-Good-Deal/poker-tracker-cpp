@@ -5,6 +5,14 @@
     "height": 1080
   },
   "elementsBoxes": {
+    "averageStack": {
+      "height": 18,
+      "topLeft": {
+        "x": 625,
+        "y": 80
+      },
+      "width": 28
+    },
     "blindAmount": {
       "height": 18,
       "topLeft": {
@@ -20,6 +28,14 @@
         "y": 48
       },
       "width": 12
+    },
+    "blindLevelTime": {
+      "height": 18,
+      "topLeft": {
+        "x": 545,
+        "y": 48
+      },
+      "width": 45
     },
     "boardCard1": {
       "height": 77,
@@ -68,14 +84,6 @@
         "y": 370
       },
       "width": 51
-    },
-    "gameTime": {
-      "height": 18,
-      "topLeft": {
-        "x": 545,
-        "y": 48
-      },
-      "width": 45
     },
     "player1Bet": {
       "height": 18,
