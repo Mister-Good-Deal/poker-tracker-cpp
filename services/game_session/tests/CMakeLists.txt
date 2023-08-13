@@ -1,4 +1,5 @@
 find_package(GTest REQUIRED)
+find_package(OpenCV REQUIRED)
 
 function(add_class_test class_name)
     set(target_name "${class_name}Test")
@@ -6,7 +7,7 @@ function(add_class_test class_name)
 
     add_executable(${target_name} ${test_src_file})
 
-    target_link_libraries(${target_name} game_session logger game_handler GTest::Main GTest::gtest GTest::gmock)
+    target_link_libraries(${target_name} game_session logger game_handler opencv_videoio GTest::Main GTest::gtest GTest::gmock)
     target_include_directories(${target_name} PRIVATE ../include)
     gtest_add_tests(TARGET ${target_name} SOURCES ${test_src_file})
 
