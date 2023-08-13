@@ -37,12 +37,11 @@ namespace GameHandler {
 
             auto setBuyIn(int32_t buyIn) -> void { _buyIn = buyIn; }
             auto setMultipliers(int32_t multipliers) -> void { _multipliers = multipliers; }
-            auto setWinner(const Player& winner) -> void { _winner = &winner; }
-            auto setCurrentPlaying(const Player& player) -> void { _currentPlaying = &player; }
+            auto setInitialStack(int32_t stack) -> void { _initialStack = stack; };
             auto setComplete(bool complete) -> void { _complete = complete; }
 
-            auto init(const std::string& player1Name, const std::string& player2Name, const std::string& player3Name) -> void;
-            auto newRound(const Blinds& blinds) -> void;
+            auto init(std::string_view player1Name, std::string_view player2Name, std::string_view player3Name) -> void;
+            auto newRound(const Blinds& blinds, const Hand& hand, int32_t dealerNumber) -> Round&;
             auto end() -> void;
 
             [[nodiscard]] auto toJson() const -> json;
@@ -52,14 +51,14 @@ namespace GameHandler {
             std::array<Player, 3>    _players;  // Player 1 is the Hero, others are Villains
             time_point<system_clock> _startTime;
             time_point<system_clock> _endTime;
-            const Player*            _winner         = nullptr;  // @todo ranking like Round class
-            const Player*            _currentPlaying = nullptr;
-            int32_t                  _buyIn          = 0;
-            int32_t                  _multipliers    = 2;
-            bool                     _initialized    = false;
-            bool                     _complete       = true;
-            bool                     _ended          = false;
+            int32_t                  _buyIn        = 0;
+            int32_t                  _multipliers  = 2;
+            int32_t                  _initialStack = 0;
+            bool                     _initialized  = false;
+            bool                     _complete     = true;
+            bool                     _ended        = false;
 
             [[nodiscard]] auto _computeBalance() const -> int32_t;
+            [[nodiscard]] auto _isGameWon() const -> bool;
     };
 }  // namespace GameHandler

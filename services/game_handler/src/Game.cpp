@@ -6,22 +6,21 @@ namespace GameHandler {
 
     auto Game::operator=(Game&& other) noexcept -> Game& {
         if (this != &other) {
-            _rounds         = std::move(other._rounds);
-            _players        = std::move(other._players);
-            _startTime      = other._startTime;
-            _endTime        = other._endTime;
-            _winner         = other._winner;
-            _currentPlaying = other._currentPlaying;
-            _buyIn          = other._buyIn;
-            _multipliers    = other._multipliers;
-            _initialized    = other._initialized;
-            _complete       = other._complete;
+            _rounds       = std::move(other._rounds);
+            _players      = std::move(other._players);
+            _startTime    = other._startTime;
+            _endTime      = other._endTime;
+            _buyIn        = other._buyIn;
+            _multipliers  = other._multipliers;
+            _initialStack = other._initialStack;
+            _initialized  = other._initialized;
+            _complete     = other._complete;
         }
 
         return *this;
     }
 
-    auto Game::init(const std::string& player1Name, const std::string& player2Name, const std::string& player3Name) -> void {
+    auto Game::init(std::string_view player1Name, std::string_view player2Name, std::string_view player3Name) -> void {
         auto nameList = {player1Name, player2Name, player3Name};
 
         if (any_of(nameList, [](const auto& name) { return name.empty(); })) {
@@ -29,21 +28,26 @@ namespace GameHandler {
                                                   player2Name, player3Name));
         }
 
-        _players[0]  = Player(player1Name, 1);
-        _players[1]  = Player(player2Name, 2);
-        _players[2]  = Player(player3Name, 3);
+        _players[0] = Player(player1Name, 1);
+        _players[1] = Player(player2Name, 2);
+        _players[2] = Player(player3Name, 3);
+
+        for (auto& player : _players) { player.setStack(_initialStack); }
+
         _startTime   = system_clock::now();
         _initialized = true;
     }
 
     auto Game::end() -> void {
-        if (_winner == nullptr) { throw std::runtime_error("The game's winner has not been set"); }
-
         _endTime = system_clock::now();
         _ended   = true;
     }
 
-    auto Game::newRound(const Blinds& blinds) -> void { _rounds.emplace_back(blinds, _players); }
+    auto Game::newRound(const Blinds& blinds, const Hand& hand, int32_t dealerNumber) -> Round& {
+        _rounds.emplace_back(blinds, _players, hand, dealerNumber);
+
+        return _rounds.back();
+    }
 
     auto Game::getPlayer(uint32_t playerNum) -> Player& {
         if (playerNum <= 0 || playerNum > 3) { throw std::invalid_argument("The given player number is invalid"); }
@@ -52,8 +56,6 @@ namespace GameHandler {
     }
 
     auto Game::toJson() const -> json {
-        if (_winner == nullptr) { throw std::runtime_error("The game's winner has not been set"); }
-
         auto roundsArray      = json::array();
         auto playersNameArray = json::array();
 
@@ -62,8 +64,7 @@ namespace GameHandler {
 
         return {{"rounds", roundsArray},
                 {"players", playersNameArray},
-                {"winner", _winner->getName()},
-                {"won", _winner->self()},
+                {"won", _isGameWon()},
                 {"buy_in", _buyIn},
                 {"multipliers", _multipliers},
                 {"balance", _computeBalance()},
@@ -71,6 +72,7 @@ namespace GameHandler {
                 {"complete", _complete}};
     }
 
-    auto Game::_computeBalance() const -> int32_t { return _buyIn * ((_winner->self() ? _multipliers : 0) - 1); }
+    auto Game::_computeBalance() const -> int32_t { return _buyIn * ((_isGameWon() ? _multipliers : 0) - 1); }
 
+    auto Game::_isGameWon() const -> bool { return _players[0].getStack() != 0; }
 }  // namespace GameHandler
