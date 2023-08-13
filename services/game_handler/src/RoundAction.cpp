@@ -15,10 +15,15 @@ namespace GameHandler {
     }
 
     auto RoundAction::toJson() const -> json {
-        json object = {{"action", actionToString(_action)}, {"player_name", _player.getName()}, {"elapsed_time", _time.count()}};
+        json object = {{"action", fmt::format("{}", _action)}, {"player_name", _player.getName()}, {"elapsed_time", _time.count()}};
 
-        if (_action == CALL || _action == BET) { object["amount"] = _amount; }
+        if (_requiresAmount(_action)) { object["amount"] = _amount; }
 
         return object;
     }
+
+    auto RoundAction::_requiresAmount(ActionType action) const -> bool {
+        return action == CALL || action == BET || action == RAISE || action == PAY_BIG_BLIND || action == PAY_SMALL_BLIND;
+    }
+
 }  // namespace GameHandler
