@@ -28,41 +28,40 @@ namespace GameHandler {
             [[nodiscard]] auto BB() const -> int32_t { return bigBlind; }
     };
 
-    struct PlayerStatus {
+    struct PlayerStatus : public Player {
         public:
-            uint32_t   number         = 0;
             ActionType lastAction     = ActionType::NONE;
             int32_t    totalBet       = 0;
             int32_t    totalStreetBet = 0;
             int32_t    maxWinnable    = 0;
-            int32_t    initialStack   = 0;
+            int32_t    endRoundStack  = 0;
             bool       inRound        = true;
             bool       isAllIn        = false;
             Hand       hand           = Hand();
             Position   position;
 
             explicit PlayerStatus(const Player& player, int32_t dealerNumber) :
-                position(static_cast<Position>((player.getNumber() - dealerNumber + 3) % 3)), number(player.getNumber()),
-                initialStack(player.getStack()), inRound(!player.isEliminated()){};
+                position(static_cast<Position>((player.getNumber() - dealerNumber + 3) % 3)), inRound(!player.isEliminated()),
+                endRoundStack(player.getStack()), Player(player){};
 
             auto payBlind(int32_t amount) -> void {
                 // @todo what if player cannot pay the blind?
-                auto payAmount = std::min(amount, initialStack);
+                auto payAmount = std::min(amount, getStack());
 
-                isAllIn = payAmount == initialStack;
+                isAllIn = payAmount == getStack();
                 totalBet += payAmount;
                 totalStreetBet += payAmount;
             }
 
             auto hasBet(int32_t amount) -> void {
-                isAllIn = (amount + totalBet) == initialStack;
+                isAllIn = (amount + totalBet) == getStack();
                 totalBet += amount;
                 totalStreetBet += amount;
                 lastAction = ActionType::BET;
             }
 
             auto hasCalled(int32_t amount) -> void {
-                isAllIn = (amount + totalBet) == initialStack;
+                isAllIn = (amount + totalBet) == getStack();
                 totalBet += amount;
                 totalStreetBet += amount;
                 lastAction = ActionType::CALL;
@@ -84,7 +83,7 @@ namespace GameHandler {
     class Round {
         public:
             using round_actions_t    = std::array<std::vector<RoundAction>, STREET_NUMBER>;
-            using ranking_t          = std::stack<std::vector<Player>>;
+            using ranking_t          = std::stack<std::vector<int32_t>>;
             using players_status_t   = std::array<PlayerStatus, 3>;
             using players_status_ptr = std::unique_ptr<players_status_t>;
 
@@ -102,15 +101,14 @@ namespace GameHandler {
             [[nodiscard]] auto getBoard() -> Board& { return _board; }
             [[nodiscard]] auto getPot() const -> int32_t { return _pot; }
             [[nodiscard]] auto isInProgress() const -> bool { return !_ended; }
-            [[nodiscard]] auto isInitialized() const -> bool { return _initialized; }
 
             auto call(uint32_t playerNum, int32_t amount) -> void;
             auto bet(uint32_t playerNum, int32_t amount) -> void;
             auto check(uint32_t playerNum) -> void;
             auto fold(uint32_t playerNum) -> void;
             auto showdown() -> void;
-            auto setPlayer2Hand(Hand hand) -> void { _getPlayerStatus(2).hand = std::move(hand); }
-            auto setPlayer3Hand(Hand hand) -> void { _getPlayerStatus(3).hand = std::move(hand); }
+            auto setPlayer2Hand(const Hand& hand) -> void { _getPlayerStatus(2).hand = hand; }
+            auto setPlayer3Hand(const Hand& hand) -> void { _getPlayerStatus(3).hand = hand; }
 
             [[nodiscard]] auto toJson() const -> json;
 
@@ -128,11 +126,11 @@ namespace GameHandler {
             players_status_ptr       _playersStatus  = nullptr;
             ActionType               _lastAction     = ActionType::NONE;
             bool                     _ended          = false;
-            bool                     _initialized    = false;
 
             [[nodiscard]] auto _hasWon() const -> bool;
             [[nodiscard]] auto _toJson(const ranking_t& ranking) const -> json;
             [[nodiscard]] auto _getStacksVariation() const -> json;
+            [[nodiscard]] auto _getPlayer(uint32_t playerNum) const -> Player;
             [[nodiscard]] auto _getPlayerStatus(uint32_t playerNum) const -> PlayerStatus;
 
             auto _getPlayer(uint32_t playerNum) -> Player&;

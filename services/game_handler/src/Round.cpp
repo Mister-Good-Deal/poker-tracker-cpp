@@ -37,46 +37,45 @@ namespace GameHandler {
             _lastActionTime = other._lastActionTime;
             _players        = other._players;
             _ended          = other._ended;
-            _initialized    = other._initialized;
         }
 
         return *this;
     }
 
     auto Round::call(uint32_t playerNum, int32_t amount) -> void {
-        auto& player = _getPlayer(playerNum);
+        auto& player = _getPlayerStatus(playerNum);
 
         _actions.at(_currentStreet).emplace_back(CALL, player, _getAndResetLastActionTime(), amount);
-        _getPlayerStatus(playerNum).hasCalled(amount);
+        player.hasCalled(amount);
         _pot += amount;
         _streetPot += amount;
         _determineStreetOver(CALL);
     }
 
     auto Round::bet(uint32_t playerNum, int32_t amount) -> void {
-        auto& player = _getPlayer(playerNum);
+        auto& player = _getPlayerStatus(playerNum);
 
         _actions.at(_currentStreet).emplace_back(BET, player, _getAndResetLastActionTime(), amount);
-        _getPlayerStatus(playerNum).hasBet(amount);
+        player.hasBet(amount);
         _lastAction = BET;
         _pot += amount;
         _streetPot += amount;
     }
 
     auto Round::check(uint32_t playerNum) -> void {
-        auto& player = _getPlayer(playerNum);
+        auto& player = _getPlayerStatus(playerNum);
 
         _actions.at(_currentStreet).emplace_back(CHECK, player, _getAndResetLastActionTime());
-        _getPlayerStatus(playerNum).hasChecked();
+        player.hasChecked();
         _determineStreetOver(CHECK);
     }
 
     auto Round::fold(uint32_t playerNum) -> void {
-        auto& player = _getPlayer(playerNum);
+        auto& player = _getPlayerStatus(playerNum);
 
         _actions.at(_currentStreet).emplace_back(FOLD, player, _getAndResetLastActionTime());
-        _getPlayerStatus(playerNum).hasFolded();
-        _ranking.emplace(std::vector<Player>{player});
+        player.hasFolded();
+        _ranking.emplace(std::vector<int32_t>{player.getNumber()});
         _determineStreetOver(FOLD);
     }
 
@@ -101,10 +100,10 @@ namespace GameHandler {
         for_each(_actions[RIVER], [&](const RoundAction& action) { riverActions.emplace_back(action.toJson()); });
 
         for (const auto& player : *_playersStatus) {
-            positions.emplace(format("{}", player.position), format("player_{}", player.number));
+            positions.emplace(format("{}", player.position), format("player_{}", player.getNumber()));
         }
 
-        for (const auto& player : *_playersStatus) { hands.emplace(format("player_{}", player.number), player.hand.toJson()); }
+        for (const auto& player : *_playersStatus) { hands.emplace(format("player_{}", player.getNumber()), player.hand.toJson()); }
 
         return {{"actions", {{"pre_flop", preFlopActions}, {"flop", flopActions}, {"turn", turnActions}, {"river", riverActions}}},
                 {"board", _board.toJson()},
@@ -123,18 +122,10 @@ namespace GameHandler {
         return _players->at(playerNum - 1);
     }
 
-    auto Round::_getNextPlayerNum(uint32_t playerNum) -> uint32_t {
+    auto Round::_getPlayer(uint32_t playerNum) const -> Player {
         if (playerNum <= 0 || playerNum > 3) { throw std::invalid_argument("The given player number is invalid"); }
 
-        uint32_t nextPlayerNum = (playerNum % 3) + 1;
-
-        while (nextPlayerNum != playerNum) {
-            if (_getPlayerStatus(nextPlayerNum).inRound) { return nextPlayerNum; }
-
-            nextPlayerNum = (nextPlayerNum % 3) + 1;
-        }
-
-        throw std::runtime_error("No next player found");
+        return _players->at(playerNum - 1);
     }
 
     auto Round::_getPlayerStatus(uint32_t playerNum) -> PlayerStatus& {
@@ -147,6 +138,20 @@ namespace GameHandler {
         if (playerNum <= 0 || playerNum > 3) { throw std::invalid_argument("The given player number is invalid"); }
 
         return _playersStatus->at(playerNum - 1);
+    }
+
+    auto Round::_getNextPlayerNum(uint32_t playerNum) -> uint32_t {
+        if (playerNum <= 0 || playerNum > 3) { throw std::invalid_argument("The given player number is invalid"); }
+
+        uint32_t nextPlayerNum = (playerNum % 3) + 1;
+
+        while (nextPlayerNum != playerNum) {
+            if (_getPlayerStatus(nextPlayerNum).inRound) { return nextPlayerNum; }
+
+            nextPlayerNum = (nextPlayerNum % 3) + 1;
+        }
+
+        throw std::runtime_error("No next player found");
     }
 
     auto Round::_getAndResetLastActionTime() -> seconds {
@@ -224,7 +229,7 @@ namespace GameHandler {
     auto Round::_hasWon() const -> bool {
         auto rankFirst = _ranking.top();
 
-        return find_if(rankFirst, [&](const Player& player) { return player.getNumber() == 1; }) != rankFirst.end();
+        return find_if(rankFirst, [&](int32_t playerNum) { return playerNum == 1; }) != rankFirst.end();
     }
 
     auto Round::_processRanking() -> void {
@@ -237,12 +242,12 @@ namespace GameHandler {
 
         sort(players, [&](const PlayerStatus& p1, const PlayerStatus& p2) { return _board.compareHands(p1.hand, p2.hand); });
 
-        // iterate through the players from last to first and add them to the _ranking stack
+        // iterate through the players in round from last to first and add them to the _ranking stack
         for (auto& player : players) {
-            if (_ranking.empty() || _board.compareHands(player.hand, _getPlayerStatus(_ranking.top().front().getNumber()).hand) == 0) {
-                _ranking.top().emplace_back(_getPlayer(player.number));
+            if (!_ranking.empty() && _board.compareHands(player.hand, _getPlayerStatus(_ranking.top().front()).hand) == 0) {
+                _ranking.top().emplace_back(player.getNumber());
             } else {
-                _ranking.emplace(std::vector<Player>{_getPlayer(player.number)});
+                _ranking.emplace(std::vector<int32_t>{player.getNumber()});
             }
         }
     }
@@ -252,9 +257,8 @@ namespace GameHandler {
 
         if (dealer == _playersStatus->end()) { throw std::runtime_error("No dealer found"); }
 
-        auto  dealerNum = dealer->number;
-        auto& SBPlayer  = _getPlayerStatus(_getNextPlayerNum(dealerNum));
-        auto& BBPlayer  = _getPlayerStatus(_getNextPlayerNum(SBPlayer.number));  // Can be the dealer if there are only 2 players
+        auto& SBPlayer = _getPlayerStatus(_getNextPlayerNum(dealer->getNumber()));
+        auto& BBPlayer = _getPlayerStatus(_getNextPlayerNum(SBPlayer.getNumber()));  // Can be the dealer if there are only 2 players
 
         SBPlayer.payBlind(_blinds.SB());
         BBPlayer.payBlind(_blinds.BB());
@@ -269,17 +273,20 @@ namespace GameHandler {
         auto pot     = _pot;
         // Add pot to winner(s) stack
         while (!ranking.empty()) {
-            auto& players = ranking.top();
+            auto playersNum = ranking.top();
             // Sort players by stacks asc and pay players by this order
-            sort(players, [&](const Player& p1, const Player& p2) { return p1.getStack() < p2.getStack(); });
+            sort(playersNum, [&](int32_t p1Num, int32_t p2Num) {
+                return _getPlayerStatus(p1Num).getStack() < _getPlayerStatus(p2Num).getStack();
+            });
             // Number of remaining players to share the pot
-            auto remainingPlayers = static_cast<int32_t>(players.size());
+            auto remainingPlayers = static_cast<int32_t>(playersNum.size());
 
-            for (auto& player : players) {
-                auto& playerStatus = _getPlayerStatus(player.getNumber());
-                auto  winAmount    = std::min(playerStatus.maxWinnable, pot / remainingPlayers--);
+            for (int32_t playerNum : playersNum) {
+                auto& player    = _getPlayerStatus(playerNum);
+                auto  winAmount = std::min(player.maxWinnable, pot / remainingPlayers--);
 
-                _getPlayer(playerStatus.number).updateStack(winAmount - playerStatus.totalBet);
+                player.endRoundStack += winAmount - player.totalBet;
+                _getPlayer(player.getNumber()).setStack(player.endRoundStack);
                 pot -= winAmount;
             }
 
@@ -314,7 +321,7 @@ namespace GameHandler {
             auto rankStepJson = json::array();
             auto rankStep     = rankingCopy.top();
 
-            for (const auto& player : rankStep) { rankStepJson.emplace_back(player.getName()); }
+            for (const auto& playerNum : rankStep) { rankStepJson.emplace_back(_getPlayerStatus(playerNum).getName()); }
 
             rankingJson.emplace_back(rankStepJson);
             rankingCopy.pop();
@@ -326,11 +333,10 @@ namespace GameHandler {
     auto Round::_getStacksVariation() const -> json {
         auto playersStack = json::array();
 
-        for (const auto& player : *_players) {
-            playersStack.emplace_back(
-                json::object({{"player", player.getName()},
-                              {"stack", player.getStack()},
-                              {"balance", player.getStack() - _getPlayerStatus(player.getNumber()).initialStack}}));
+        for (const auto& player : *_playersStatus) {
+            playersStack.emplace_back(json::object({{"player", player.getName()},
+                                                    {"stack", player.endRoundStack},
+                                                    {"balance", player.endRoundStack - player.getStack()}}));
         }
 
         return playersStack;
