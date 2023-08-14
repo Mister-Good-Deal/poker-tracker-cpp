@@ -33,13 +33,12 @@ namespace GameHandler {
     };
 }  // namespace GameHandler
 
-// Custom formatter for Position
+// Custom fmt formatter for Position
 namespace fmt {
     using GameHandler::RoundAction;
 
     template<>
     struct formatter<RoundAction::ActionType> : formatter<string_view> {
-            // parse is inherited from formatter<string_view>.
             template<typename FormatContext>
             auto format(RoundAction::ActionType action, FormatContext& ctx) const {
                 string_view name = "unknown";

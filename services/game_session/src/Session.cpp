@@ -1,6 +1,7 @@
 #include "game_session/Session.hpp"
 
 #include <logger/Logger.hpp>
+#include <utilities/ImageMacros.hpp>
 
 namespace GameSession {
     using GameHandler::invalid_player_name;
@@ -9,13 +10,15 @@ namespace GameSession {
 
     using enum RoundAction::ActionType;
 
-    Session::Session(std::string_view roomName, uint64_t windowId) :
-        _roomName(roomName), _windowId(windowId), _scraper(_roomName, {0, 0}), _ocr(OcrFactory::create(_roomName)), _game() {}
+    // @todo get window size from windowId if not provided
+    Session::Session(std::string_view roomName, uint64_t windowId, windowSize_t windowSize) :
+        _roomName(roomName), _windowId(windowId), _scraper(_roomName, windowSize), _ocr(OcrFactory::create(_roomName)), _game() {}
 
     auto Session::operator=(Session&& other) noexcept -> Session& {
         if (this != &other) {
             _game                    = std::move(other._game);
             _scraper                 = std::move(other._scraper);
+            _currentScreenshot       = std::move(other._currentScreenshot);
             _tickRate                = other._tickRate;
             _windowId                = other._windowId;
             _gameStage               = other._gameStage;
@@ -26,22 +29,22 @@ namespace GameSession {
     }
 
     auto Session::run() -> void {
-        _getScreenshot().copyTo(_currentScreenshot);
+        _currentScreenshot = _getScreenshot();
 
         while (_gameStage != GameStages::ENDED) {
             switch (_gameStage) {
                 case GameStages::STARTING: _waitGameStart(); break;
-                case GameStages::GAME_INFO_SETUP: _harvestGameInfo(_currentScreenshot); break;
+                case GameStages::GAME_INFO_SETUP: _harvestGameInfo(*_currentScreenshot); break;
                 case GameStages::IN_PROGRESS:
                     while (_game.getCurrentRound().isInProgress()) {
-                        if (!_isNextActionTriggered(_currentScreenshot)) { continue; }
+                        if (!_isNextActionTriggered(*_currentScreenshot)) { continue; }
 
-                        _trackCurrentRound(_currentScreenshot);
+                        _trackCurrentRound(*_currentScreenshot);
                     }
 
                     _determineGameOver();
 
-                    if (!_game.isOver()) { _startRound(_currentScreenshot); }
+                    if (!_game.isOver()) { _startRound(*_currentScreenshot); }
 
                     break;
                 case GameStages::ENDED: break;
@@ -49,12 +52,12 @@ namespace GameSession {
 
             std::this_thread::sleep_for(_tickRate);
 
-            _getScreenshot().copyTo(_currentScreenshot);
+            _currentScreenshot = _getScreenshot();
         }
     }
 
     // Used for testing by mocking this method
-    auto Session::_getScreenshot() -> cv::Mat { return _scraper.getScreenshot(_windowId); }
+    auto Session::_getScreenshot() -> sharedConstMat_t { return _scraper.getScreenshot(_windowId); }
 
     auto Session::_assignButton(const cv::Mat& screenshot) -> void {
         _currentPlayerPlayingNum = _getButtonPosition(screenshot);
@@ -153,16 +156,12 @@ namespace GameSession {
     }
 
     auto Session::_waitGameStart() -> void {
-        while (_gameStage == GameStages::STARTING) {
-            try {
-                _getButtonPosition(_currentScreenshot);
+        try {
+            DISPLAY_VIDEO("waiting game start", *_currentScreenshot);
+            
+            _getButtonPosition(*_currentScreenshot);
 
-                _gameStage = GameStages::GAME_INFO_SETUP;
-            } catch (const CannotFindButtonException& e) {
-                std::this_thread::sleep_for(_tickRate);
-
-                _getScreenshot().copyTo(_currentScreenshot);
-            }
-        }
+            _gameStage = GameStages::GAME_INFO_SETUP;
+        } catch (const CannotFindButtonException& e) { LOG_DEBUG(Logger::getLogger(), "Waiting game start"); }
     }
 }  // namespace GameSession

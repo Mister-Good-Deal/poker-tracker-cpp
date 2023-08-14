@@ -10,8 +10,11 @@ namespace GameSession {
     using GameHandler::RoundAction;
     using OCR::OcrInterface;
     using OCR::Factory::OcrFactory;
+    using Scraper::windowSize_t;
     using std::chrono::milliseconds;
     using std::chrono::seconds;
+
+    using sharedConstMat_t = Scraper::Model::sharedConstMat_t;
 
     static const milliseconds TICK_RATE = milliseconds(500);
 
@@ -29,7 +32,7 @@ namespace GameSession {
 
     class Session {
         public:
-            Session(std::string_view roomName, uint64_t windowId);
+            Session(std::string_view roomName, uint64_t windowId, windowSize_t windowSize = {0, 0});
             Session(const Session& other) = delete;
             Session(Session&& other) noexcept { *this = std::move(other); };
 
@@ -43,18 +46,19 @@ namespace GameSession {
             auto run() -> void;
 
         protected:
-            virtual auto _getScreenshot() -> cv::Mat;
+            virtual auto _getScreenshot() -> sharedConstMat_t;
 
         private:
             milliseconds                  _tickRate = TICK_RATE;
             std::string                   _roomName;
-            uint64_t                      _windowId = 0;
-            Scraper::Model                _scraper  = Scraper::Model(_roomName, {0, 0});
+            uint64_t                      _windowId   = 0;
+            windowSize_t                  _windowSize = {0, 0};
+            Scraper::Model                _scraper    = Scraper::Model(_roomName, _windowSize);
             std::unique_ptr<OcrInterface> _ocr;
             Game                          _game;
             GameStages                    _gameStage = GameStages::STARTING;
-            cv::Mat                       _currentScreenshot;
-            uint32_t                      _currentPlayerPlayingNum = 0;
+            sharedConstMat_t              _currentScreenshot;
+            int32_t                       _currentPlayerPlayingNum = 0;
             cv::Mat                       _lastWaitingActionImg;
 
             auto _assignButton(const cv::Mat& screenshot) -> void;
