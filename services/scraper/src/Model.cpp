@@ -11,11 +11,15 @@ namespace Scraper {
 
     using Logger = Logger::Quill;
 
+    Model::Model(std::string_view roomName, windowSize_t windowSize) : _windowSize(windowSize), _roomName(roomName) {
+        _loadDefaultModel();
+    }
+
     auto Model::operator=(Model&& other) noexcept -> Model& {
         if (this != &other) {
             _activeWindows = std::move(other._activeWindows);
             _roomName      = std::move(other._roomName);
-            _windowSize    = std::move(other._windowSize);
+            _windowSize    = other._windowSize;
 
             // All elements coordinates
             _firstCardCoord      = other._firstCardCoord;
@@ -120,7 +124,7 @@ namespace Scraper {
 #endif
     }
 
-    auto Model::getScreenshot(uint64_t windowId) -> cv::Mat {
+    auto Model::getScreenshot(uint64_t windowId) -> sharedConstMat_t {
         _parseActiveWindows();
 
         if (!_activeWindows.contains(windowId)) {
@@ -146,11 +150,11 @@ namespace Scraper {
 
         BitBlt(hdcMemDC, 0, 0, width, height, hdcWindow, 0, 0, SRCCOPY);
 
-        cv::Mat screenshot(height, width, CV_8UC4);
+        auto screenshot = std::make_shared<cv::Mat>(height, width, CV_8UC4);
 
-        GetBitmapBits(hbmScreen, static_cast<LONG>(screenshot.total() * screenshot.elemSize()), screenshot.data);
+        GetBitmapBits(hbmScreen, static_cast<LONG>(screenshot->total() * screenshot->elemSize()), screenshot->data);
 
-        screenshot = cv::imdecode(screenshot, cv::IMREAD_COLOR);
+        *screenshot = cv::imdecode(*screenshot, cv::IMREAD_COLOR);
 
         SelectObject(hdcMemDC, oldObj);
         DeleteDC(hdcMemDC);
@@ -164,9 +168,9 @@ namespace Scraper {
         XGetWindowAttributes(display, window.ref, &attributes);
         XImage* img = XGetImage(display, window.ref, 0, 0, attributes.width, attributes.height, AllPlanes, ZPixmap);
 
-        cv::Mat screenshot(attributes.height, attributes.width, CV_8UC4, img->data);
+        auto screenshot = std::make_shared<cv::Mat>(attributes.height, attributes.width, CV_8UC4, img->data);
 
-        cv::cvtColor(screenshot, screenshot, cv::COLOR_BGRA2BGR);
+        cv::cvtColor(*screenshot, *screenshot, cv::COLOR_BGRA2BGR);
 
         XDestroyImage(img);
         XCloseDisplay(display);
@@ -183,7 +187,7 @@ namespace Scraper {
         return _activeWindows;
     }
 
-    auto Model::getWindowElementsView(const cv::Mat& img) -> cv::Mat {
+    auto Model::getWindowElementsView(const cv::Mat& img) const -> const cv::Mat {
         cv::Mat               elementsView = img.clone();
         std::vector<cv::Rect> elements     = {
             getAverageStackCoord(),  getBlindAmountCoord(),   getBlindLevelCoord(),    getBlindLevelTimeCoord(),
@@ -247,7 +251,7 @@ namespace Scraper {
 
     auto Model::toJson() const -> json {
         return {{"roomName", _roomName},
-                {"windowSize", {{"width", _windowSize.first}, {"height", _windowSize.second}}},
+                {"windowSize", {{"width", _windowSize.width}, {"height", _windowSize.height}}},
                 {"elementsBoxes",
                  {{"averageStack", _rectToJson(getAverageStackCoord())},   {"blindAmount", _rectToJson(getBlindAmountCoord())},
                   {"blindLevel", _rectToJson(getBlindLevelCoord())},       {"blindLevelTime", _rectToJson(getBlindLevelTimeCoord())},
@@ -307,5 +311,20 @@ namespace Scraper {
 
     auto Model::_rectToJson(const cv::Rect& rect) const -> json {
         return {{"topLeft", {{"x", rect.x}, {"y", rect.y}}}, {"width", rect.width}, {"height", rect.height}};
+    }
+    auto Model::_loadDefaultModel() -> void {
+        std::filesystem::path modelPath;
+
+        if (_roomName == "Winamax") {
+            modelPath = fmt::format(MODEL_PATH_FORMAT, fmt::arg("dir", WINAMAX_DIR), fmt::arg("size", _windowSize));
+        }
+
+        std::ifstream file(modelPath);
+
+        if (file.is_open()) {
+            loadFromJson(json::parse(file));
+        } else {
+            throw std::runtime_error(fmt::format("No default model found for room {} of window's size {}", _roomName, _windowSize));
+        }
     }
 }  // namespace Scraper

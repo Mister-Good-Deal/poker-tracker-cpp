@@ -23,7 +23,7 @@ TEST(ModelTest, displayScreenshot) {
 TEST(ModelTest, displayAllElements) {
     Model scraper("Winamax", {3840, 1080});
 
-    std::ifstream fileReader(std::string(WINAMAX_DIR) + "/3840x1080x8_coordinates.json");
+    std::ifstream fileReader(std::string(WINAMAX_DIR) + "/models/3840x1080.json");
     scraper.loadFromJson(json::parse(fileReader));
 
     cv::Mat screenshot_1 = cv::imread(std::string(WINAMAX_DIR) + "/screen_1.png");
@@ -46,7 +46,7 @@ TEST(ModelTest, displayAllElements) {
 TEST(ModelTest, checkPlayerButtonScapping) {
     Model scraper("Winamax", {3840, 1080});
 
-    std::ifstream fileReader(std::string(WINAMAX_DIR) + "/3840x1080x8_coordinates.json");
+    std::ifstream fileReader(std::string(WINAMAX_DIR) + "/models/3840x1080.json");
     scraper.loadFromJson(json::parse(fileReader));
 
     cv::Mat screenshot = cv::imread(std::string(WINAMAX_DIR) + "/screen_6.png");

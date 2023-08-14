@@ -23,7 +23,9 @@
 #endif
 namespace Scraper {
     using json         = nlohmann::json;
-    using windowSize_t = std::pair<int32_t, int32_t>;
+    using windowSize_t = cv::Size_<int32_t>;
+
+    static constexpr std::string_view MODEL_PATH_FORMAT = "{dir}/models/{size}.json";
 
     struct WindowInfo {
             std::string title;
@@ -41,9 +43,10 @@ namespace Scraper {
 
     class Model {
         public:
-            using windows_t = std::unordered_map<uint64_t, WindowInfo>;
+            using windows_t        = std::unordered_map<uint64_t, WindowInfo>;
+            using sharedConstMat_t = std::shared_ptr<const cv::Mat>;
 
-            Model(std::string_view roomName, windowSize_t windowSize) : _windowSize(std::move(windowSize)), _roomName(roomName){};
+            Model(std::string_view roomName, windowSize_t windowSize);
             Model(const Model& other) = default;
             Model(Model&& other) noexcept { *this = std::move(other); };
 
@@ -52,7 +55,6 @@ namespace Scraper {
             auto operator=(const Model& other) -> Model& = default;
             auto operator=(Model&& other) noexcept -> Model&;
 
-            auto getWindowSize() const -> const windowSize_t& { return _windowSize; }
             auto getAverageStackCoord() const -> const cv::Rect& { return _averageStackCoord; }
             auto getBlindAmountCoord() const -> const cv::Rect& { return _blindAmountCoord; }
             auto getBlindLevelCoord() const -> const cv::Rect& { return _blindLevelCoord; }
@@ -84,8 +86,8 @@ namespace Scraper {
             auto getPrizePoolCoord() const -> const cv::Rect& { return _prizePoolCoord; }
             auto getRoomName() const -> const std::string& { return _roomName; }
             auto getSecondCardCoord() const -> const cv::Rect& { return _secondCardCoord; }
+            auto getWindowSize() const -> const windowSize_t& { return _windowSize; }
 
-            void setWindowSize(const windowSize_t& windowSize) { _windowSize = windowSize; }
             void setAverageStackCoord(const cv::Rect& averageStackCoord) { _averageStackCoord = averageStackCoord; }
             void setBlindAmountCoord(const cv::Rect& blindAmountCoord) { _blindAmountCoord = blindAmountCoord; }
             void setBlindLevelCoord(const cv::Rect& blindLevelCoord) { _blindLevelCoord = blindLevelCoord; }
@@ -117,6 +119,7 @@ namespace Scraper {
             void setPrizePoolCoord(const cv::Rect& prizePoolCoord) { _prizePoolCoord = prizePoolCoord; }
             void setRoomName(const std::string& roomName) { _roomName = roomName; }
             void setSecondCardCoord(const cv::Rect& secondCardCoord) { _secondCardCoord = secondCardCoord; }
+            void setWindowSize(const windowSize_t& windowSize) { _windowSize = windowSize; }
 
             /**
              *              Players positions on the table
@@ -127,36 +130,36 @@ namespace Scraper {
              *                   |__________________|
              *                         Player 1
              */
-            auto getFirstCardImg(const cv::Mat& img) -> cv::Mat { return img(getFirstCardCoord()); };
-            auto getAverageStackImg(const cv::Mat& img) -> cv::Mat { return img(getAverageStackCoord()); };
-            auto getBlindAmountImg(const cv::Mat& img) -> cv::Mat { return img(getBlindAmountCoord()); };
-            auto getBlindLevelImg(const cv::Mat& img) -> cv::Mat { return img(getBlindLevelCoord()); };
-            auto getBlindLevelTimeImg(const cv::Mat& img) -> cv::Mat { return img(getBlindLevelTimeCoord()); };
-            auto getBoardCard1Img(const cv::Mat& img) -> cv::Mat { return img(getBoardCard1Coord()); };
-            auto getBoardCard2Img(const cv::Mat& img) -> cv::Mat { return img(getBoardCard2Coord()); };
-            auto getBoardCard3Img(const cv::Mat& img) -> cv::Mat { return img(getBoardCard3Coord()); };
-            auto getBoardCard4Img(const cv::Mat& img) -> cv::Mat { return img(getBoardCard4Coord()); };
-            auto getBoardCard5Img(const cv::Mat& img) -> cv::Mat { return img(getBoardCard5Coord()); };
-            auto getPlayer1ActionImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer1ActionCoord()); };
-            auto getPlayer1BetImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer1BetCoord()); };
-            auto getPlayer1ButtonImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer1ButtonCoord()); };
-            auto getPlayer1NameImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer1NameCoord()); };
-            auto getPlayer1StackImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer1StackCoord()); };
-            auto getPlayer2ActionImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer2ActionCoord()); };
-            auto getPlayer2BetImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer2BetCoord()); };
-            auto getPlayer2ButtonImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer2ButtonCoord()); };
-            auto getPlayer2CardsImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer2HandCoord()); };
-            auto getPlayer2NameImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer2NameCoord()); };
-            auto getPlayer2StackImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer2StackCoord()); };
-            auto getPlayer3ActionImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer3ActionCoord()); };
-            auto getPlayer3BetImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer3BetCoord()); };
-            auto getPlayer3ButtonImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer3ButtonCoord()); };
-            auto getPlayer3CardsImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer3HandCoord()); };
-            auto getPlayer3NameImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer3NameCoord()); };
-            auto getPlayer3StackImg(const cv::Mat& img) -> cv::Mat { return img(getPlayer3StackCoord()); };
-            auto getPotImg(const cv::Mat& img) -> cv::Mat { return img(getPotCoord()); };
-            auto getPrizePoolImg(const cv::Mat& img) -> cv::Mat { return img(getPrizePoolCoord()); };
-            auto getSecondCardImg(const cv::Mat& img) -> cv::Mat { return img(getSecondCardCoord()); };
+            auto getFirstCardImg(const cv::Mat& img) const -> const cv::Mat { return img(getFirstCardCoord()); };
+            auto getAverageStackImg(const cv::Mat& img) const -> const cv::Mat { return img(getAverageStackCoord()); };
+            auto getBlindAmountImg(const cv::Mat& img) const -> const cv::Mat { return img(getBlindAmountCoord()); };
+            auto getBlindLevelImg(const cv::Mat& img) const -> const cv::Mat { return img(getBlindLevelCoord()); };
+            auto getBlindLevelTimeImg(const cv::Mat& img) const -> const cv::Mat { return img(getBlindLevelTimeCoord()); };
+            auto getBoardCard1Img(const cv::Mat& img) const -> const cv::Mat { return img(getBoardCard1Coord()); };
+            auto getBoardCard2Img(const cv::Mat& img) const -> const cv::Mat { return img(getBoardCard2Coord()); };
+            auto getBoardCard3Img(const cv::Mat& img) const -> const cv::Mat { return img(getBoardCard3Coord()); };
+            auto getBoardCard4Img(const cv::Mat& img) const -> const cv::Mat { return img(getBoardCard4Coord()); };
+            auto getBoardCard5Img(const cv::Mat& img) const -> const cv::Mat { return img(getBoardCard5Coord()); };
+            auto getPlayer1ActionImg(const cv::Mat& img) const -> const cv::Mat { return img(getPlayer1ActionCoord()); };
+            auto getPlayer1BetImg(const cv::Mat& img) const -> const cv::Mat { return img(getPlayer1BetCoord()); };
+            auto getPlayer1ButtonImg(const cv::Mat& img) const -> const cv::Mat { return img(getPlayer1ButtonCoord()); };
+            auto getPlayer1NameImg(const cv::Mat& img) const -> const cv::Mat { return img(getPlayer1NameCoord()); };
+            auto getPlayer1StackImg(const cv::Mat& img) const -> const cv::Mat { return img(getPlayer1StackCoord()); };
+            auto getPlayer2ActionImg(const cv::Mat& img) const -> const cv::Mat { return img(getPlayer2ActionCoord()); };
+            auto getPlayer2BetImg(const cv::Mat& img) const -> const cv::Mat { return img(getPlayer2BetCoord()); };
+            auto getPlayer2ButtonImg(const cv::Mat& img) const -> const cv::Mat { return img(getPlayer2ButtonCoord()); };
+            auto getPlayer2CardsImg(const cv::Mat& img) const -> const cv::Mat { return img(getPlayer2HandCoord()); };
+            auto getPlayer2NameImg(const cv::Mat& img) const -> const cv::Mat { return img(getPlayer2NameCoord()); };
+            auto getPlayer2StackImg(const cv::Mat& img) const -> const cv::Mat { return img(getPlayer2StackCoord()); };
+            auto getPlayer3ActionImg(const cv::Mat& img) const -> const cv::Mat { return img(getPlayer3ActionCoord()); };
+            auto getPlayer3BetImg(const cv::Mat& img) const -> const cv::Mat { return img(getPlayer3BetCoord()); };
+            auto getPlayer3ButtonImg(const cv::Mat& img) const -> const cv::Mat { return img(getPlayer3ButtonCoord()); };
+            auto getPlayer3CardsImg(const cv::Mat& img) const -> const cv::Mat { return img(getPlayer3HandCoord()); };
+            auto getPlayer3NameImg(const cv::Mat& img) const -> const cv::Mat { return img(getPlayer3NameCoord()); };
+            auto getPlayer3StackImg(const cv::Mat& img) const -> const cv::Mat { return img(getPlayer3StackCoord()); };
+            auto getPotImg(const cv::Mat& img) const -> const cv::Mat { return img(getPotCoord()); };
+            auto getPrizePoolImg(const cv::Mat& img) const -> const cv::Mat { return img(getPrizePoolCoord()); };
+            auto getSecondCardImg(const cv::Mat& img) const -> const cv::Mat { return img(getSecondCardCoord()); };
 
             // Convenient methods to get coordinates with a player number
             auto getPlayerHandCoord(uint32_t playerNum) const -> const cv::Rect&;
@@ -165,15 +168,15 @@ namespace Scraper {
             auto getPlayerButtonCoord(uint32_t playerNum) const -> const cv::Rect&;
             auto getPlayerStackCoord(uint32_t playerNum) const -> const cv::Rect&;
             // For the image extraction
-            auto getPlayerCardsImg(const cv::Mat& img, uint32_t playerNum) -> cv::Mat { return img(getPlayerHandCoord(playerNum)); }
-            auto getPlayerActionImg(const cv::Mat& img, uint32_t playerNum) -> cv::Mat { return img(getPlayerActionCoord(playerNum)); }
-            auto getPlayerBetImg(const cv::Mat& img, uint32_t playerNum) -> cv::Mat { return img(getPlayerBetCoord(playerNum)); }
-            auto getPlayerButtonImg(const cv::Mat& img, uint32_t playerNum) -> cv::Mat { return img(getPlayerButtonCoord(playerNum)); }
-            auto getPlayerStackImg(const cv::Mat& img, uint32_t playerNum) -> cv::Mat { return img(getPlayerStackCoord(playerNum)); }
+            auto getPlayerCardsImg(const cv::Mat& img, uint32_t num) -> const cv::Mat { return img(getPlayerHandCoord(num)); }
+            auto getPlayerActionImg(const cv::Mat& img, uint32_t num) -> const cv::Mat { return img(getPlayerActionCoord(num)); }
+            auto getPlayerBetImg(const cv::Mat& img, uint32_t num) -> const cv::Mat { return img(getPlayerBetCoord(num)); }
+            auto getPlayerButtonImg(const cv::Mat& img, uint32_t num) -> const cv::Mat { return img(getPlayerButtonCoord(num)); }
+            auto getPlayerStackImg(const cv::Mat& img, uint32_t num) -> const cv::Mat { return img(getPlayerStackCoord(num)); }
 
             auto getActiveWindows() -> windows_t;
-            auto getScreenshot(uint64_t windowId) -> cv::Mat;
-            auto getWindowElementsView(const cv::Mat& img) -> cv::Mat;
+            auto getScreenshot(uint64_t windowId) -> sharedConstMat_t;
+            auto getWindowElementsView(const cv::Mat& img) const -> const cv::Mat;
 
             [[nodiscard]] auto toJson() const -> json;
 
@@ -219,5 +222,17 @@ namespace Scraper {
             auto _parseActiveWindows() -> void;
             auto _rectToJson(const cv::Rect& rect) const -> json;
             auto _jsonToRect(const json& json) const -> cv::Rect;
+            auto _loadDefaultModel() -> void;
     };
 }  // namespace Scraper
+
+// Custom fmt formatter for windowSize_t
+namespace fmt {
+    template<>
+    struct formatter<Scraper::windowSize_t> : formatter<string_view> {
+            template<typename FormatContext>
+            auto format(const Scraper::windowSize_t& size, FormatContext& ctx) const {
+                return fmt::format_to(ctx.out(), "{}x{}", size.width, size.height);
+            }
+    };
+}  // namespace fmt
