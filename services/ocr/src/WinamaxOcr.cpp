@@ -1,7 +1,7 @@
 #include "ocr/WinamaxOcr.hpp"
 
 #include <logger/Logger.hpp>
-#include <utilities/Macros.hpp>
+#include <utilities/ImageMacros.hpp>
 
 namespace OCR {
     using Logger = Logger::Quill;
