@@ -178,3 +178,9 @@ namespace fmt {
             }
     };
 }  // namespace fmt
+
+// Registered as safe to copy for Quill logger
+namespace quill {
+    template<>
+    struct copy_loggable<GameHandler::Card> : std::true_type {};
+}  // namespace quill
