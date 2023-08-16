@@ -59,7 +59,7 @@ namespace GameHandler {
                 totalStreetBet += amount;
                 lastAction = ActionType::BET;
             }
-            
+
             auto hasRaised(int32_t amount) -> void {
                 isAllIn = (amount + totalBet) == getStack();
                 totalBet += amount;
@@ -117,6 +117,7 @@ namespace GameHandler {
             auto showdown() -> void;
             auto setPlayer2Hand(const Hand& hand) -> void { _getPlayerStatus(2).hand = hand; }
             auto setPlayer3Hand(const Hand& hand) -> void { _getPlayerStatus(3).hand = hand; }
+            auto getNextPlayerNum(int32_t playerNum) -> int32_t;
 
             [[nodiscard]] auto toJson() const -> json;
 
@@ -138,11 +139,9 @@ namespace GameHandler {
             [[nodiscard]] auto _hasWon() const -> bool;
             [[nodiscard]] auto _toJson(const ranking_t& ranking) const -> json;
             [[nodiscard]] auto _getStacksVariation() const -> json;
-            [[nodiscard]] auto _getPlayer(uint32_t playerNum) const -> Player;
             [[nodiscard]] auto _getPlayerStatus(uint32_t playerNum) const -> PlayerStatus;
 
             auto _getPlayer(uint32_t playerNum) -> Player&;
-            auto _getNextPlayerNum(uint32_t playerNum) -> uint32_t;
             auto _getPlayerStatus(uint32_t playerNum) -> PlayerStatus&;
             auto _getAndResetLastActionTime() -> seconds;
             auto _determineStreetOver(const ActionType& currentPlayerAction) -> void;
@@ -156,13 +155,13 @@ namespace GameHandler {
     };
 }  // namespace GameHandler
 
-// Custom formatter for Position
+// Custom formatter for Position and Blinds
 namespace fmt {
+    using GameHandler::Blinds;
     using GameHandler::Position;
 
     template<>
     struct formatter<Position> : formatter<string_view> {
-            // parse is inherited from formatter<string_view>.
             template<typename FormatContext>
             auto format(Position position, FormatContext& ctx) const {
                 string_view name = "unknown";
@@ -176,4 +175,18 @@ namespace fmt {
                 return formatter<string_view>::format(name, ctx);
             }
     };
+
+    template<>
+    struct formatter<Blinds> : formatter<string_view> {
+            template<typename FormatContext>
+            auto format(const Blinds& blinds, FormatContext& ctx) const {
+                return fmt::format_to(ctx.out(), "({}-{})", blinds.SB(), blinds.BB());
+            }
+    };
 }  // namespace fmt
+
+// Registered as safe to copy for Quill logger
+namespace quill {
+    template<>
+    struct copy_loggable<GameHandler::Blinds> : std::true_type {};
+}  // namespace quill

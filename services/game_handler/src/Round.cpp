@@ -71,7 +71,7 @@ namespace GameHandler {
         _pot += amount;
         _streetPot += amount;
     }
-    
+
     auto Round::check(uint32_t playerNum) -> void {
         auto& player = _getPlayerStatus(playerNum);
 
@@ -92,6 +92,20 @@ namespace GameHandler {
     auto Round::showdown() -> void {
         _endStreet();
         _endRound();
+    }
+
+    auto Round::getNextPlayerNum(int32_t playerNum) -> int32_t {
+        if (playerNum <= 0 || playerNum > 3) { throw std::invalid_argument("The given player number is invalid"); }
+
+        int32_t nextPlayerNum = (playerNum % 3) + 1;
+
+        while (nextPlayerNum != playerNum) {
+            if (_getPlayerStatus(nextPlayerNum).inRound) { return nextPlayerNum; }
+
+            nextPlayerNum = (nextPlayerNum % 3) + 1;
+        }
+
+        throw std::runtime_error("No next player found");
     }
 
     auto Round::toJson() const -> json {
@@ -132,12 +146,6 @@ namespace GameHandler {
         return _players->at(playerNum - 1);
     }
 
-    auto Round::_getPlayer(uint32_t playerNum) const -> Player {
-        if (playerNum <= 0 || playerNum > 3) { throw std::invalid_argument("The given player number is invalid"); }
-
-        return _players->at(playerNum - 1);
-    }
-
     auto Round::_getPlayerStatus(uint32_t playerNum) -> PlayerStatus& {
         if (playerNum <= 0 || playerNum > 3) { throw std::invalid_argument("The given player number is invalid"); }
 
@@ -148,20 +156,6 @@ namespace GameHandler {
         if (playerNum <= 0 || playerNum > 3) { throw std::invalid_argument("The given player number is invalid"); }
 
         return _playersStatus->at(playerNum - 1);
-    }
-
-    auto Round::_getNextPlayerNum(uint32_t playerNum) -> uint32_t {
-        if (playerNum <= 0 || playerNum > 3) { throw std::invalid_argument("The given player number is invalid"); }
-
-        uint32_t nextPlayerNum = (playerNum % 3) + 1;
-
-        while (nextPlayerNum != playerNum) {
-            if (_getPlayerStatus(nextPlayerNum).inRound) { return nextPlayerNum; }
-
-            nextPlayerNum = (nextPlayerNum % 3) + 1;
-        }
-
-        throw std::runtime_error("No next player found");
     }
 
     auto Round::_getAndResetLastActionTime() -> seconds {
@@ -267,8 +261,8 @@ namespace GameHandler {
 
         if (dealer == _playersStatus->end()) { throw std::runtime_error("No dealer found"); }
 
-        auto& SBPlayer = _getPlayerStatus(_getNextPlayerNum(dealer->getNumber()));
-        auto& BBPlayer = _getPlayerStatus(_getNextPlayerNum(SBPlayer.getNumber()));  // Can be the dealer if there are only 2 players
+        auto& SBPlayer = _getPlayerStatus(getNextPlayerNum(dealer->getNumber()));
+        auto& BBPlayer = _getPlayerStatus(getNextPlayerNum(SBPlayer.getNumber()));  // Can be the dealer if there are only 2 players
 
         SBPlayer.payBlind(_blinds.SB());
         BBPlayer.payBlind(_blinds.BB());
