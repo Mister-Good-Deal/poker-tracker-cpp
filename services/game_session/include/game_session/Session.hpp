@@ -15,15 +15,11 @@ namespace GameSession {
     using std::chrono::seconds;
 
     using sharedConstMat_t = Scraper::Model::sharedConstMat_t;
+    using ActionType       = GameHandler::RoundAction::ActionType;
 
     static const milliseconds TICK_RATE = milliseconds(500);
 
     enum GameStages : int32_t { STARTING = 0, GAME_INFO_SETUP, IN_PROGRESS, ENDED };
-
-    class InvalidActionException : public std::runtime_error {
-        public:
-            explicit InvalidActionException(const std::string& arg) : runtime_error(arg) {}
-    };
 
     class CannotFindButtonException : public std::runtime_error {
         public:
@@ -59,6 +55,7 @@ namespace GameSession {
             GameStages                    _gameStage = GameStages::STARTING;
             sharedConstMat_t              _currentScreenshot;
             int32_t                       _currentPlayerPlayingNum = 0;
+            ActionType                    _currentAction           = ActionType::NONE;
             cv::Mat                       _lastWaitingActionImg;
 
             auto _assignButton(const cv::Mat& screenshot) -> void;
@@ -69,6 +66,6 @@ namespace GameSession {
             auto _isNextActionTriggered(const cv::Mat& screenshot) -> bool;
             auto _startRound(const cv::Mat& screenshot) -> void;
             auto _trackCurrentRound(const cv::Mat& screenshot) -> void;
-            auto _waitGameStart() -> void;
+            auto _waitGameStart(const cv::Mat& screenshot) -> void;
     };
 }  // namespace GameSession

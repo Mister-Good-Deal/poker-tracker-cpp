@@ -1,62 +1,21 @@
 #include "ocr/OcrInterface.hpp"
 
-#include <charconv>
-
 #include <logger/Logger.hpp>
-#include <utilities/ImageMacros.hpp>
+#include <utilities/Image.hpp>
+#include <utilities/Strings.hpp>
 
 namespace OCR {
+    using Utilities::Strings::fullTrim;
+    using Utilities::Strings::removeChar;
+    using Utilities::Strings::replaceChar;
+    using Utilities::Strings::toFloat;
+    using Utilities::Strings::toInt;
+    using Utilities::Strings::trim;
+
     using Logger = Logger::Quill;
 
     using enum cv::text::ocr_engine_mode;
     using enum cv::text::page_seg_mode;
-
-    namespace {
-        static inline auto constexpr ltrim(std::string& s) -> void {
-            s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) { return !std::isspace(ch); }));
-        }
-
-        static inline auto constexpr rtrim(std::string& s) -> void {
-            s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) { return !std::isspace(ch); }).base(), s.end());
-        }
-
-        static inline auto constexpr fullTrim(std::string& s) -> void {
-            s.erase(std::remove_if(s.begin(), s.end(), [](unsigned char ch) { return std::isspace(ch); }), s.end());
-        }
-
-        static inline auto constexpr removeChar(std::string& s, char toRemove) -> void {
-            s.erase(std::remove(s.begin(), s.end(), toRemove), s.end());
-        }
-
-        static inline auto constexpr replaceChar(std::string& s, char find, char replace) -> void {
-            std::replace(s.begin(), s.end(), find, replace);
-        }
-
-        static inline auto constexpr trim(std::string& s) -> void {
-            rtrim(s);
-            ltrim(s);
-        }
-
-        static inline auto constexpr toFloat(std::string_view s) -> double {
-            double value = 0.0;
-
-            auto error = std::from_chars(s.begin(), s.end(), value);
-
-            if (error.ec != std::errc()) { throw std::runtime_error("Could not convert string to float"); }
-
-            return value;
-        }
-
-        static inline auto constexpr toInt(std::string_view s) -> int32_t {
-            int32_t value = 0;
-
-            auto error = std::from_chars(s.begin(), s.end(), value);
-
-            if (error.ec != std::errc()) { throw std::runtime_error("Could not convert string to int"); }
-
-            return value;
-        }
-    }  // namespace
 
     OcrInterface::OcrInterface() {
         // DEFAULT datapath = "/usr/local/share/tessdata"
@@ -98,7 +57,6 @@ namespace OCR {
         fullTrim(number);
 
         LOG_DEBUG(Logger::getLogger(), "readIntNumbers string: {}", number);
-        DISPLAY_IMAGE("readIntNumbers", intNumberImage);
 
         return toInt(number);
     }
@@ -113,7 +71,6 @@ namespace OCR {
         auto secondNumber = range.substr(dashPos + 1);
 
         LOG_DEBUG(Logger::getLogger(), "readIntRange string: {}", range);
-        DISPLAY_IMAGE("readIntRange", intRangeImage);
 
         return {toInt(firstNumber), toInt(secondNumber)};
     }

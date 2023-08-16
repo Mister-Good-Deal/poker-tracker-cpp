@@ -25,7 +25,7 @@ class SessionMock : public Session {
 
         auto getNextFrame() -> sharedConstMat_t {
             if (!_video.isOpened()) {
-                if (!_video.open(std::string(WINAMAX_RESOURCES_DIR) + "/game_sample_3840_1080_x8.webm")) {
+                if (!_video.open(std::string(WINAMAX_RESOURCES_DIR) + "/game_sample_3840x1080x8_25cts_2nd.mkv")) {
                     LOG_ERROR(Logger::Quill::getLogger(), "Failed to open video");
                 }
             }
