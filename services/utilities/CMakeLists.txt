@@ -20,7 +20,9 @@ find_package(GTest REQUIRED)
 set(
         SRC
         include/utilities/GtestMacros.hpp
-        include/utilities/ImageMacros.hpp
+        include/utilities/Image.hpp
+        include/utilities/Strings.hpp
+        include/utilities/Time.hpp
 )
 
 #-----------------------------------------------------------------------------------------------------------------------

@@ -144,20 +144,12 @@ namespace OCR {
     }
     // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
 
-    auto WinamaxOcr::_cvColorToString(const cv::Vec3b& color) const -> std::string {
-        return "(" + std::to_string(color[0]) + ", " + std::to_string(color[1]) + ", " + std::to_string(color[2]) + ")";
-    }
-
     auto WinamaxOcr::_colorRangeThreshold(const cv::Mat& image, const cv::Scalar& colorLower, const cv::Scalar& colorUpper) const
         -> cv::Mat {
         cv::Mat hsvImage, result;
 
-        DISPLAY_IMAGE("colorRangeThreshold input", image);
-
         cv::cvtColor(image, hsvImage, cv::COLOR_BGR2HSV);
         cv::inRange(hsvImage, colorLower, colorUpper, result);
-
-        DISPLAY_IMAGE("colorRangeThreshold output", result);
 
         return result;
     }

@@ -46,7 +46,6 @@ namespace OCR {
             cv::Mat _cardsSkin;
             cv::Mat _buttonImg;
 
-            [[nodiscard]] auto _cvColorToString(const cv::Vec3b& color) const -> std::string;
             [[nodiscard]] auto _extractWhiteTextDarkBackground(const cv::Mat& image) const -> cv::Mat;
             [[nodiscard]] auto _extractWhiteTextLightBackground(const cv::Mat& image) const -> cv::Mat;
             [[nodiscard]] auto _extractYellowText(const cv::Mat& image) const -> cv::Mat;
