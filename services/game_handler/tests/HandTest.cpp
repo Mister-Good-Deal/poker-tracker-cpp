@@ -2,7 +2,7 @@
 
 #include <game_handler/CardFactory.hpp>
 #include <game_handler/Hand.hpp>
-#include <utilities/Macros.hpp>
+#include <utilities/GtestMacros.hpp>
 
 using GameHandler::Card;
 using GameHandler::Hand;

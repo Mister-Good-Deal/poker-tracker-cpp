@@ -17,17 +17,9 @@ namespace GameHandler {
         return *this;
     }
 
-    auto Card::getFullName() const -> std::string {
-        return (_rank == UNDEFINED || _suit == UNKNOWN) ? "N/A" : rankToString(_rank) + " of " + suitToString(_suit);
-    }
-
-    auto Card::getShortName() const -> std::string {
-        return (_rank == UNDEFINED || _suit == UNKNOWN) ? "NA" : rankToShortString(_rank) + suitToString(_suit)[0];
-    }
-
     auto Card::isBroadway() const -> bool { return find(BROADWAY, _rank) != BROADWAY.end(); }
 
     auto Card::toJson() const -> json {
-        return {{"shortName", getShortName()}, {"rank", rankToString(_rank)}, {"suit", suitToString(_suit)}};
+        return {{"shortName", fmt::format("{:s}", *this)}, {"rank", fmt::format("{:l}", _rank)}, {"suit", fmt::format("{:l}", _suit)}};
     }
 }  // namespace GameHandler
