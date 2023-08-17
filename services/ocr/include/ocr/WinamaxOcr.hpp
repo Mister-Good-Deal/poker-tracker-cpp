@@ -3,10 +3,15 @@
 #include <ocr/OcrInterface.hpp>
 
 namespace OCR {
+    using uniqueMat_t = std::unique_ptr<cv::Mat>;
+
     class WinamaxOcr final : public OcrInterface {
         public:
-            static constexpr std::string DEFAULT_CARD_SKIN  = "skin_1.png";
-            static constexpr std::string DEFAULT_BUTTON_IMG = "dealer_btn.png";
+            static constexpr std::string DEFAULT_CARD_SKIN              = "skin_1.png";
+            static constexpr std::string DEFAULT_BUTTON_IMG             = "dealer_btn.png";
+            static constexpr int32_t     DEFAULT_OCR_IMG_WIDTH          = 1000;
+            static constexpr int32_t     DEFAULT_MIN_CLUSTER_SIZE       = 30;
+            static constexpr int32_t     DEFAULT_DILATATION_KERNEL_SIZE = 5;
 
             WinamaxOcr();
             WinamaxOcr(const WinamaxOcr& other) = default;
@@ -46,10 +51,13 @@ namespace OCR {
             cv::Mat _cardsSkin;
             cv::Mat _buttonImg;
 
-            [[nodiscard]] auto _extractWhiteTextDarkBackground(const cv::Mat& image) const -> cv::Mat;
-            [[nodiscard]] auto _extractWhiteTextLightBackground(const cv::Mat& image) const -> cv::Mat;
-            [[nodiscard]] auto _extractYellowText(const cv::Mat& image) const -> cv::Mat;
-            [[nodiscard]] auto _colorRangeThreshold(const cv::Mat& image, const cv::Scalar& colorLower,
-                                                    const cv::Scalar& colorUpper) const -> cv::Mat;
+            auto _extractWhiteTextDarkBackground(cv::Mat& img) const -> cv::Mat&;
+            auto _extractWhiteTextLightBackground(cv::Mat& img) const -> cv::Mat&;
+            auto _extractYellowText(cv::Mat& img) const -> cv::Mat&;
+            auto _colorRangeThreshold(cv::Mat& img, const cv::Scalar& colorLower, const cv::Scalar& colorUpper) const -> cv::Mat&;
+            auto _trimSalt(cv::Mat& img, int32_t minClusterSize = DEFAULT_MIN_CLUSTER_SIZE) const -> cv::Mat&;
+            auto _applyDilation(cv::Mat& img, int32_t kernelSize = DEFAULT_DILATATION_KERNEL_SIZE) const -> cv::Mat&;
+
+            [[nodiscard]] auto _resizedImage(const cv::Mat& src, int32_t desiredWidth = DEFAULT_OCR_IMG_WIDTH) const -> uniqueMat_t;
     };
 }  // namespace OCR

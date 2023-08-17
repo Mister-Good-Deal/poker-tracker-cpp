@@ -26,7 +26,7 @@ namespace OCR {
 
     auto WinamaxOcr::readAverageStack(const cv::Mat& averageStackImage) const -> int32_t {
         try {
-            return readIntNumbers(_extractWhiteTextDarkBackground(averageStackImage));
+            return readIntNumbers(_trimSalt(_extractWhiteTextDarkBackground(*_resizedImage(averageStackImage, 150)), 75));
         } catch (const InvalidNumberException& e) { throw CannotReadAverageStackImageException(averageStackImage); }
     }
 
@@ -91,7 +91,7 @@ namespace OCR {
     }
 
     auto WinamaxOcr::readGameAction(const cv::Mat& gameActionImage) const -> ActionType {
-        auto action = readWord(_extractYellowText(gameActionImage));
+        auto action = readWord(_extractYellowText(*_resizedImage(gameActionImage)));
 
         LOG_DEBUG(Logger::getLogger(), "Text action read = {}", action);
 
@@ -103,12 +103,11 @@ namespace OCR {
             return FOLD;
         } else if (action.starts_with("BET")) {
             return BET;
-        } else if (action.starts_with("RAISES")) {
+        } else if (action.starts_with("RAISES TO")) {
             return RAISE;
-        } else if (action.starts_with("SMALL")) {
+        } else if (action == "SMALL BLIND") {
             return PAY_SMALL_BLIND;
-        } else if (action.starts_with("BIG")) {
-            // @fixme Read BIG BUND instead of BIG BLIND, L and I are merged into a U
+        } else if (action == "BIG BLIND") {
             return PAY_BIG_BLIND;
         } else {
             throw CannotReadGameActionImageException(gameActionImage, action);
@@ -117,18 +116,18 @@ namespace OCR {
 
     auto WinamaxOcr::readPlayerBet(const cv::Mat& playerBetImage) const -> int32_t {
         try {
-            return readIntNumbers(_extractYellowText(playerBetImage));
+            return readIntNumbers(_extractYellowText(*_resizedImage(playerBetImage)));
         } catch (const InvalidNumberException& e) { throw CannotReadPlayerBetImageException(playerBetImage); }
     }
 
     auto WinamaxOcr::readPlayerBetInBB(const cv::Mat& playerBetInBBImage) const -> double {
         try {
-            return readFloatNumbers(_extractYellowText(playerBetInBBImage));
+            return readFloatNumbers(_extractYellowText(*_resizedImage(playerBetInBBImage)));
         } catch (const InvalidNumberException& e) { throw CannotReadPlayerBetInBBImageException(playerBetInBBImage); }
     }
 
     auto WinamaxOcr::readPlayerName(const cv::Mat& playerNameImage) const -> std::string {
-        auto playerName = readWordByChar(_extractWhiteTextLightBackground(playerNameImage));
+        auto playerName = readWordByChar(_applyDilation(_trimSalt(_extractWhiteTextLightBackground(*_resizedImage(playerNameImage)))));
 
         if (playerName.empty()) { throw CannotReadPlayerNameImageException(playerNameImage); }
 
@@ -179,27 +178,62 @@ namespace OCR {
         return isSimilar(buttonImage, getButtonImg(), 0.05, getButtonMask());
     }
 
-    auto WinamaxOcr::_extractWhiteTextDarkBackground(const cv::Mat& image) const -> cv::Mat {
+    auto WinamaxOcr::_extractWhiteTextDarkBackground(cv::Mat& img) const -> cv::Mat& {
         // Light color range because winamax uses light colors (with a mix of different color) with a dark background
-        return _colorRangeThreshold(image, {0, 0, 180}, {255, 255, 255});
+        return _colorRangeThreshold(img, {0, 0, 180}, {255, 255, 255});
     }
 
-    auto WinamaxOcr::_extractWhiteTextLightBackground(const cv::Mat& image) const -> cv::Mat {
-        return _colorRangeThreshold(image, {0, 0, 200}, {255, 55, 255});
+    auto WinamaxOcr::_extractWhiteTextLightBackground(cv::Mat& img) const -> cv::Mat& {
+        return _colorRangeThreshold(img, {0, 0, 200}, {255, 55, 255});
     }
 
-    auto WinamaxOcr::_extractYellowText(const cv::Mat& image) const -> cv::Mat {
-        return _colorRangeThreshold(image, {22, 0, 0}, {42, 255, 255});
+    auto WinamaxOcr::_extractYellowText(cv::Mat& img) const -> cv::Mat& {
+        return _colorRangeThreshold(img, {20, 100, 100}, {30, 255, 255});
     }
     // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
 
-    auto WinamaxOcr::_colorRangeThreshold(const cv::Mat& image, const cv::Scalar& colorLower, const cv::Scalar& colorUpper) const
-        -> cv::Mat {
+    auto WinamaxOcr::_colorRangeThreshold(cv::Mat& img, const cv::Scalar& colorLower, const cv::Scalar& colorUpper) const -> cv::Mat& {
         cv::Mat hsvImage, result;
 
-        cv::cvtColor(image, hsvImage, cv::COLOR_BGR2HSV);
-        cv::inRange(hsvImage, colorLower, colorUpper, result);
+        cv::cvtColor(img, hsvImage, cv::COLOR_BGR2HSV);
+        cv::inRange(hsvImage, colorLower, colorUpper, img);
 
-        return result;
+        return img;
     }
+
+    auto WinamaxOcr::_resizedImage(const cv::Mat& src, int32_t desiredWidth) const -> uniqueMat_t {
+        auto ratio     = static_cast<double>(desiredWidth) / src.cols;
+        auto newHeight = static_cast<int32_t>(src.rows * ratio);
+
+        cv::Mat resized;
+        cv::resize(src, resized, cv::Size(desiredWidth, newHeight));
+
+        return std::make_unique<cv::Mat>(resized);
+    }
+
+    auto WinamaxOcr::_trimSalt(cv::Mat& img, int32_t minClusterSize) const -> cv::Mat& {
+        const int32_t LABEL_CONNECTIVITY = 8;
+
+        // Find connected components of the "white" areas
+        cv::Mat labelsMat;
+        int32_t nLabels = cv::connectedComponents(img, labelsMat, LABEL_CONNECTIVITY, CV_32S);
+
+        // Filter clusters with fewer than minClusterSize pixels
+        for (int label = 1; label < nLabels; label++) {
+            if (cv::countNonZero(labelsMat == label) < minClusterSize) { img.setTo(0, labelsMat == label); }
+        }
+
+        return img;
+    }
+
+    auto WinamaxOcr::_applyDilation(cv::Mat& img, int32_t kernelSize) const -> cv::Mat& {
+        // Define the structuring element for dilation
+        cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(kernelSize, kernelSize));
+
+        // Apply dilation
+        cv::dilate(img, img, kernel);
+
+        return img;
+    }
+
 }  // namespace OCR
