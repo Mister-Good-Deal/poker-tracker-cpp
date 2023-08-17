@@ -93,19 +93,21 @@ TEST(WinamaxOcrTest, readActionShouldWork) {
     auto raisesTxt     = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/actions/raises_to_3_bb.png");
     auto bigBlindTxt   = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/actions/big_blind.png");
     auto smallBlindTxt = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/actions/small_blind.png");
+    auto foldTxt       = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/actions/fold.png");
 
     EXPECT_EQ(Env::winamaxOcr().readGameAction(raisesTxt), RAISE);
     EXPECT_EQ(Env::winamaxOcr().readGameAction(smallBlindTxt), PAY_SMALL_BLIND);
     EXPECT_EQ(Env::winamaxOcr().readGameAction(bigBlindTxt), PAY_BIG_BLIND);
+    EXPECT_EQ(Env::winamaxOcr().readGameAction(foldTxt), FOLD);
 }
 
 TEST(WinamaxOcrTest, readPlayerNameShouldWork) {
-    auto player1NameImg = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/player_name/name_1.png");
-    auto player2NameImg = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/player_name/name_2.png");
-    auto player3NameImg = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/player_name/name_3.png");
+    auto player1NameImg = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/player_name/_Mister_.png");
+    auto player2NameImg = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/player_name/G00dspeed");
+    auto player3NameImg = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/player_name/sucre_461406.png");
 
     EXPECT_STREQ(Env::winamaxOcr().readPlayerName(player1NameImg).c_str(), "_Mister_");
-    // EXPECT_STREQ(Env::winamaxOcr().readPlayerName(player2NameImg).c_str(), "G00dspeed"); // @todo fixme
+    // EXPECT_STREQ(Env::winamaxOcr().readPlayerName(player2NameImg).c_str(), "G00dspeed"); @fixme OO instead of 00
     EXPECT_STREQ(Env::winamaxOcr().readPlayerName(player3NameImg).c_str(), "sucre_461406");
 }
 
