@@ -19,7 +19,7 @@ namespace OCR {
 
     OcrInterface::OcrInterface() {
         // DEFAULT datapath = "/usr/local/share/tessdata"
-        _tesseractCard         = cv::text::OCRTesseract::create(nullptr, "eng", "23456789TJQKA", OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
+        _tesseractCard         = cv::text::OCRTesseract::create(nullptr, "eng", "0123456789TJQKA", OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
         _tesseractWord         = cv::text::OCRTesseract::create(nullptr, "eng", ALL_CHARACTERS, OEM_CUBE_ONLY, PSM_SINGLE_BLOCK);
         _tesseractChar         = cv::text::OCRTesseract::create(nullptr, "eng", ALL_CHARACTERS, OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
         _tesseractIntNumbers   = cv::text::OCRTesseract::create(nullptr, "eng", "0123456789 ", OEM_CUBE_ONLY, PSM_SINGLE_CHAR);

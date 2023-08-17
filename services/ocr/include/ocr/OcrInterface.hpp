@@ -147,9 +147,9 @@ namespace OCR {
 
     class OcrInterface {
         public:
-            static constexpr double      SIMILARITY_THRESHOLD = 0.08;
+            static constexpr double      SIMILARITY_THRESHOLD = 0.15;
             static constexpr int32_t     OCR_MIN_CONFIDENCE   = 30;  // @todo confidence between numbers 1 and 7 is really low
-            static constexpr const char* ALL_CHARACTERS       = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_ ";
+            static constexpr const char* ALL_CHARACTERS       = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_ ";
 
             OcrInterface();
             OcrInterface(const OcrInterface&) = default;

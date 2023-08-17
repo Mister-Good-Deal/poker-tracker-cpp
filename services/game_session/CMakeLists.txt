@@ -47,8 +47,10 @@ target_link_libraries(game_session PUBLIC logger game_handler scraper ocr nlohma
 
 # Add the image file as a resource
 set(WINAMAX_RESOURCES_DIR "${PROJECT_SOURCE_DIR}/resources/winamax")
+set(LOGS_DIR "${PROJECT_SOURCE_DIR}/logs")
 
 add_definitions(-DWINAMAX_RESOURCES_DIR="${WINAMAX_RESOURCES_DIR}")
+add_definitions(-DLOGS_DIR="${LOGS_DIR}")
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Tests

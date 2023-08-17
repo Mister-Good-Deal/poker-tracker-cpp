@@ -44,6 +44,7 @@ namespace GameHandler {
                     case '7': return Rank::SEVEN;
                     case '8': return Rank::EIGHT;
                     case '9': return Rank::NINE;
+                    case '1': // Can be 10 or T
                     case 'T': return Rank::TEN;
                     case 'J': return Rank::JACK;
                     case 'Q': return Rank::QUEEN;

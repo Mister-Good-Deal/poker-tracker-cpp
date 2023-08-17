@@ -180,7 +180,7 @@ namespace GameSession {
         auto secondCard = _ocr->readCard(_scraper.getSecondCardImg(screenshot));
         Hand hand       = {firstCard, secondCard};
         // Start round, _currentPlayerPlayingNum is set to the button position by _assignButton call
-        LOG_INFO(Logger::getLogger(), "Starting new round with blinds {} and hand {}", blinds, hand);
+        LOG_INFO(Logger::getLogger(), "Starting new round: [blinds {}] [hand {}] [button {}]", blinds, hand, _currentPlayerPlayingNum);
 
         _game.newRound(blinds, hand, _currentPlayerPlayingNum);
     }

@@ -34,6 +34,8 @@ namespace GameHandler {
             [[nodiscard]] auto isInitialized() const -> bool { return _initialized; };
             [[nodiscard]] auto isOver() const -> bool { return _ended; };
             [[nodiscard]] auto getBuyIn() const -> int32_t { return _buyIn; };
+            [[nodiscard]] auto getMultipliers() const -> int32_t { return _multipliers; };
+            [[nodiscard]] auto getInitialStack() const -> int32_t { return _initialStack; };
 
             auto setBuyIn(int32_t buyIn) -> void { _buyIn = buyIn; }
             auto setMultipliers(int32_t multipliers) -> void { _multipliers = multipliers; }

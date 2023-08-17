@@ -29,6 +29,10 @@ namespace Utilities::Image {
     }
 
     static inline auto writeImage(const cv::Mat& image, std::string_view logPath, std::string_view category) -> void {
+        std::filesystem::directory_entry directory(fmt::format("{}/images/{}", logPath, category));
+
+        if (!directory.exists()) { std::filesystem::create_directory(directory); }
+
         cv::imwrite(fmt::format("{}/images/{}/{}.png", logPath, category, getMsTimestamp()), image);
     }
 }  // namespace Utilities::Image
