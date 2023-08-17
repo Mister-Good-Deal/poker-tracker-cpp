@@ -108,6 +108,10 @@ namespace GameHandler {
         throw std::runtime_error("No next player found");
     }
 
+    auto Round::getLastAction() -> RoundAction {
+        return _actions[_currentStreet].empty() ? _actions[_currentStreet - 1].back() : _actions[_currentStreet].back();
+    }
+
     auto Round::toJson() const -> json {
         if (_ranking.empty()) { throw std::runtime_error("The round's ranking has not been set"); }
 
@@ -325,7 +329,7 @@ namespace GameHandler {
             auto rankStepJson = json::array();
             auto rankStep     = rankingCopy.top();
 
-            for (const auto& playerNum : rankStep) { rankStepJson.emplace_back(_getPlayerStatus(playerNum).getName()); }
+            for (const auto& playerNum : rankStep) { rankStepJson.emplace_back(fmt::format("player_{}", playerNum)); }
 
             rankingJson.emplace_back(rankStepJson);
             rankingCopy.pop();
@@ -338,7 +342,7 @@ namespace GameHandler {
         auto playersStack = json::array();
 
         for (const auto& player : *_playersStatus) {
-            playersStack.emplace_back(json::object({{"player", player.getName()},
+            playersStack.emplace_back(json::object({{"player", fmt::format("player_{}", player.getNumber())},
                                                     {"stack", player.endRoundStack},
                                                     {"balance", player.endRoundStack - player.getStack()}}));
         }

@@ -15,7 +15,9 @@ namespace GameHandler {
     }
 
     auto RoundAction::toJson() const -> json {
-        json object = {{"action", fmt::format("{}", _action)}, {"player_name", _player.getName()}, {"elapsed_time", _time.count()}};
+        json object = {{"action", fmt::format("{}", _action)},
+                       {"player", fmt::format("player_{}", _player.getNumber())},
+                       {"elapsed_time", _time.count()}};
 
         if (_requiresAmount(_action)) { object["amount"] = _amount; }
 

@@ -20,7 +20,7 @@ TEST(GameTest, jsonRepresentationShouldBeCorrect) {
     game.setBuyIn(10);
     game.setMultipliers(3);
     game.setInitialStack(1000);
-    game.init("player_1", "player_2", "player_3");
+    game.init("player 1", "player 2", "player 3");
 
     // Run a scenario
 
@@ -77,16 +77,16 @@ TEST(GameTest, jsonRepresentationShouldBeCorrect) {
                 {
                     "actions": {
                         "pre_flop": [
-                            { "action": "Check", "player_name": "player_1", "elapsed_time": 0 },
-                            { "action": "Raise", "player_name": "player_2", "elapsed_time": 0, "amount": 250 },
-                            { "action": "Fold", "player_name": "player_3", "elapsed_time": 0 },
-                            { "action": "Call", "player_name": "player_1", "elapsed_time": 0, "amount": 300 }
+                            { "action": "Check", "player": "player_1", "elapsed_time": 0 },
+                            { "action": "Raise", "player": "player_2", "elapsed_time": 0, "amount": 250 },
+                            { "action": "Fold", "player": "player_3", "elapsed_time": 0 },
+                            { "action": "Call", "player": "player_1", "elapsed_time": 0, "amount": 300 }
                         ],
                         "flop": [
-                            { "action": "Check", "player_name": "player_1", "elapsed_time": 0 },
-                            { "action": "Raise", "player_name": "player_2", "elapsed_time": 0, "amount": 200 },
-                            { "action": "Raise", "player_name": "player_1", "elapsed_time": 0, "amount": 700 },
-                            { "action": "Fold", "player_name": "player_2", "elapsed_time": 0 }
+                            { "action": "Check", "player": "player_1", "elapsed_time": 0 },
+                            { "action": "Raise", "player": "player_2", "elapsed_time": 0, "amount": 200 },
+                            { "action": "Raise", "player": "player_1", "elapsed_time": 0, "amount": 700 },
+                            { "action": "Fold", "player": "player_2", "elapsed_time": 0 }
                         ],
                         "turn": [],
                         "river": []
@@ -122,10 +122,10 @@ TEST(GameTest, jsonRepresentationShouldBeCorrect) {
                 {
                     "actions": {
                         "pre_flop": [
-                            { "action": "Raise", "player_name": "player_2", "elapsed_time": 0, "amount": 500 },
-                            { "action": "Call", "player_name": "player_3", "elapsed_time": 0, "amount": 500 },
-                            { "action": "Raise", "player_name": "player_1", "elapsed_time": 0, "amount": 1400 },
-                            { "action": "Call", "player_name": "player_3", "elapsed_time": 0, "amount": 300 }
+                            { "action": "Raise", "player": "player_2", "elapsed_time": 0, "amount": 500 },
+                            { "action": "Call", "player": "player_3", "elapsed_time": 0, "amount": 500 },
+                            { "action": "Raise", "player": "player_1", "elapsed_time": 0, "amount": 1400 },
+                            { "action": "Call", "player": "player_3", "elapsed_time": 0, "amount": 300 }
                         ],
                         "flop": [],
                         "turn": [],
@@ -168,7 +168,7 @@ TEST(GameTest, jsonRepresentationShouldBeCorrect) {
                     ]
                 }
             ],
-            "players": ["player_1", "player_2", "player_3"],
+            "players": ["player 1", "player 2", "player 3"],
             "buy_in": 10,
             "multipliers": 3,
             "won": true,

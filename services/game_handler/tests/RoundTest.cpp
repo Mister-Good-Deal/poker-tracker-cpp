@@ -57,16 +57,16 @@ TEST(RoundTest, DISABLED_jsonRepresentationWithTimingsShouldBeCorrect) {
         {
             "actions": {
                 "pre_flop": [
-                    { "action": "Check", "player_name": "player_1", "elapsed_time": 2 },
-                    { "action": "Bet", "player_name": "player_2", "elapsed_time": 1, "amount": 150 },
-                    { "action": "Fold", "player_name": "player_3", "elapsed_time": 3 },
-                    { "action": "Call", "player_name": "player_1", "elapsed_time": 0, "amount": 200 }
+                    { "action": "Check", "player": "player_1", "elapsed_time": 2 },
+                    { "action": "Bet", "player": "player_2", "elapsed_time": 1, "amount": 150 },
+                    { "action": "Fold", "player": "player_3", "elapsed_time": 3 },
+                    { "action": "Call", "player": "player_1", "elapsed_time": 0, "amount": 200 }
                 ],
                 "flop": [
-                    { "action": "Check", "player_name": "player_1", "elapsed_time": 3 },
-                    { "action": "Bet", "player_name": "player_2", "elapsed_time": 1, "amount": 200 },
-                    { "action": "Bet", "player_name": "player_1", "elapsed_time": 1, "amount": 600 },
-                    { "action": "Fold", "player_name": "player_2", "elapsed_time": 4 }
+                    { "action": "Check", "player": "player_1", "elapsed_time": 3 },
+                    { "action": "Bet", "player": "player_2", "elapsed_time": 1, "amount": 200 },
+                    { "action": "Bet", "player": "player_1", "elapsed_time": 1, "amount": 600 },
+                    { "action": "Fold", "player": "player_2", "elapsed_time": 4 }
                 ],
                 "turn": [],
                 "river": []
@@ -105,9 +105,9 @@ TEST(RoundTest, DISABLED_jsonRepresentationWithTimingsShouldBeCorrect) {
 }
 
 TEST(RoundTest, case1JsonRepresentationShouldBeCorrect) {
-    Player player1("player_1", 1);
-    Player player2("player_2", 2);
-    Player player3("player_3", 3);
+    Player player1("player 1", 1);
+    Player player2("player 2", 2);
+    Player player3("player 3", 3);
 
     player1.setStack(1000);
     player2.setStack(1000);
@@ -136,16 +136,16 @@ TEST(RoundTest, case1JsonRepresentationShouldBeCorrect) {
         {
             "actions": {
                 "pre_flop": [
-                    { "action": "Check", "player_name": "player_1", "elapsed_time": 0 },
-                    { "action": "Raise", "player_name": "player_2", "elapsed_time": 0, "amount": 150 },
-                    { "action": "Fold", "player_name": "player_3", "elapsed_time": 0 },
-                    { "action": "Call", "player_name": "player_1", "elapsed_time": 0, "amount": 200 }
+                    { "action": "Check", "player": "player_1", "elapsed_time": 0 },
+                    { "action": "Raise", "player": "player_2", "elapsed_time": 0, "amount": 150 },
+                    { "action": "Fold", "player": "player_3", "elapsed_time": 0 },
+                    { "action": "Call", "player": "player_1", "elapsed_time": 0, "amount": 200 }
                 ],
                 "flop": [
-                    { "action": "Check", "player_name": "player_1", "elapsed_time": 0 },
-                    { "action": "Raise", "player_name": "player_2", "elapsed_time": 0, "amount": 200 },
-                    { "action": "Raise", "player_name": "player_1", "elapsed_time": 0, "amount": 600 },
-                    { "action": "Fold", "player_name": "player_2", "elapsed_time": 0 }
+                    { "action": "Check", "player": "player_1", "elapsed_time": 0 },
+                    { "action": "Raise", "player": "player_2", "elapsed_time": 0, "amount": 200 },
+                    { "action": "Raise", "player": "player_1", "elapsed_time": 0, "amount": 600 },
+                    { "action": "Fold", "player": "player_2", "elapsed_time": 0 }
                 ],
                 "turn": [],
                 "river": []
@@ -226,24 +226,24 @@ TEST(RoundTest, case2JsonRepresentationShouldBeCorrect) {
         {
             "actions": {
                 "pre_flop": [
-                    { "action": "Check", "player_name": "player_1", "elapsed_time": 0 },
-                    { "action": "Raise", "player_name": "player_2", "elapsed_time": 0, "amount": 150 },
-                    { "action": "Fold", "player_name": "player_3", "elapsed_time": 0 },
-                    { "action": "Call", "player_name": "player_1", "elapsed_time": 0, "amount": 200 }
+                    { "action": "Check", "player": "player_1", "elapsed_time": 0 },
+                    { "action": "Raise", "player": "player_2", "elapsed_time": 0, "amount": 150 },
+                    { "action": "Fold", "player": "player_3", "elapsed_time": 0 },
+                    { "action": "Call", "player": "player_1", "elapsed_time": 0, "amount": 200 }
                 ],
                 "flop": [
-                    { "action": "Check", "player_name": "player_1", "elapsed_time": 0 },
-                    { "action": "Raise", "player_name": "player_2", "elapsed_time": 0, "amount": 200 },
-                    { "action": "Raise", "player_name": "player_1", "elapsed_time": 0, "amount": 600 },
-                    { "action": "Call", "player_name": "player_2", "elapsed_time": 0, "amount": 400 }
+                    { "action": "Check", "player": "player_1", "elapsed_time": 0 },
+                    { "action": "Raise", "player": "player_2", "elapsed_time": 0, "amount": 200 },
+                    { "action": "Raise", "player": "player_1", "elapsed_time": 0, "amount": 600 },
+                    { "action": "Call", "player": "player_2", "elapsed_time": 0, "amount": 400 }
                 ],
                 "turn": [
-                    { "action": "Check", "player_name": "player_1", "elapsed_time": 0 },
-                    { "action": "Check", "player_name": "player_2", "elapsed_time": 0 }
+                    { "action": "Check", "player": "player_1", "elapsed_time": 0 },
+                    { "action": "Check", "player": "player_2", "elapsed_time": 0 }
                 ],
                 "river": [
-                    { "action": "Check", "player_name": "player_1", "elapsed_time": 0 },
-                    { "action": "Check", "player_name": "player_2", "elapsed_time": 0 }
+                    { "action": "Check", "player": "player_1", "elapsed_time": 0 },
+                    { "action": "Check", "player": "player_2", "elapsed_time": 0 }
                 ]
             },
             "board": [
@@ -326,21 +326,21 @@ TEST(RoundTest, case3JsonRepresentationShouldBeCorrect) {
         {
             "actions": {
                 "pre_flop": [
-                    { "action": "Check", "player_name": "player_2", "elapsed_time": 0 },
-                    { "action": "Raise", "player_name": "player_3", "elapsed_time": 0, "amount": 150 },
-                    { "action": "Call", "player_name": "player_1", "elapsed_time": 0, "amount": 100 },
-                    { "action": "Call", "player_name": "player_2", "elapsed_time": 0, "amount": 200 }
+                    { "action": "Check", "player": "player_2", "elapsed_time": 0 },
+                    { "action": "Raise", "player": "player_3", "elapsed_time": 0, "amount": 150 },
+                    { "action": "Call", "player": "player_1", "elapsed_time": 0, "amount": 100 },
+                    { "action": "Call", "player": "player_2", "elapsed_time": 0, "amount": 200 }
                 ],
                 "flop": [
-                    { "action": "Check", "player_name": "player_2", "elapsed_time": 0 },
-                    { "action": "Raise", "player_name": "player_3", "elapsed_time": 0, "amount": 500 },
-                    { "action": "Call", "player_name": "player_1", "elapsed_time": 0, "amount": 300 },
-                    { "action": "Call", "player_name": "player_2", "elapsed_time": 0, "amount": 500 }
+                    { "action": "Check", "player": "player_2", "elapsed_time": 0 },
+                    { "action": "Raise", "player": "player_3", "elapsed_time": 0, "amount": 500 },
+                    { "action": "Call", "player": "player_1", "elapsed_time": 0, "amount": 300 },
+                    { "action": "Call", "player": "player_2", "elapsed_time": 0, "amount": 500 }
                 ],
                 "turn": [
-                    { "action": "Check", "player_name": "player_2", "elapsed_time": 0 },
-                    { "action": "Raise", "player_name": "player_3", "elapsed_time": 0, "amount": 800 },
-                    { "action": "Fold", "player_name": "player_2", "elapsed_time": 0 }
+                    { "action": "Check", "player": "player_2", "elapsed_time": 0 },
+                    { "action": "Raise", "player": "player_3", "elapsed_time": 0, "amount": 800 },
+                    { "action": "Fold", "player": "player_2", "elapsed_time": 0 }
                 ],
                 "river": []
             },

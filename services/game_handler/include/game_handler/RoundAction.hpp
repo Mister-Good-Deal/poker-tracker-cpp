@@ -67,9 +67,9 @@ namespace fmt {
     struct formatter<RoundAction> : formatter<string_view> {
             template<typename FormatContext>
             auto format(const RoundAction& action, FormatContext& ctx) const {
-                return action.getAmount() == 0 ? fmt::format_to(ctx.out(), "Player {} {} in {}s", action.getPlayer().getNumber(),
+                return action.getAmount() == 0 ? fmt::format_to(ctx.out(), "Player {} {} after {}", action.getPlayer().getNumber(),
                                                                 action.getAction(), action.getTime())
-                                               : fmt::format_to(ctx.out(), "Player {} {} {} in {}s", action.getPlayer().getNumber(),
+                                               : fmt::format_to(ctx.out(), "Player {} {} {} after {}", action.getPlayer().getNumber(),
                                                                 action.getAction(), action.getAmount(), action.getTime());
             }
     };
