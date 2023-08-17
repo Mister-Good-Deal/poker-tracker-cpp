@@ -83,7 +83,6 @@ namespace OCR {
         replaceChar(number, ',', '.');
 
         LOG_DEBUG(Logger::getLogger(), "readFloatNumbers string: {}", number);
-        DISPLAY_IMAGE("readFloatNumbers", floatNumberImage);
 
         return toFloat(number);
     }
@@ -98,7 +97,6 @@ namespace OCR {
         auto seconds       = clock.substr(doubleDashPos + 1);
 
         LOG_DEBUG(Logger::getLogger(), "readDuration string: {}", clock);
-        DISPLAY_IMAGE("readDuration", clockImage);
 
         return std::chrono::seconds(toInt(minutes) * 60 + toInt(seconds));
     }
