@@ -17,7 +17,8 @@ namespace GameSession {
     using sharedConstMat_t = Scraper::Model::sharedConstMat_t;
     using ActionType       = GameHandler::RoundAction::ActionType;
 
-    static const milliseconds TICK_RATE = milliseconds(500);
+    static const milliseconds TICK_RATE                   = milliseconds(250);
+    static const double       ACTION_SIMILARITY_THRESHOLD = 0.01;
 
     enum GameStages : int32_t { STARTING = 0, GAME_INFO_SETUP, IN_PROGRESS, ENDED };
 
@@ -54,7 +55,7 @@ namespace GameSession {
             Game                          _game;
             GameStages                    _gameStage = GameStages::STARTING;
             sharedConstMat_t              _currentScreenshot;
-            int32_t                       _currentPlayerPlayingNum = 0;
+            int32_t                       _currentPlayerNum        = 0;
             ActionType                    _currentAction           = ActionType::NONE;
             cv::Mat                       _lastWaitingActionImg;
 

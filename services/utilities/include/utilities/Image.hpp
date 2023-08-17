@@ -28,11 +28,19 @@ namespace Utilities::Image {
         return "(" + std::to_string(color[0]) + ", " + std::to_string(color[1]) + ", " + std::to_string(color[2]) + ")";
     }
 
-    static inline auto writeImage(const cv::Mat& image, std::string_view logPath, std::string_view category) -> void {
+    static inline auto writeLogImage(const cv::Mat& image, std::string_view logPath, std::string_view category) -> void {
         std::filesystem::directory_entry directory(fmt::format("{}/images/{}", logPath, category));
 
         if (!directory.exists()) { std::filesystem::create_directory(directory); }
 
         cv::imwrite(fmt::format("{}/images/{}/{}.png", logPath, category, getMsTimestamp()), image);
+    }
+    
+    static inline auto writeImage(const cv::Mat& image, const std::filesystem::path& file) -> void {
+        std::filesystem::directory_entry directory(file.root_directory());
+        
+        if (!directory.exists()) { std::filesystem::create_directory(directory); }
+
+        cv::imwrite(file, image);
     }
 }  // namespace Utilities::Image

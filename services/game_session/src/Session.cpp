@@ -9,7 +9,7 @@ namespace GameSession {
     using GameHandler::Hand;
     using GameHandler::invalid_player_name;
     using OCR::ExceptionWithImage;
-    using Utilities::Image::writeImage;
+    using Utilities::Image::writeLogImage;
     using Utilities::Strings::InvalidNumberException;
 
     using Logger = Logger::Quill;
@@ -22,17 +22,17 @@ namespace GameSession {
 
     auto Session::operator=(Session&& other) noexcept -> Session& {
         if (this != &other) {
-            _game                    = std::move(other._game);
-            _scraper                 = std::move(other._scraper);
-            _ocr                     = std::move(other._ocr);
-            _currentScreenshot       = std::move(other._currentScreenshot);
-            _roomName                = std::move(other._roomName);
-            _tickRate                = other._tickRate;
-            _windowId                = other._windowId;
-            _windowSize              = other._windowSize;
-            _gameStage               = other._gameStage;
-            _currentPlayerPlayingNum = other._currentPlayerPlayingNum;
-            _currentAction           = other._currentAction;
+            _game              = std::move(other._game);
+            _scraper           = std::move(other._scraper);
+            _ocr               = std::move(other._ocr);
+            _currentScreenshot = std::move(other._currentScreenshot);
+            _roomName          = std::move(other._roomName);
+            _tickRate          = other._tickRate;
+            _windowId          = other._windowId;
+            _windowSize        = other._windowSize;
+            _gameStage         = other._gameStage;
+            _currentPlayerNum  = other._currentPlayerNum;
+            _currentAction     = other._currentAction;
         }
 
         return *this;
@@ -70,8 +70,8 @@ namespace GameSession {
     auto Session::_getScreenshot() -> sharedConstMat_t { return _scraper.getScreenshot(_windowId); }
 
     auto Session::_assignButton(const cv::Mat& screenshot) -> void {
-        _currentPlayerPlayingNum = _getButtonPosition(screenshot);
-        _lastWaitingActionImg    = _scraper.getPlayerActionImg(screenshot, _currentPlayerPlayingNum);
+        _currentPlayerNum     = _getButtonPosition(screenshot);
+        _lastWaitingActionImg = _scraper.getPlayerActionImg(screenshot, _currentPlayerNum);
     }
 
     auto Session::_determineGameOver() -> void {
@@ -108,15 +108,11 @@ namespace GameSession {
             default: _currentAction = NONE;
         }
 
-        if (amount > 0) {
-            LOG_INFO(Logger::getLogger(), "Player {} {} {}", playerNum, _currentAction, amount);
-        } else {
-            LOG_INFO(Logger::getLogger(), "Player {} {}", playerNum, _currentAction);
-        }
+        LOG_INFO(Logger::getLogger(), "{}", _game.getCurrentRound().getLastAction());
 
-        _currentPlayerPlayingNum = _game.getCurrentRound().getNextPlayerNum(_currentPlayerPlayingNum);
-        _lastWaitingActionImg    = _scraper.getPlayerActionImg(screenshot, _currentPlayerPlayingNum);
-        _currentAction           = NONE;
+        _currentPlayerNum     = _game.getCurrentRound().getNextPlayerNum(_currentPlayerNum);
+        _lastWaitingActionImg = _scraper.getPlayerActionImg(screenshot, _currentPlayerNum);
+        _currentAction        = NONE;
     }
 
     auto Session::_getButtonPosition(const cv::Mat& screenshot) -> int32_t {
@@ -163,11 +159,16 @@ namespace GameSession {
             _gameStage = GameStages::IN_PROGRESS;
             // Start the 1st round
             _startRound(screenshot);
-        } catch (const ExceptionWithImage& e) { LOG_DEBUG(Logger::getLogger(), "{}", e.what()); }
+        } catch (const ExceptionWithImage& e) {
+            LOG_DEBUG(Logger::getLogger(), "{}", e.what());
+
+            writeLogImage(e.getImage(), LOGS_DIR, e.getCategory());
+        }
     }
 
     auto Session::_isNextActionTriggered(const cv::Mat& screenshot) -> bool {
-        return !_ocr->isSimilar(_scraper.getPlayerActionImg(screenshot, _currentPlayerPlayingNum), _lastWaitingActionImg);
+        return !_ocr->isSimilar(_scraper.getPlayerActionImg(screenshot, _currentPlayerNum), _lastWaitingActionImg,
+                                ACTION_SIMILARITY_THRESHOLD);
     }
 
     auto Session::_startRound(const cv::Mat& screenshot) -> void {
@@ -180,18 +181,18 @@ namespace GameSession {
         auto secondCard = _ocr->readCard(_scraper.getSecondCardImg(screenshot));
         Hand hand       = {firstCard, secondCard};
         // Start round, _currentPlayerPlayingNum is set to the button position by _assignButton call
-        LOG_INFO(Logger::getLogger(), "Starting new round: [blinds {}] [hand {}] [button {}]", blinds, hand, _currentPlayerPlayingNum);
+        LOG_INFO(Logger::getLogger(), "Starting new round: [blinds {}] [hand {}] [button {}]", blinds, hand, _currentPlayerNum);
 
-        _game.newRound(blinds, hand, _currentPlayerPlayingNum);
+        _game.newRound(blinds, hand, _currentPlayerNum);
     }
 
     auto Session::_trackCurrentRound(const cv::Mat& screenshot) -> void {
         try {
-            _determinePlayerAction(screenshot, _currentPlayerPlayingNum);
+            _determinePlayerAction(screenshot, _currentPlayerNum);
         } catch (const ExceptionWithImage& e) {
             LOG_DEBUG(Logger::getLogger(), "{}", e.what());
 
-            writeImage(e.getImage(), LOGS_DIR, e.getCategory());
+            writeLogImage(e.getImage(), LOGS_DIR, e.getCategory());
         }
     }
 

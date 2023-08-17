@@ -21,6 +21,11 @@ namespace GameHandler {
             auto operator=(const RoundAction& other) -> RoundAction& = default;
             auto operator=(RoundAction&& other) noexcept -> RoundAction&;
 
+            [[nodiscard]] auto getAction() const -> ActionType { return _action; }
+            [[nodiscard]] auto getPlayer() const -> const Player& { return _player; }
+            [[nodiscard]] auto getTime() const -> const seconds& { return _time; }
+            [[nodiscard]] auto getAmount() const -> int32_t { return _amount; }
+
             [[nodiscard]] auto toJson() const -> json;
 
         private:
@@ -57,4 +62,21 @@ namespace fmt {
                 return formatter<string_view>::format(name, ctx);
             }
     };
+
+    template<>
+    struct formatter<RoundAction> : formatter<string_view> {
+            template<typename FormatContext>
+            auto format(const RoundAction& action, FormatContext& ctx) const {
+                return action.getAmount() == 0 ? fmt::format_to(ctx.out(), "Player {} {} in {}s", action.getPlayer().getNumber(),
+                                                                action.getAction(), action.getTime())
+                                               : fmt::format_to(ctx.out(), "Player {} {} {} in {}s", action.getPlayer().getNumber(),
+                                                                action.getAction(), action.getAmount(), action.getTime());
+            }
+    };
 }  // namespace fmt
+
+// Registered as safe to copy for Quill logger
+namespace quill {
+    template<>
+    struct copy_loggable<GameHandler::RoundAction> : std::true_type {};
+}  // namespace quill

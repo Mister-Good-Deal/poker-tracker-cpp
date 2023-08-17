@@ -107,6 +107,7 @@ namespace GameHandler {
 
             [[nodiscard]] auto getBoard() -> Board& { return _board; }
             [[nodiscard]] auto getPot() const -> int32_t { return _pot; }
+            [[nodiscard]] auto getLastAction() -> RoundAction { return _actions[_currentStreet].back(); }
             [[nodiscard]] auto isInProgress() const -> bool { return !_ended; }
 
             auto call(uint32_t playerNum, int32_t amount) -> void;
