@@ -8,6 +8,7 @@
 namespace GameSession {
     using GameHandler::Hand;
     using GameHandler::invalid_player_name;
+    using OCR::CannotReadCardImageException;
     using OCR::ExceptionWithImage;
     using Utilities::Image::writeLogImage;
     using Utilities::Strings::InvalidNumberException;
@@ -49,9 +50,13 @@ namespace GameSession {
                 case GameStages::GAME_INFO_SETUP: _harvestGameInfo(*_currentScreenshot); break;
                 case GameStages::IN_PROGRESS:
                     if (!_game.getCurrentRound().isInProgress()) {
+                        LOG_DEBUG(Logger::getLogger(), "Round recap:\n{}", _game.getCurrentRound().toJson().dump(4));
+
                         _determineGameOver();
 
                         if (!_game.isOver()) { _startRound(*_currentScreenshot); }
+                    } else if (_game.getCurrentRound().waitingShowdown()) {
+                        _waitShowdown(*_currentScreenshot);
                     } else if (_isNextActionTriggered(*_currentScreenshot)) {
                         _trackCurrentRound(*_currentScreenshot);
                     }
@@ -86,7 +91,6 @@ namespace GameSession {
     }
 
     auto Session::_determinePlayerAction(const cv::Mat& screenshot, uint32_t playerNum) -> void {
-        int32_t amount = 0;
         // readPlayerBet may fail, so we keep the action until we can read the bet and reset the action to NONE in case of success
         if (_currentAction == NONE) { _currentAction = _ocr->readGameAction(_scraper.getPlayerActionImg(screenshot, playerNum)); }
 
@@ -94,16 +98,13 @@ namespace GameSession {
             case FOLD: _game.getCurrentRound().fold(playerNum); break;
             case CHECK: _game.getCurrentRound().check(playerNum); break;
             case CALL:
-                amount = _ocr->readPlayerBet(_scraper.getPlayerBetImg(screenshot, playerNum));
-                _game.getCurrentRound().call(playerNum, amount);
+                _game.getCurrentRound().call(playerNum, _ocr->readPlayerBet(_scraper.getPlayerBetImg(screenshot, playerNum)));
                 break;
             case BET:
-                amount = _ocr->readPlayerBet(_scraper.getPlayerBetImg(screenshot, playerNum));
-                _game.getCurrentRound().bet(playerNum, amount);
+                _game.getCurrentRound().bet(playerNum, _ocr->readPlayerBet(_scraper.getPlayerBetImg(screenshot, playerNum)));
                 break;
             case RAISE:
-                amount = _ocr->readPlayerBet(_scraper.getPlayerBetImg(screenshot, playerNum));
-                _game.getCurrentRound().raise(playerNum, amount);
+                _game.getCurrentRound().raiseTo(playerNum, _ocr->readPlayerBet(_scraper.getPlayerBetImg(screenshot, playerNum)));
                 break;
             default: _currentAction = NONE;
         }
@@ -123,6 +124,32 @@ namespace GameSession {
         }
 
         throw CannotFindButtonException("Could not determine button position");
+    }
+
+    auto Session::_getFlop(const cv::Mat& screenshot) -> void {
+        auto card1 = _ocr->readCard(_scraper.getBoardCard1Img(screenshot));
+        auto card2 = _ocr->readCard(_scraper.getBoardCard2Img(screenshot));
+        auto card3 = _ocr->readCard(_scraper.getBoardCard3Img(screenshot));
+
+        _game.getCurrentRound().getBoard().setFlop({card1, card2, card3});
+
+        LOG_INFO(Logger::getLogger(), "Flop: {}-{}-{}", card1, card2, card3);
+    }
+
+    auto Session::_getTurn(const cv::Mat& screenshot) -> void {
+        auto card = _ocr->readCard(_scraper.getBoardCard4Img(screenshot));
+
+        _game.getCurrentRound().getBoard().setTurn(card);
+
+        LOG_INFO(Logger::getLogger(), "Turn: {}", card);
+    }
+
+    auto Session::_getRiver(const cv::Mat& screenshot) -> void {
+        auto card = _ocr->readCard(_scraper.getBoardCard5Img(screenshot));
+
+        _game.getCurrentRound().getBoard().setRiver(card);
+
+        LOG_INFO(Logger::getLogger(), "River: {}", card);
     }
 
     /**
@@ -181,9 +208,10 @@ namespace GameSession {
         auto secondCard = _ocr->readCard(_scraper.getSecondCardImg(screenshot));
         Hand hand       = {firstCard, secondCard};
         // Start round, _currentPlayerPlayingNum is set to the button position by _assignButton call
-        LOG_INFO(Logger::getLogger(), "Starting new round: [blinds {}] [hand {}] [button {}]", blinds, hand, _currentPlayerNum);
-
         _game.newRound(blinds, hand, _currentPlayerNum);
+        LOG_INFO(Logger::getLogger(), "Starting new round: [blinds {}] [hand {}] [button {}]", blinds, hand, _currentPlayerNum);
+        // Get flop
+        _getFlop(screenshot);
     }
 
     auto Session::_trackCurrentRound(const cv::Mat& screenshot) -> void {
@@ -212,5 +240,28 @@ namespace GameSession {
         } catch (const CannotFindButtonException& e) {
             LOG_DEBUG(Logger::getLogger(), "Waiting game start, button not found");
         } catch (const ExceptionWithImage& e) { LOG_DEBUG(Logger::getLogger(), "Waiting game start, hand not distributed"); }
+    }
+
+    auto Session::_waitShowdown(const cv::Mat& screenshot) -> void {
+        try {
+            auto&       round = _game.getCurrentRound();
+            const auto& board = round.getBoard();
+            // Check board cards
+            if (board.getTurn().isUnknown()) { _getTurn(screenshot); }
+            if (board.getRiver().isUnknown()) { _getRiver(screenshot); }
+            // Get player hands
+            for (auto playerNum : _game.getCurrentRound().getInRoundPlayersNum()) {
+                if (playerNum == 1) { continue; }  // Skip player 1, as it is the bot
+                if (!round.getPlayerHand(playerNum).isSet()) {
+                    auto hand = _ocr->readHand(_scraper.getPlayerCardsImg(screenshot, playerNum));
+
+                    round.setPlayerHand(hand, playerNum);
+
+                    LOG_INFO(Logger::getLogger(), "player_{} hand: {}-{}", playerNum, hand.getCards()[0], hand.getCards()[1]);
+                }
+            }
+
+            round.showdown();
+        } catch (const CannotReadCardImageException& e) { LOG_DEBUG(Logger::getLogger(), "Waiting showdown"); }
     }
 }  // namespace GameSession

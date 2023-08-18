@@ -63,10 +63,14 @@ namespace GameSession {
             auto _determineGameOver() -> void;
             auto _determinePlayerAction(const cv::Mat& screenshot, uint32_t playerNum) -> void;
             auto _getButtonPosition(const cv::Mat& screenshot) -> int32_t;
+            auto _getFlop(const cv::Mat& screenshot) -> void;
+            auto _getTurn(const cv::Mat& screenshot) -> void;
+            auto _getRiver(const cv::Mat& screenshot) -> void;
             auto _harvestGameInfo(const cv::Mat& screenshot) -> void;
             auto _isNextActionTriggered(const cv::Mat& screenshot) -> bool;
             auto _startRound(const cv::Mat& screenshot) -> void;
             auto _trackCurrentRound(const cv::Mat& screenshot) -> void;
             auto _waitGameStart(const cv::Mat& screenshot) -> void;
+            auto _waitShowdown(const cv::Mat& screenshot) -> void;
     };
 }  // namespace GameSession
