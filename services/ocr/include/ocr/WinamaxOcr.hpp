@@ -12,11 +12,12 @@ namespace OCR {
             static constexpr int32_t     DEFAULT_OCR_IMG_WIDTH          = 1000;
             static constexpr int32_t     DEFAULT_MIN_CLUSTER_SIZE       = 30;
             static constexpr int32_t     DEFAULT_DILATATION_KERNEL_SIZE = 5;
+            static constexpr int32_t     CARD_WIDTH                     = 51;
 
             WinamaxOcr();
             WinamaxOcr(const WinamaxOcr& other) = default;
-            WinamaxOcr(WinamaxOcr&& other) noexcept { *this = std::move(other); };
-            explicit WinamaxOcr(cv::Mat cardsSkin) : _cardsSkin(std::move(cardsSkin)){};
+            WinamaxOcr(WinamaxOcr&& other) noexcept : OcrInterface(std::move(other)) { *this = std::move(other); };
+            explicit WinamaxOcr(cv::Mat cardsSkin) : _cardsSkin(std::move(cardsSkin)), OcrInterface(CARD_WIDTH){};
 
             ~WinamaxOcr() final = default;
 

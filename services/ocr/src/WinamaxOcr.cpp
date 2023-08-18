@@ -13,7 +13,8 @@ namespace OCR {
     using enum ActionType;
 
     WinamaxOcr::WinamaxOcr() :
-        _cardsSkin(cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards_skins/" + DEFAULT_CARD_SKIN)), _buttonImg(getButtonImg()) {}
+        _cardsSkin(cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards_skins/" + DEFAULT_CARD_SKIN)), _buttonImg(getButtonImg()),
+        OcrInterface(CARD_WIDTH) {}
 
     auto WinamaxOcr::operator=(WinamaxOcr&& other) noexcept -> WinamaxOcr& {
         if (this != &other) {

@@ -12,6 +12,7 @@ namespace OCR {
     using cv::text::OCRTesseract;
     using GameHandler::Blinds;
     using GameHandler::Card;
+    using GameHandler::Hand;
     using GameHandler::RoundAction;
     using GameHandler::UnknownCardRankException;
     using std::chrono::seconds;
@@ -67,10 +68,17 @@ namespace OCR {
             [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read blind range"; }
     };
 
-    class CannotReadCardRankImageException : public ExceptionWithImage {
+    class CannotReadCardImageException : public ExceptionWithImage {
+        public:
+            explicit CannotReadCardImageException(const cv::Mat& image) : ExceptionWithImage(image, "card") {}
+
+            [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read card"; }
+    };
+
+    class CannotReadCardRankImageException : public CannotReadCardImageException {
         public:
             explicit CannotReadCardRankImageException(UnknownCardRankException exception, const cv::Mat& image) :
-                ExceptionWithImage(image, "cardRank"), _exception(std::move(exception)) {}
+                CannotReadCardImageException(image), _exception(std::move(exception)) {}
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read card rank"; }
 
@@ -78,9 +86,9 @@ namespace OCR {
             UnknownCardRankException _exception;
     };
 
-    class CannotReadCardSuitImageException : public ExceptionWithImage {
+    class CannotReadCardSuitImageException : public CannotReadCardImageException {
         public:
-            explicit CannotReadCardSuitImageException(const cv::Mat& image) : ExceptionWithImage(image, "cardSuit") {}
+            explicit CannotReadCardSuitImageException(const cv::Mat& image) : CannotReadCardImageException(image) {}
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read card suit"; }
     };
@@ -151,7 +159,7 @@ namespace OCR {
             static constexpr int32_t     OCR_MIN_CONFIDENCE   = 30;  // @todo confidence between numbers 1 and 7 is really low
             static constexpr const char* ALL_CHARACTERS       = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_ ";
 
-            OcrInterface();
+            explicit OcrInterface(int32_t cardWidth);
             OcrInterface(const OcrInterface&) = default;
             OcrInterface(OcrInterface&&)      = default;
 
@@ -183,6 +191,7 @@ namespace OCR {
             [[nodiscard]] virtual auto hasButton(const cv::Mat& buttonImage) const -> bool                   = 0;
 
             [[nodiscard]] virtual auto readCard(const cv::Mat& cardImage) const -> Card;
+            [[nodiscard]] virtual auto readHand(const cv::Mat& handImage) const -> Hand;
             [[nodiscard]] virtual auto readWord(const cv::Mat& wordImage) const -> std::string;
             [[nodiscard]] virtual auto readWordByChar(const cv::Mat& wordImage) const -> std::string;
             [[nodiscard]] virtual auto readIntNumbers(const cv::Mat& intNumberImage) const -> int32_t;
@@ -207,6 +216,8 @@ namespace OCR {
             cv::Ptr<OCRTesseract> _tesseractIntRange;
             cv::Ptr<OCRTesseract> _tesseractFloatNumbers;
             cv::Ptr<OCRTesseract> _tesseractDuration;
+
+            int32_t _cardWidth;
     };
 
 }  // namespace OCR

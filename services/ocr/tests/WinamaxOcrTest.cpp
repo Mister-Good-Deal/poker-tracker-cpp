@@ -103,7 +103,7 @@ TEST(WinamaxOcrTest, readActionShouldWork) {
 
 TEST(WinamaxOcrTest, readPlayerNameShouldWork) {
     auto player1NameImg = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/player_name/_Mister_.png");
-    auto player2NameImg = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/player_name/G00dspeed");
+    auto player2NameImg = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/player_name/G00dspeed.png");
     auto player3NameImg = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/player_name/sucre_461406.png");
 
     EXPECT_STREQ(Env::winamaxOcr().readPlayerName(player1NameImg).c_str(), "_Mister_");
@@ -193,6 +193,8 @@ TEST(WinamaxOcrTest, playerButtonDetectionShouldWork) {
     EXPECT_TRUE(Env::winamaxOcr().hasButton(button));
     EXPECT_FALSE(Env::winamaxOcr().hasButton(noButton));
 }
+
+// @todo test readHand
 
 auto main(int argc, char* argv[]) -> int {
     ::testing::InitGoogleTest(&argc, argv);

@@ -17,7 +17,7 @@ namespace OCR {
     using enum cv::text::ocr_engine_mode;
     using enum cv::text::page_seg_mode;
 
-    OcrInterface::OcrInterface() {
+    OcrInterface::OcrInterface(int32_t cardWidth) : _cardWidth(cardWidth) {
         // DEFAULT datapath = "/usr/local/share/tessdata"
         _tesseractCard         = cv::text::OCRTesseract::create(nullptr, "eng", "0123456789TJQKA", OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
         _tesseractWord         = cv::text::OCRTesseract::create(nullptr, "eng", ALL_CHARACTERS, OEM_CUBE_ONLY, PSM_SINGLE_BLOCK);
@@ -33,6 +33,13 @@ namespace OCR {
         cv::Mat suitImage = cardImage(getSuitCardArea());
 
         return {readCardRank(rankImage), readCardSuit(suitImage)};
+    }
+
+    auto OcrInterface::readHand(const cv::Mat& handImage) const -> Hand {
+        cv::Mat firstCardImage  = handImage({0, 0, _cardWidth, handImage.rows});
+        cv::Mat secondCardImage = handImage({handImage.cols - _cardWidth, 0, _cardWidth, handImage.rows});
+
+        return {readCard(firstCardImage), readCard(secondCardImage)};
     }
 
     auto OcrInterface::readWord(const cv::Mat& wordImage) const -> std::string {
@@ -56,8 +63,6 @@ namespace OCR {
 
         fullTrim(number);
 
-        LOG_DEBUG(Logger::getLogger(), "readIntNumbers string: {}", number);
-
         return toInt(number);
     }
 
@@ -69,8 +74,6 @@ namespace OCR {
         auto dashPos      = range.find('-');
         auto firstNumber  = range.substr(0, dashPos);
         auto secondNumber = range.substr(dashPos + 1);
-
-        LOG_DEBUG(Logger::getLogger(), "readIntRange string: {}", range);
 
         return {toInt(firstNumber), toInt(secondNumber)};
     }
@@ -95,8 +98,6 @@ namespace OCR {
         auto doubleDashPos = clock.find(':');
         auto minutes       = clock.substr(0, doubleDashPos);
         auto seconds       = clock.substr(doubleDashPos + 1);
-
-        LOG_DEBUG(Logger::getLogger(), "readDuration string: {}", clock);
 
         return std::chrono::seconds(toInt(minutes) * 60 + toInt(seconds));
     }
@@ -146,8 +147,6 @@ namespace OCR {
         }
 
         double similarity = cv::norm(firstImageCopy, secondImageCopy, cv::NORM_RELATIVE | cv::NORM_L2SQR, mask);
-
-        LOG_DEBUG(Logger::getLogger(), "Similarity score: {}", similarity);
 
         return similarity;
     }
