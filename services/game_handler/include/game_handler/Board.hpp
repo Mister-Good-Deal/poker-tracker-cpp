@@ -37,6 +37,8 @@ namespace GameHandler {
             auto operator=(Board&& other) noexcept -> Board&;
 
             [[nodiscard]] auto getCards() const -> board_t { return _cards; }
+            [[nodiscard]] auto getTurn() const -> Card { return _cards[3]; }
+            [[nodiscard]] auto getRiver() const -> Card { return _cards[4]; }
             [[nodiscard]] auto hasPossibleStraight() const -> bool { return _possibleStraight; }
             [[nodiscard]] auto hasPossibleFlush() const -> bool { return _possibleFlush; }
             [[nodiscard]] auto hasPossibleFlushDraw() const -> bool { return _possibleFlushDraw; }
