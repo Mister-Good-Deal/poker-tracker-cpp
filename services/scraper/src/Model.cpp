@@ -23,6 +23,7 @@ namespace Scraper {
 
             // All elements coordinates
             _firstCardCoord      = other._firstCardCoord;
+            _secondCardCoord     = other._secondCardCoord;
             _averageStackCoord   = other._averageStackCoord;
             _blindAmountCoord    = other._blindAmountCoord;
             _blindLevelCoord     = other._blindLevelCoord;
@@ -51,7 +52,6 @@ namespace Scraper {
             _player3StackCoord   = other._player3StackCoord;
             _potCoord            = other._potCoord;
             _prizePoolCoord      = other._prizePoolCoord;
-            _secondCardCoord     = other._secondCardCoord;
         }
 
         return *this;
@@ -192,13 +192,12 @@ namespace Scraper {
         std::vector<cv::Rect> elements     = {
             getAverageStackCoord(),  getBlindAmountCoord(),   getBlindLevelCoord(),    getBlindLevelTimeCoord(),
             getBoardCard1Coord(),    getBoardCard2Coord(),    getBoardCard3Coord(),    getBoardCard4Coord(),
-            getBoardCard5Coord(),    getFirstCardCoord(),     getPlayer1ActionCoord(), getPlayer1BetCoord(),
-            getPlayer1ButtonCoord(), getPlayer1NameCoord(),   getPlayer1StackCoord(),  getPlayer2ActionCoord(),
-            getPlayer2BetCoord(),    getPlayer2ButtonCoord(), getPlayer2HandCoord(),   getPlayer2NameCoord(),
-            getPlayer2StackCoord(),  getPlayer3ActionCoord(), getPlayer3BetCoord(),    getPlayer3ButtonCoord(),
-            getPlayer3HandCoord(),   getPlayer3NameCoord(),   getPlayer3StackCoord(),  getPotCoord(),
-            getPrizePoolCoord(),     getSecondCardCoord(),
-        };
+            getBoardCard5Coord(),    getFirstCardCoord(),     getSecondCardCoord(),    getPlayer1ActionCoord(),
+            getPlayer1BetCoord(),    getPlayer1ButtonCoord(), getPlayer1NameCoord(),   getPlayer1StackCoord(),
+            getPlayer2ActionCoord(), getPlayer2BetCoord(),    getPlayer2ButtonCoord(), getPlayer2HandCoord(),
+            getPlayer2NameCoord(),   getPlayer2StackCoord(),  getPlayer3ActionCoord(), getPlayer3BetCoord(),
+            getPlayer3ButtonCoord(), getPlayer3HandCoord(),   getPlayer3NameCoord(),   getPlayer3StackCoord(),
+            getPotCoord(),           getPrizePoolCoord()};
 
         for (const auto& element : elements) { cv::rectangle(elementsView, element, cv::Scalar(0, 255, 0), 2); }
 
@@ -253,21 +252,36 @@ namespace Scraper {
         return {{"roomName", _roomName},
                 {"windowSize", {{"width", _windowSize.width}, {"height", _windowSize.height}}},
                 {"elementsBoxes",
-                 {{"averageStack", _rectToJson(getAverageStackCoord())},   {"blindAmount", _rectToJson(getBlindAmountCoord())},
-                  {"blindLevel", _rectToJson(getBlindLevelCoord())},       {"blindLevelTime", _rectToJson(getBlindLevelTimeCoord())},
-                  {"boardCard1", _rectToJson(getBoardCard1Coord())},       {"boardCard2", _rectToJson(getBoardCard2Coord())},
-                  {"boardCard3", _rectToJson(getBoardCard3Coord())},       {"boardCard4", _rectToJson(getBoardCard4Coord())},
-                  {"boardCard5", _rectToJson(getBoardCard5Coord())},       {"firstCard", _rectToJson(getFirstCardCoord())},
-                  {"player1Action", _rectToJson(getPlayer1ActionCoord())}, {"player1Bet", _rectToJson(getPlayer1BetCoord())},
-                  {"player1Button", _rectToJson(getPlayer1ButtonCoord())}, {"player1Name", _rectToJson(getPlayer1NameCoord())},
-                  {"player1Stack", _rectToJson(getPlayer1StackCoord())},   {"player2Action", _rectToJson(getPlayer2ActionCoord())},
-                  {"player2Bet", _rectToJson(getPlayer2BetCoord())},       {"player2Button", _rectToJson(getPlayer2ButtonCoord())},
-                  {"player2Hand", _rectToJson(getPlayer2HandCoord())},     {"player2Name", _rectToJson(getPlayer2NameCoord())},
-                  {"player2Stack", _rectToJson(getPlayer2StackCoord())},   {"player3Action", _rectToJson(getPlayer3ActionCoord())},
-                  {"player3Bet", _rectToJson(getPlayer3BetCoord())},       {"player3Button", _rectToJson(getPlayer3ButtonCoord())},
-                  {"player3Hand", _rectToJson(getPlayer3HandCoord())},     {"player3Name", _rectToJson(getPlayer3NameCoord())},
-                  {"player3Stack", _rectToJson(getPlayer3StackCoord())},   {"pot", _rectToJson(getPotCoord())},
-                  {"prizePool", _rectToJson(getPrizePoolCoord())},         {"secondCard", _rectToJson(getSecondCardCoord())}}}};
+                 {{"averageStack", _rectToJson(getAverageStackCoord())},
+                  {"blindAmount", _rectToJson(getBlindAmountCoord())},
+                  {"blindLevel", _rectToJson(getBlindLevelCoord())},
+                  {"blindLevelTime", _rectToJson(getBlindLevelTimeCoord())},
+                  {"boardCard1", _rectToJson(getBoardCard1Coord())},
+                  {"boardCard2", _rectToJson(getBoardCard2Coord())},
+                  {"boardCard3", _rectToJson(getBoardCard3Coord())},
+                  {"boardCard4", _rectToJson(getBoardCard4Coord())},
+                  {"boardCard5", _rectToJson(getBoardCard5Coord())},
+                  {"firstCard", _rectToJson(getFirstCardCoord())},
+                  {"secondCard", _rectToJson(getSecondCardCoord())},
+                  {"player1Action", _rectToJson(getPlayer1ActionCoord())},
+                  {"player1Bet", _rectToJson(getPlayer1BetCoord())},
+                  {"player1Button", _rectToJson(getPlayer1ButtonCoord())},
+                  {"player1Name", _rectToJson(getPlayer1NameCoord())},
+                  {"player1Stack", _rectToJson(getPlayer1StackCoord())},
+                  {"player2Action", _rectToJson(getPlayer2ActionCoord())},
+                  {"player2Bet", _rectToJson(getPlayer2BetCoord())},
+                  {"player2Button", _rectToJson(getPlayer2ButtonCoord())},
+                  {"player2Hand", _rectToJson(getPlayer2HandCoord())},
+                  {"player2Name", _rectToJson(getPlayer2NameCoord())},
+                  {"player2Stack", _rectToJson(getPlayer2StackCoord())},
+                  {"player3Action", _rectToJson(getPlayer3ActionCoord())},
+                  {"player3Bet", _rectToJson(getPlayer3BetCoord())},
+                  {"player3Button", _rectToJson(getPlayer3ButtonCoord())},
+                  {"player3Hand", _rectToJson(getPlayer3HandCoord())},
+                  {"player3Name", _rectToJson(getPlayer3NameCoord())},
+                  {"player3Stack", _rectToJson(getPlayer3StackCoord())},
+                  {"pot", _rectToJson(getPotCoord())},
+                  {"prizePool", _rectToJson(getPrizePoolCoord())}}}};
     }
 
     auto Model::loadFromJson(const json& json) -> void {
@@ -282,6 +296,7 @@ namespace Scraper {
         _boardCard4Coord     = _jsonToRect(json.at("elementsBoxes").at("boardCard4"));
         _boardCard5Coord     = _jsonToRect(json.at("elementsBoxes").at("boardCard5"));
         _firstCardCoord      = _jsonToRect(json.at("elementsBoxes").at("firstCard"));
+        _secondCardCoord     = _jsonToRect(json.at("elementsBoxes").at("secondCard"));
         _player1ActionCoord  = _jsonToRect(json.at("elementsBoxes").at("player1Action"));
         _player1BetCoord     = _jsonToRect(json.at("elementsBoxes").at("player1Bet"));
         _player1ButtonCoord  = _jsonToRect(json.at("elementsBoxes").at("player1Button"));
@@ -301,7 +316,6 @@ namespace Scraper {
         _player3StackCoord   = _jsonToRect(json.at("elementsBoxes").at("player3Stack"));
         _potCoord            = _jsonToRect(json.at("elementsBoxes").at("pot"));
         _prizePoolCoord      = _jsonToRect(json.at("elementsBoxes").at("prizePool"));
-        _secondCardCoord     = _jsonToRect(json.at("elementsBoxes").at("secondCard"));
         _windowSize          = {json.at("windowSize").at("width"), json.at("windowSize").at("height")};
     }
 

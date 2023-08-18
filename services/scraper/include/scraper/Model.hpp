@@ -65,6 +65,7 @@ namespace Scraper {
             auto getBoardCard4Coord() const -> const cv::Rect& { return _boardCard4Coord; }
             auto getBoardCard5Coord() const -> const cv::Rect& { return _boardCard5Coord; }
             auto getFirstCardCoord() const -> const cv::Rect& { return _firstCardCoord; }
+            auto getSecondCardCoord() const -> const cv::Rect& { return _secondCardCoord; }
             auto getPlayer1ActionCoord() const -> const cv::Rect& { return _player1ActionCoord; }
             auto getPlayer1BetCoord() const -> const cv::Rect& { return _player1BetCoord; }
             auto getPlayer1ButtonCoord() const -> const cv::Rect& { return _player1ButtonCoord; }
@@ -85,7 +86,6 @@ namespace Scraper {
             auto getPotCoord() const -> const cv::Rect& { return _potCoord; }
             auto getPrizePoolCoord() const -> const cv::Rect& { return _prizePoolCoord; }
             auto getRoomName() const -> const std::string& { return _roomName; }
-            auto getSecondCardCoord() const -> const cv::Rect& { return _secondCardCoord; }
             auto getWindowSize() const -> const windowSize_t& { return _windowSize; }
 
             void setAverageStackCoord(const cv::Rect& averageStackCoord) { _averageStackCoord = averageStackCoord; }
@@ -98,6 +98,7 @@ namespace Scraper {
             void setBoardCard4Coord(const cv::Rect& boardCard4Coord) { _boardCard4Coord = boardCard4Coord; }
             void setBoardCard5Coord(const cv::Rect& boardCard5Coord) { _boardCard5Coord = boardCard5Coord; }
             void setFirstCardCoord(const cv::Rect& firstCardCoord) { _firstCardCoord = firstCardCoord; }
+            void setSecondCardCoord(const cv::Rect& secondCardCoord) { _secondCardCoord = secondCardCoord; }
             void setPlayer1ActionCoord(const cv::Rect& player1ActionCoord) { _player1ActionCoord = player1ActionCoord; }
             void setPlayer1BetCoord(const cv::Rect& player1BetCoord) { _player1BetCoord = player1BetCoord; }
             void setPlayer1ButtonCoord(const cv::Rect& player1ButtonCoord) { _player1ButtonCoord = player1ButtonCoord; }
@@ -118,7 +119,6 @@ namespace Scraper {
             void setPotCoord(const cv::Rect& potCoord) { _potCoord = potCoord; }
             void setPrizePoolCoord(const cv::Rect& prizePoolCoord) { _prizePoolCoord = prizePoolCoord; }
             void setRoomName(const std::string& roomName) { _roomName = roomName; }
-            void setSecondCardCoord(const cv::Rect& secondCardCoord) { _secondCardCoord = secondCardCoord; }
             void setWindowSize(const windowSize_t& windowSize) { _windowSize = windowSize; }
 
             /**
@@ -131,6 +131,7 @@ namespace Scraper {
              *                         Player 1
              */
             auto getFirstCardImg(const cv::Mat& img) const -> const cv::Mat { return img(getFirstCardCoord()); };
+            auto getSecondCardImg(const cv::Mat& img) const -> const cv::Mat { return img(getSecondCardCoord()); };
             auto getAverageStackImg(const cv::Mat& img) const -> const cv::Mat { return img(getAverageStackCoord()); };
             auto getBlindAmountImg(const cv::Mat& img) const -> const cv::Mat { return img(getBlindAmountCoord()); };
             auto getBlindLevelImg(const cv::Mat& img) const -> const cv::Mat { return img(getBlindLevelCoord()); };
@@ -159,7 +160,6 @@ namespace Scraper {
             auto getPlayer3StackImg(const cv::Mat& img) const -> const cv::Mat { return img(getPlayer3StackCoord()); };
             auto getPotImg(const cv::Mat& img) const -> const cv::Mat { return img(getPotCoord()); };
             auto getPrizePoolImg(const cv::Mat& img) const -> const cv::Mat { return img(getPrizePoolCoord()); };
-            auto getSecondCardImg(const cv::Mat& img) const -> const cv::Mat { return img(getSecondCardCoord()); };
 
             // Convenient methods to get coordinates with a player number
             auto getPlayerHandCoord(uint32_t playerNum) const -> const cv::Rect&;
@@ -189,6 +189,7 @@ namespace Scraper {
 
             // All screen elements coordinates from attributes as cv::Rect object
             cv::Rect _firstCardCoord;
+            cv::Rect _secondCardCoord;
             cv::Rect _averageStackCoord;
             cv::Rect _blindAmountCoord;
             cv::Rect _blindLevelCoord;
@@ -217,7 +218,6 @@ namespace Scraper {
             cv::Rect _player3StackCoord;
             cv::Rect _potCoord;
             cv::Rect _prizePoolCoord;
-            cv::Rect _secondCardCoord;
 
             auto _parseActiveWindows() -> void;
             auto _rectToJson(const cv::Rect& rect) const -> json;
