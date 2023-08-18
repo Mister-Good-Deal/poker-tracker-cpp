@@ -108,17 +108,20 @@ namespace GameHandler {
             [[nodiscard]] auto getBoard() -> Board& { return _board; }
             [[nodiscard]] auto getPot() const -> int32_t { return _pot; }
             [[nodiscard]] auto getLastAction() -> RoundAction;
+            [[nodiscard]] auto getNextPlayerNum(int32_t playerNum) const -> int32_t;
             [[nodiscard]] auto isInProgress() const -> bool { return !_ended; }
+            [[nodiscard]] auto waitingShowdown() const -> bool;
+            [[nodiscard]] auto getInRoundPlayersNum() const -> std::vector<int32_t>;
+            [[nodiscard]] auto getPlayerHand(int32_t playerNum) const -> Hand { return _getPlayerStatus(playerNum).hand; }
 
-            auto call(uint32_t playerNum, int32_t amount) -> void;
-            auto bet(uint32_t playerNum, int32_t amount) -> void;
-            auto raise(uint32_t playerNum, int32_t amount) -> void;
-            auto check(uint32_t playerNum) -> void;
-            auto fold(uint32_t playerNum) -> void;
+            auto call(int32_t playerNum, int32_t amount) -> void;
+            auto bet(int32_t playerNum, int32_t amount) -> void;
+            auto raise(int32_t playerNum, int32_t amount) -> void;
+            auto raiseTo(int32_t playerNum, int32_t amount) -> void;
+            auto check(int32_t playerNum) -> void;
+            auto fold(int32_t playerNum) -> void;
             auto showdown() -> void;
-            auto setPlayer2Hand(const Hand& hand) -> void { _getPlayerStatus(2).hand = hand; }
-            auto setPlayer3Hand(const Hand& hand) -> void { _getPlayerStatus(3).hand = hand; }
-            auto getNextPlayerNum(int32_t playerNum) -> int32_t;
+            auto setPlayerHand(const Hand& hand, int32_t playerNum) -> void { _getPlayerStatus(playerNum).hand = hand; }
 
             [[nodiscard]] auto toJson() const -> json;
 

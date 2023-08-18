@@ -42,7 +42,7 @@ namespace GameHandler {
         return *this;
     }
 
-    auto Round::call(uint32_t playerNum, int32_t amount) -> void {
+    auto Round::call(int32_t playerNum, int32_t amount) -> void {
         auto& player = _getPlayerStatus(playerNum);
 
         _actions.at(_currentStreet).emplace_back(CALL, player, _getAndResetLastActionTime(), amount);
@@ -52,7 +52,7 @@ namespace GameHandler {
         _determineStreetOver(CALL);
     }
 
-    auto Round::bet(uint32_t playerNum, int32_t amount) -> void {
+    auto Round::bet(int32_t playerNum, int32_t amount) -> void {
         auto& player = _getPlayerStatus(playerNum);
 
         _actions.at(_currentStreet).emplace_back(BET, player, _getAndResetLastActionTime(), amount);
@@ -62,7 +62,7 @@ namespace GameHandler {
         _streetPot += amount;
     }
 
-    auto Round::raise(uint32_t playerNum, int32_t amount) -> void {
+    auto Round::raise(int32_t playerNum, int32_t amount) -> void {
         auto& player = _getPlayerStatus(playerNum);
 
         _actions.at(_currentStreet).emplace_back(RAISE, player, _getAndResetLastActionTime(), amount);
@@ -72,7 +72,12 @@ namespace GameHandler {
         _streetPot += amount;
     }
 
-    auto Round::check(uint32_t playerNum) -> void {
+    auto Round::raiseTo(int32_t playerNum, int32_t amount) -> void {
+        // @todo totalBet or totalStreetBet?
+        raise(playerNum, amount - _getPlayerStatus(playerNum).totalStreetBet);
+    }
+
+    auto Round::check(int32_t playerNum) -> void {
         auto& player = _getPlayerStatus(playerNum);
 
         _actions.at(_currentStreet).emplace_back(CHECK, player, _getAndResetLastActionTime());
@@ -80,7 +85,7 @@ namespace GameHandler {
         _determineStreetOver(CHECK);
     }
 
-    auto Round::fold(uint32_t playerNum) -> void {
+    auto Round::fold(int32_t playerNum) -> void {
         auto& player = _getPlayerStatus(playerNum);
 
         _actions.at(_currentStreet).emplace_back(FOLD, player, _getAndResetLastActionTime());
@@ -89,12 +94,9 @@ namespace GameHandler {
         _determineStreetOver(FOLD);
     }
 
-    auto Round::showdown() -> void {
-        _endStreet();
-        _endRound();
-    }
+    auto Round::showdown() -> void { _endRound(); }
 
-    auto Round::getNextPlayerNum(int32_t playerNum) -> int32_t {
+    auto Round::getNextPlayerNum(int32_t playerNum) const -> int32_t {
         if (playerNum <= 0 || playerNum > 3) { throw std::invalid_argument("The given player number is invalid"); }
 
         int32_t nextPlayerNum = (playerNum % 3) + 1;
@@ -110,6 +112,22 @@ namespace GameHandler {
 
     auto Round::getLastAction() -> RoundAction {
         return _actions[_currentStreet].empty() ? _actions[_currentStreet - 1].back() : _actions[_currentStreet].back();
+    }
+
+    auto Round::getInRoundPlayersNum() const -> std::vector<int32_t> {
+        std::vector<int32_t> inRoundPlayersNum;
+
+        for (const auto& player : *_playersStatus) {
+            if (player.inRound) { inRoundPlayersNum.emplace_back(player.getNumber()); }
+        }
+
+        return inRoundPlayersNum;
+    }
+
+    auto Round::waitingShowdown() const -> bool {
+        // @todo fix this
+        return _currentStreet == Street::SHOWDOWN
+            || any_of(*_playersStatus, [](const PlayerStatus& player) { return player.isAllIn; });
     }
 
     auto Round::toJson() const -> json {
@@ -252,7 +270,8 @@ namespace GameHandler {
 
         // iterate through the players in round from last to first and add them to the _ranking stack
         for (auto& player : players) {
-            if (!_ranking.empty() && _board.compareHands(player.hand, _getPlayerStatus(_ranking.top().front()).hand) == 0) {
+            if (players.size() > 1 && !_ranking.top().empty()
+                && _board.compareHands(player.hand, _getPlayerStatus(_ranking.top().front()).hand) == 0) {
                 _ranking.top().emplace_back(player.getNumber());
             } else {
                 _ranking.emplace(std::vector<int32_t>{player.getNumber()});

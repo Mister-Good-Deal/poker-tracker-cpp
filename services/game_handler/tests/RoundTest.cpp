@@ -19,9 +19,9 @@ TEST(RoundTest, DISABLED_jsonRepresentationWithTimingsShouldBeCorrect) {
     auto blinds = Blinds{50, 100};
     auto hand   = Hand(card("AH"), card("KH"));
 
-    Player player1("player_1", 1);
-    Player player2("player_2", 2);
-    Player player3("player_3", 3);
+    Player player1("player 1", 1);
+    Player player2("player 2", 2);
+    Player player3("player 3", 3);
 
     player1.setStack(1000);
     player2.setStack(1000);
@@ -184,9 +184,9 @@ TEST(RoundTest, case1JsonRepresentationShouldBeCorrect) {
 }
 
 TEST(RoundTest, case2JsonRepresentationShouldBeCorrect) {
-    Player player1("player_1", 1);
-    Player player2("player_2", 2);
-    Player player3("player_3", 3);
+    Player player1("player 1", 1);
+    Player player2("player 2", 2);
+    Player player3("player 3", 3);
 
     player1.setStack(1000);
     player2.setStack(1000);
@@ -218,7 +218,9 @@ TEST(RoundTest, case2JsonRepresentationShouldBeCorrect) {
     round.check(1);
     round.check(2);
     // Showdown
-    round.setPlayer2Hand({card("AD"), card("KC")});
+    EXPECT_TRUE(round.waitingShowdown());
+    
+    round.setPlayerHand({card("AD"), card("KC")}, 2);
     round.showdown();
 
     // language=json
@@ -285,9 +287,9 @@ TEST(RoundTest, case2JsonRepresentationShouldBeCorrect) {
 }
 
 TEST(RoundTest, case3JsonRepresentationShouldBeCorrect) {
-    Player player1("player_1", 1);
-    Player player2("player_2", 2);
-    Player player3("player_3", 3);
+    Player player1("player 1", 1);
+    Player player2("player 2", 2);
+    Player player3("player 3", 3);
 
     player1.setStack(500);
     player2.setStack(1000);
@@ -318,7 +320,9 @@ TEST(RoundTest, case3JsonRepresentationShouldBeCorrect) {
     // River
     round.getBoard().setRiver(card("8D"));
     // Showdown
-    round.setPlayer3Hand({card("AD"), card("KC")});
+    EXPECT_TRUE(round.waitingShowdown());
+    
+    round.setPlayerHand({card("AD"), card("KC")}, 3);
     round.showdown();
 
     // language=json
@@ -375,6 +379,68 @@ TEST(RoundTest, case3JsonRepresentationShouldBeCorrect) {
                 { "player": "player_1", "stack": 1500, "balance": 1000 },
                 { "player": "player_2", "stack": 300, "balance": -700 },
                 { "player": "player_3", "stack": 1200, "balance": -300 }
+            ]
+        }
+    )"_json;
+
+    EXPECT_EQ(round.toJson(), expectedJson);
+}
+
+TEST(RoundTest, case4JsonRepresentationShouldBeCorrect) {
+    Player player1("player 1", 1);
+    Player player2("player 2", 2);
+    Player player3("player 3", 3);
+    
+    player1.setStack(300);
+    player2.setStack(300);
+    player3.setStack(300);
+
+    std::array<Player, 3> players = {player1, player2, player3};
+
+    Round round(Blinds{10, 20}, players, {card("TH"), card("9C")}, 2);
+
+    // Run a scenario
+
+    // Pre-flop
+    round.fold(2);
+    round.raiseTo(3, 300);
+    round.fold(1);
+
+    // language=json
+    auto expectedJson = R"(
+        {
+            "actions": {
+                "pre_flop": [
+                    { "action": "Fold", "player": "player_2", "elapsed_time": 0 },
+                    { "action": "Raise", "player": "player_3", "elapsed_time": 0, "amount": 290 },
+                    { "action": "Fold", "player": "player_1", "elapsed_time": 0 }
+                ],
+                "flop": [],
+                "turn": [],
+                "river": []
+            },
+            "board": [],
+            "hands": {
+                "player_1": [
+                    { "shortName": "TH", "rank": "Ten", "suit": "Heart" },
+                    { "shortName": "9C", "rank": "Nine", "suit": "Club" }
+                ],
+                "player_2": [],
+                "player_3": []
+            },
+            "pot": 320,            
+            "blinds": { "small": 10, "big": 20 },
+            "won": false,
+            "positions": {
+                "dealer": "player_2",
+                "small_blind": "player_3",
+                "big_blind": "player_1"
+            },
+            "ranking": [["player_3"], ["player_1"], ["player_2"]],
+            "stacks": [
+                { "player": "player_1", "stack": 280, "balance": -20 },
+                { "player": "player_2", "stack": 300, "balance": 0 },
+                { "player": "player_3", "stack": 320, "balance": 20 }
             ]
         }
     )"_json;
