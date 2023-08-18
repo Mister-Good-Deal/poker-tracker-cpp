@@ -35,10 +35,10 @@ namespace Utilities::Image {
 
         cv::imwrite(fmt::format("{}/images/{}/{}.png", logPath, category, getMsTimestamp()), image);
     }
-    
+
     static inline auto writeImage(const cv::Mat& image, const std::filesystem::path& file) -> void {
         std::filesystem::directory_entry directory(file.root_directory());
-        
+
         if (!directory.exists()) { std::filesystem::create_directory(directory); }
 
         cv::imwrite(file, image);

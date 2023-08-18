@@ -228,10 +228,8 @@ namespace Scraper {
 
 // Custom fmt formatter for windowSize_t
 namespace fmt {
-    template<>
-    struct formatter<Scraper::windowSize_t> : formatter<string_view> {
-            template<typename FormatContext>
-            auto format(const Scraper::windowSize_t& size, FormatContext& ctx) const {
+    template<> struct formatter<Scraper::windowSize_t> : formatter<string_view> {
+            template<typename FormatContext> auto format(const Scraper::windowSize_t& size, FormatContext& ctx) const {
                 return fmt::format_to(ctx.out(), "{}x{}", size.width, size.height);
             }
     };

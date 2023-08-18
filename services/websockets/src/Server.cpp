@@ -34,14 +34,13 @@ namespace Websockets {
     auto Server::close() -> void { _server.close(); }
 
     auto Server::configureWebsockets() -> void {
-        _server.ws<PerSocketData>("/websockets",
-                                  {.idleTimeout = SERVER_IDLE_TIMEOUT,
-                                   .upgrade     = [](auto* res, auto* req, auto* context) {},
-                                   .open        = [](WsResource ws) { ws->subscribe("oh_interesting_subject"); },
-                                   .message =
-                                       [](WsResource ws, std::string_view message, OpCode opCode) {
-                                           // @todo Parse the message and send the appropriate response
-                                           ws->send(message, opCode);
-                                       }});
+        _server.ws<PerSocketData>("/websockets", {.idleTimeout = SERVER_IDLE_TIMEOUT,
+                                                  .upgrade     = [](auto* res, auto* req, auto* context) {},
+                                                  .open        = [](WsResource ws) { ws->subscribe("oh_interesting_subject"); },
+                                                  .message =
+                                                      [](WsResource ws, std::string_view message, OpCode opCode) {
+                                                          // @todo Parse the message and send the appropriate response
+                                                          ws->send(message, opCode);
+                                                      }});
     }
 }  // namespace Websockets

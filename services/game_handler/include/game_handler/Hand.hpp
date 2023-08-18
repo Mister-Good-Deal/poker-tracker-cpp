@@ -72,8 +72,7 @@ namespace GameHandler {
 
 // Custom formatter for Hand
 namespace fmt {
-    template<>
-    struct formatter<GameHandler::Hand> : formatter<string_view> {
+    template<> struct formatter<GameHandler::Hand> : formatter<string_view> {
             char presentation = 's';  // Default presentation type: short
 
             // Parsing function to support different presentations short and long
@@ -86,8 +85,7 @@ namespace fmt {
                 return it;
             }
 
-            template<typename FormatContext>
-            auto format(const GameHandler::Hand& hand, FormatContext& ctx) const {
+            template<typename FormatContext> auto format(const GameHandler::Hand& hand, FormatContext& ctx) const {
                 return presentation == 's' ? fmt::format_to(ctx.out(), "({:s}, {:s})", hand.getCards()[0], hand.getCards()[1])
                                            : fmt::format_to(ctx.out(), "({:l}, {:l})", hand.getCards()[0], hand.getCards()[1]);
             }
@@ -96,6 +94,5 @@ namespace fmt {
 
 // Registered as safe to copy for Quill logger
 namespace quill {
-    template<>
-    struct copy_loggable<GameHandler::Hand> : std::true_type {};
+    template<> struct copy_loggable<GameHandler::Hand> : std::true_type {};
 }  // namespace quill

@@ -44,7 +44,7 @@ namespace GameHandler {
                     case '7': return Rank::SEVEN;
                     case '8': return Rank::EIGHT;
                     case '9': return Rank::NINE;
-                    case '1': // Can be 10 or T
+                    case '1':  // Can be 10 or T
                     case 'T': return Rank::TEN;
                     case 'J': return Rank::JACK;
                     case 'Q': return Rank::QUEEN;
@@ -89,8 +89,7 @@ namespace GameHandler {
 namespace fmt {
     using GameHandler::Card;
 
-    template<>
-    struct formatter<Card::Rank> : formatter<string_view> {
+    template<> struct formatter<Card::Rank> : formatter<string_view> {
             char presentation = 's';  // Default presentation type: short
 
             // Parsing function to support different presentations short and long
@@ -103,8 +102,7 @@ namespace fmt {
                 return it;
             }
 
-            template<typename FormatContext>
-            auto format(Card::Rank rank, FormatContext& ctx) const {
+            template<typename FormatContext> auto format(Card::Rank rank, FormatContext& ctx) const {
                 string_view name = "";
 
                 switch (rank) {
@@ -128,8 +126,7 @@ namespace fmt {
             }
     };
 
-    template<>
-    struct formatter<Card::Suit> : formatter<string_view> {
+    template<> struct formatter<Card::Suit> : formatter<string_view> {
             char presentation = 's';  // Default presentation type: short
 
             // Parsing function to support different presentations short and long
@@ -142,8 +139,7 @@ namespace fmt {
                 return it;
             }
 
-            template<typename FormatContext>
-            auto format(Card::Suit suit, FormatContext& ctx) const {
+            template<typename FormatContext> auto format(Card::Suit suit, FormatContext& ctx) const {
                 string_view name = "";
 
                 switch (suit) {
@@ -158,8 +154,7 @@ namespace fmt {
             }
     };
 
-    template<>
-    struct formatter<Card> : formatter<string_view> {
+    template<> struct formatter<Card> : formatter<string_view> {
             char presentation = 's';  // Default presentation type: short
 
             // Parsing function to support different presentations short and long
@@ -172,8 +167,7 @@ namespace fmt {
                 return it;
             }
 
-            template<typename FormatContext>
-            auto format(const Card& card, FormatContext& ctx) const {
+            template<typename FormatContext> auto format(const Card& card, FormatContext& ctx) const {
                 return presentation == 's' ? fmt::format_to(ctx.out(), "{:s}{:s}", card.getRank(), card.getSuit())
                                            : fmt::format_to(ctx.out(), "{:l} of {:l}", card.getRank(), card.getSuit());
             }
@@ -182,6 +176,5 @@ namespace fmt {
 
 // Registered as safe to copy for Quill logger
 namespace quill {
-    template<>
-    struct copy_loggable<GameHandler::Card> : std::true_type {};
+    template<> struct copy_loggable<GameHandler::Card> : std::true_type {};
 }  // namespace quill
