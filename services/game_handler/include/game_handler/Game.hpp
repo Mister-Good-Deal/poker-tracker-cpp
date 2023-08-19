@@ -25,17 +25,14 @@ namespace GameHandler {
             auto operator=(Game&& other) noexcept -> Game&;
 
             auto getCurrentRound() -> Round& { return _rounds.back(); };
-            auto getPlayer1() -> Player& { return _players[0]; };
-            auto getPlayer2() -> Player& { return _players[1]; };
-            auto getPlayer3() -> Player& { return _players[2]; };
-            auto getPlayer(uint32_t playerNum) -> Player&;
             auto getPlayers() -> std::array<Player, 3>& { return _players; };
 
-            [[nodiscard]] auto isInitialized() const -> bool { return _initialized; };
+            [[nodiscard]] auto hasNoRound() const -> bool { return _rounds.empty(); };
             [[nodiscard]] auto isOver() const -> bool { return _ended; };
             [[nodiscard]] auto getBuyIn() const -> int32_t { return _buyIn; };
             [[nodiscard]] auto getMultipliers() const -> int32_t { return _multipliers; };
             [[nodiscard]] auto getInitialStack() const -> int32_t { return _initialStack; };
+            [[nodiscard]] auto getPlayer(int32_t playerNum) const -> const Player&;
 
             auto setBuyIn(int32_t buyIn) -> void { _buyIn = buyIn; }
             auto setMultipliers(int32_t multipliers) -> void { _multipliers = multipliers; }
@@ -56,7 +53,6 @@ namespace GameHandler {
             int32_t                  _buyIn        = 0;
             int32_t                  _multipliers  = 2;
             int32_t                  _initialStack = 0;
-            bool                     _initialized  = false;
             bool                     _complete     = true;
             bool                     _ended        = false;
 
@@ -64,3 +60,27 @@ namespace GameHandler {
             [[nodiscard]] auto _isGameWon() const -> bool;
     };
 }  // namespace GameHandler
+
+// Custom formatter for Position and Blinds
+namespace fmt {
+    using GameHandler::Game;
+
+    template<> struct formatter<Game> : formatter<string_view> {
+            template<typename FormatContext> auto format(const Game& game, FormatContext& ctx) const {
+                return fmt::format_to(ctx.out(),
+                                      "Game information:\n\tBuy-in: {}\n\tPrize pool: {}\n\tInitial stack: "
+                                      "{}\n\tPlayer 1: {}\n\tPlayer 2: {}\n\tPlayer 3: {}",
+                                      game.getBuyIn(),
+                                      game.getBuyIn() * game.getMultipliers(),
+                                      game.getInitialStack(),
+                                      game.getPlayer(1).getName(),
+                                      game.getPlayer(2).getName(),
+                                      game.getPlayer(3).getName());
+            }
+    };
+}  // namespace fmt
+
+// Registered as safe to copy for Quill logger
+namespace quill {
+    template<> struct copy_loggable<GameHandler::Game> : std::true_type {};
+}  // namespace quill

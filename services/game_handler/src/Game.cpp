@@ -13,7 +13,6 @@ namespace GameHandler {
             _buyIn        = other._buyIn;
             _multipliers  = other._multipliers;
             _initialStack = other._initialStack;
-            _initialized  = other._initialized;
             _complete     = other._complete;
         }
 
@@ -34,8 +33,7 @@ namespace GameHandler {
 
         for (auto& player : _players) { player.setStack(_initialStack); }
 
-        _startTime   = system_clock::now();
-        _initialized = true;
+        _startTime = system_clock::now();
     }
 
     auto Game::end() -> void {
@@ -49,7 +47,7 @@ namespace GameHandler {
         return _rounds.back();
     }
 
-    auto Game::getPlayer(uint32_t playerNum) -> Player& {
+    auto Game::getPlayer(int32_t playerNum) const -> const Player& {
         if (playerNum <= 0 || playerNum > 3) { throw std::invalid_argument("The given player number is invalid"); }
 
         return _players.at(playerNum - 1);
