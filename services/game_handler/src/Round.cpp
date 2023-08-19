@@ -19,11 +19,30 @@ namespace GameHandler {
     using enum RoundAction::ActionType;
 
     Round::Round(const Blinds& blinds, std::array<Player, 3>& players, Hand hand, int32_t dealerNumber) :
-      _blinds(blinds), _players(&players), _lastActionTime(system_clock::now()),
+      _blinds(blinds), _players(&players), _lastActionTime(system_clock::now()), _hand(hand), _dealerNumber(dealerNumber),
       _playersStatus(std::make_unique<players_status_t>(players_status_t{
           {PlayerStatus{players[0], dealerNumber}, PlayerStatus{players[1], dealerNumber}, PlayerStatus{players[2], dealerNumber}}})) {
         _getPlayerStatus(1).hand = std::move(hand);
         _payBlinds();
+    }
+
+    auto Round::operator=(const Round& other) -> Round& {
+        if (this != &other) {
+            _actions        = other._actions;
+            _board          = other._board;
+            _ranking        = other._ranking;
+            _blinds         = other._blinds;
+            _pot            = other._pot;
+            _currentStreet  = other._currentStreet;
+            _lastActionTime = other._lastActionTime;
+            _players        = other._players;
+            _ended          = other._ended;
+            _hand           = other._hand;
+            _dealerNumber   = other._dealerNumber;
+            _playersStatus  = std::make_unique<players_status_t>(*_playersStatus);
+        }
+
+        return *this;
     }
 
     auto Round::operator=(Round&& other) noexcept -> Round& {
@@ -32,6 +51,8 @@ namespace GameHandler {
             _board          = std::move(other._board);
             _ranking        = std::move(other._ranking);
             _playersStatus  = std::move(other._playersStatus);
+            _hand           = std::move(other._hand);
+            _dealerNumber   = other._dealerNumber;
             _blinds         = other._blinds;
             _pot            = other._pot;
             _currentStreet  = other._currentStreet;
@@ -47,6 +68,7 @@ namespace GameHandler {
         auto& player         = _getPlayerStatus(playerNum);
         auto  computedAmount = amount - player.totalStreetBet;
 
+        _lastAction    = _currentAction;
         _currentAction = _actions.at(_currentStreet).emplace_back(CALL, player, _getAndResetLastActionTime(), amount);
         player.hasCalled(amount);
         _pot       += computedAmount;
@@ -58,7 +80,8 @@ namespace GameHandler {
     auto Round::bet(int32_t playerNum, int32_t amount) -> void {
         auto& player = _getPlayerStatus(playerNum);
 
-        _lastAction = _currentAction = _actions.at(_currentStreet).emplace_back(BET, player, _getAndResetLastActionTime(), amount);
+        _lastAction    = _currentAction;
+        _currentAction = _actions.at(_currentStreet).emplace_back(BET, player, _getAndResetLastActionTime(), amount);
         player.hasBet(amount);
         _pot       += amount;
         _streetPot += amount;
@@ -68,7 +91,8 @@ namespace GameHandler {
         auto& player         = _getPlayerStatus(playerNum);
         auto  computedAmount = amount - player.totalStreetBet;
 
-        _lastAction = _currentAction = _actions.at(_currentStreet).emplace_back(RAISE, player, _getAndResetLastActionTime(), amount);
+        _lastAction    = _currentAction;
+        _currentAction = _actions.at(_currentStreet).emplace_back(RAISE, player, _getAndResetLastActionTime(), amount);
         player.hasRaised(amount);
         _pot       += computedAmount;
         _streetPot += computedAmount;
@@ -77,6 +101,7 @@ namespace GameHandler {
     auto Round::check(int32_t playerNum) -> void {
         auto& player = _getPlayerStatus(playerNum);
 
+        _lastAction    = _currentAction;
         _currentAction = _actions.at(_currentStreet).emplace_back(CHECK, player, _getAndResetLastActionTime());
         player.hasChecked();
 
@@ -86,6 +111,7 @@ namespace GameHandler {
     auto Round::fold(int32_t playerNum) -> void {
         auto& player = _getPlayerStatus(playerNum);
 
+        _lastAction    = _currentAction;
         _currentAction = _actions.at(_currentStreet).emplace_back(FOLD, player, _getAndResetLastActionTime());
         player.hasFolded();
         _ranking.emplace(std::vector<int32_t>{player.getNumber()});
@@ -199,6 +225,7 @@ namespace GameHandler {
         bool currentPlayerFold         = _currentAction.getAction() == FOLD;
         bool currentPlayerCalledOrFold = currentPlayerCalled || currentPlayerFold;
         bool lastPlayerCalledOrFold    = _lastAction.getAction() == CALL || _lastAction.getAction() == FOLD;
+
         // clang-format off
         return  roundPlayersCount == 1 
             || (roundPlayersCount == 2 && allPlayersPlayed && currentPlayerCalled)
@@ -219,11 +246,7 @@ namespace GameHandler {
      * @return void
      */
     auto Round::_determineStreetOver() -> void {
-        if (_isStreetOver()) {
-            _endStreet();
-        } else {
-            _lastAction = _currentAction;
-        }
+        if (_isStreetOver()) { _endStreet(); }
     }
 
     auto Round::_determineRoundOver() -> void {
@@ -298,7 +321,7 @@ namespace GameHandler {
         BBPlayer.payBlind(_blinds.BB());
 
         _streetPot += SBPlayer.totalBet + BBPlayer.totalBet;
-        _pot       = _streetPot;
+        _pot        = _streetPot;
     }
 
     auto Round::_updateStacks() -> void {

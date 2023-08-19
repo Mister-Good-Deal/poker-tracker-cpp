@@ -45,12 +45,11 @@ namespace GameHandler {
               initialStack(player.getStack()), Player(player){};
 
             auto payBlind(int32_t amount) -> void {
-                // @todo what if player cannot pay the blind?
                 auto payAmount = std::min(amount, getStack());
 
                 totalBet       += payAmount;
                 totalStreetBet += payAmount;
-                isAllIn        = totalBet == initialStack;
+                isAllIn         = totalBet == initialStack;
 
                 setStack(initialStack - totalBet);
             }
@@ -58,26 +57,26 @@ namespace GameHandler {
             auto hasBet(int32_t amount) -> void {
                 totalBet       += amount;
                 totalStreetBet += amount;
-                isAllIn        = totalBet == initialStack;
-                lastAction     = ActionType::BET;
+                isAllIn         = totalBet == initialStack;
+                lastAction      = ActionType::BET;
 
                 setStack(initialStack - totalBet);
             }
 
             auto hasRaised(int32_t amount) -> void {
                 totalBet       += amount - totalStreetBet;
-                totalStreetBet = amount;
-                isAllIn        = totalBet == initialStack;
-                lastAction     = ActionType::RAISE;
+                totalStreetBet  = amount;
+                isAllIn         = totalBet == initialStack;
+                lastAction      = ActionType::RAISE;
 
                 setStack(initialStack - totalBet);
             }
 
             auto hasCalled(int32_t amount) -> void {
                 totalBet       += amount - totalStreetBet;
-                totalStreetBet = amount;
-                isAllIn        = totalBet == initialStack;
-                lastAction     = ActionType::CALL;
+                totalStreetBet  = amount;
+                isAllIn         = totalBet == initialStack;
+                lastAction      = ActionType::CALL;
 
                 setStack(initialStack - totalBet);
             }
@@ -107,23 +106,24 @@ namespace GameHandler {
             enum Street : int32_t { PREFLOP = 0, FLOP, TURN, RIVER, SHOWDOWN };
 
             Round(const Blinds& blinds, std::array<Player, 3>& players, Hand hand, int32_t dealerNumber);
-            Round(const Round& other) = delete;
+            Round(const Round& other) { *this = other; }
             Round(Round&& other) noexcept { *this = std::move(other); };
 
             virtual ~Round() = default;
 
-            auto operator=(const Round& other) -> Round& = delete;
+            auto operator=(const Round& other) -> Round&;
             auto operator=(Round&& other) noexcept -> Round&;
 
             [[nodiscard]] auto getBoard() -> Board& { return _board; }
             [[nodiscard]] auto getPot() const -> int32_t { return _pot; }
-            [[nodiscard]] auto getLastAction() -> RoundAction { return _lastAction; };
+            [[nodiscard]] auto getLastAction() -> RoundAction { return _currentAction; };
             [[nodiscard]] auto getCurrentPlayerStack(int32_t playerNum) const -> int32_t;
             [[nodiscard]] auto getNextPlayerNum(int32_t playerNum) const -> int32_t;
             [[nodiscard]] auto isInProgress() const -> bool { return !_ended; }
             [[nodiscard]] auto waitingShowdown() const -> bool;
             [[nodiscard]] auto getInRoundPlayersNum() const -> std::vector<int32_t>;
             [[nodiscard]] auto getPlayerHand(int32_t playerNum) const -> Hand { return _getPlayerStatus(playerNum).hand; }
+            [[nodiscard]] auto getCurrentStreet() const -> Street { return _currentStreet; }
 
             auto call(int32_t playerNum, int32_t amount) -> void;
             auto bet(int32_t playerNum, int32_t amount) -> void;
@@ -143,6 +143,8 @@ namespace GameHandler {
             int32_t                  _pot            = 0;
             int32_t                  _streetPot      = 0;
             int32_t                  _frozenPot      = 0;
+            int32_t                  _dealerNumber   = 0;
+            Hand                     _hand           = Hand();
             Street                   _currentStreet  = Street::PREFLOP;
             time_point<system_clock> _lastActionTime = system_clock::now();
             std::array<Player, 3>*   _players        = nullptr;  // The Game class owns the players, so we use a pointer here
