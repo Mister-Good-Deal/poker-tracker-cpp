@@ -104,7 +104,7 @@ namespace OCR {
             return FOLD;
         } else if (action.starts_with("BET")) {
             return BET;
-        } else if (action.starts_with("RAISES TO")) {
+        } else if (action.starts_with("RAISES")) {
             return RAISE;
         } else if (action == "SMALL BLIND") {
             return PAY_SMALL_BLIND;
