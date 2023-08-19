@@ -11,6 +11,7 @@ namespace GameHandler {
         public:
             enum class ActionType : int32_t { CHECK = 0, CALL, BET, RAISE, FOLD, PAY_SMALL_BLIND, PAY_BIG_BLIND, NONE };
 
+            explicit RoundAction()                    = default;
             RoundAction(const RoundAction& other)     = default;
             RoundAction(RoundAction&& other) noexcept = default;
             RoundAction(ActionType action, Player player, seconds time, int32_t amount = 0) :
@@ -29,9 +30,9 @@ namespace GameHandler {
             [[nodiscard]] auto toJson() const -> json;
 
         private:
-            ActionType _action;
-            Player     _player;
-            seconds    _time;
+            ActionType _action = ActionType::NONE;
+            Player     _player = Player();
+            seconds    _time   = seconds(0);
             int32_t    _amount = 0;
 
             [[nodiscard]] auto _requiresAmount(ActionType action) const -> bool;

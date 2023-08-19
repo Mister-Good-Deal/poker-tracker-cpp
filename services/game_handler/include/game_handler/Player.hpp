@@ -26,7 +26,7 @@ namespace GameHandler {
             auto bust() -> void { _eliminated = true; }
 
         private:
-            std::string _name;
+            std::string _name       = "DEFAULT_PLAYER";
             int32_t     _number     = 0;
             int32_t     _stack      = 0;
             bool        _eliminated = false;

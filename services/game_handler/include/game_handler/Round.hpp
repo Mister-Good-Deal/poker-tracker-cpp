@@ -34,7 +34,7 @@ namespace GameHandler {
             int32_t    totalBet       = 0;
             int32_t    totalStreetBet = 0;
             int32_t    maxWinnable    = 0;
-            int32_t    endRoundStack  = 0;
+            int32_t    initialStack   = 0;
             bool       inRound        = true;
             bool       isAllIn        = false;
             Hand       hand           = Hand();
@@ -42,36 +42,40 @@ namespace GameHandler {
 
             explicit PlayerStatus(const Player& player, int32_t dealerNumber) :
                 position(static_cast<Position>((player.getNumber() - dealerNumber + 3) % 3)), inRound(!player.isEliminated()),
-                endRoundStack(player.getStack()), Player(player){};
+                initialStack(player.getStack()), Player(player){};
 
             auto payBlind(int32_t amount) -> void {
                 // @todo what if player cannot pay the blind?
                 auto payAmount = std::min(amount, getStack());
 
-                isAllIn = payAmount == getStack();
                 totalBet += payAmount;
                 totalStreetBet += payAmount;
+                isAllIn = totalBet == initialStack;
+                setStack(initialStack - totalBet);
             }
 
             auto hasBet(int32_t amount) -> void {
-                isAllIn = (amount + totalBet) == getStack();
                 totalBet += amount;
                 totalStreetBet += amount;
+                isAllIn    = totalBet == initialStack;
                 lastAction = ActionType::BET;
+                setStack(initialStack - totalBet);
             }
 
             auto hasRaised(int32_t amount) -> void {
-                isAllIn = (amount + totalBet) == getStack();
-                totalBet += amount;
-                totalStreetBet += amount;
-                lastAction = ActionType::RAISE;
+                totalBet += amount - totalStreetBet;
+                totalStreetBet = amount;
+                isAllIn        = totalBet == initialStack;
+                lastAction     = ActionType::RAISE;
+                setStack(initialStack - totalBet);
             }
 
             auto hasCalled(int32_t amount) -> void {
-                isAllIn = (amount + totalBet) == getStack();
-                totalBet += amount;
-                totalStreetBet += amount;
-                lastAction = ActionType::CALL;
+                totalBet += amount - totalStreetBet;
+                totalStreetBet = amount;
+                isAllIn        = totalBet == initialStack;
+                lastAction     = ActionType::CALL;
+                setStack(initialStack - totalBet);
             }
 
             auto hasChecked() -> void { lastAction = ActionType::CHECK; }
@@ -85,6 +89,8 @@ namespace GameHandler {
                 totalStreetBet = 0;
                 lastAction     = ActionType::NONE;
             }
+
+            auto winChips(int32_t chips) -> void { setStack(getStack() + chips); }
     };
 
     class Round {
@@ -107,7 +113,8 @@ namespace GameHandler {
 
             [[nodiscard]] auto getBoard() -> Board& { return _board; }
             [[nodiscard]] auto getPot() const -> int32_t { return _pot; }
-            [[nodiscard]] auto getLastAction() -> RoundAction;
+            [[nodiscard]] auto getLastAction() -> RoundAction { return _lastAction; };
+            [[nodiscard]] auto getCurrentPlayerStack(int32_t playerNum) const -> int32_t;
             [[nodiscard]] auto getNextPlayerNum(int32_t playerNum) const -> int32_t;
             [[nodiscard]] auto isInProgress() const -> bool { return !_ended; }
             [[nodiscard]] auto waitingShowdown() const -> bool;
@@ -117,7 +124,6 @@ namespace GameHandler {
             auto call(int32_t playerNum, int32_t amount) -> void;
             auto bet(int32_t playerNum, int32_t amount) -> void;
             auto raise(int32_t playerNum, int32_t amount) -> void;
-            auto raiseTo(int32_t playerNum, int32_t amount) -> void;
             auto check(int32_t playerNum) -> void;
             auto fold(int32_t playerNum) -> void;
             auto showdown() -> void;
@@ -137,18 +143,20 @@ namespace GameHandler {
             time_point<system_clock> _lastActionTime = system_clock::now();
             std::array<Player, 3>*   _players        = nullptr;  // The Game class owns the players, so we use a pointer here
             players_status_ptr       _playersStatus  = nullptr;
-            ActionType               _lastAction     = ActionType::NONE;
+            RoundAction              _currentAction  = RoundAction();
+            RoundAction              _lastAction     = RoundAction();
             bool                     _ended          = false;
 
             [[nodiscard]] auto _hasWon() const -> bool;
             [[nodiscard]] auto _toJson(const ranking_t& ranking) const -> json;
             [[nodiscard]] auto _getStacksVariation() const -> json;
-            [[nodiscard]] auto _getPlayerStatus(uint32_t playerNum) const -> PlayerStatus;
+            [[nodiscard]] auto _getPlayerStatus(int32_t playerNum) const -> PlayerStatus;
+            [[nodiscard]] auto _isStreetOver() const -> bool;
 
-            auto _getPlayer(uint32_t playerNum) -> Player&;
-            auto _getPlayerStatus(uint32_t playerNum) -> PlayerStatus&;
+            auto _getPlayer(int32_t playerNum) -> Player&;
+            auto _getPlayerStatus(int32_t playerNum) -> PlayerStatus&;
             auto _getAndResetLastActionTime() -> seconds;
-            auto _determineStreetOver(const ActionType& currentPlayerAction) -> void;
+            auto _determineStreetOver() -> void;
             auto _determineRoundOver() -> void;
             auto _processRanking() -> void;
             auto _updateStacks() -> void;
@@ -164,10 +172,8 @@ namespace fmt {
     using GameHandler::Blinds;
     using GameHandler::Position;
 
-    template<>
-    struct formatter<Position> : formatter<string_view> {
-            template<typename FormatContext>
-            auto format(Position position, FormatContext& ctx) const {
+    template<> struct formatter<Position> : formatter<string_view> {
+            template<typename FormatContext> auto format(Position position, FormatContext& ctx) const {
                 string_view name = "unknown";
 
                 switch (position) {
@@ -180,10 +186,8 @@ namespace fmt {
             }
     };
 
-    template<>
-    struct formatter<Blinds> : formatter<string_view> {
-            template<typename FormatContext>
-            auto format(const Blinds& blinds, FormatContext& ctx) const {
+    template<> struct formatter<Blinds> : formatter<string_view> {
+            template<typename FormatContext> auto format(const Blinds& blinds, FormatContext& ctx) const {
                 return fmt::format_to(ctx.out(), "({}-{})", blinds.SB(), blinds.BB());
             }
     };
@@ -191,6 +195,5 @@ namespace fmt {
 
 // Registered as safe to copy for Quill logger
 namespace quill {
-    template<>
-    struct copy_loggable<GameHandler::Blinds> : std::true_type {};
+    template<> struct copy_loggable<GameHandler::Blinds> : std::true_type {};
 }  // namespace quill
