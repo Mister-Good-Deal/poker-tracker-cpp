@@ -20,11 +20,20 @@ namespace GameSession {
     static const milliseconds TICK_RATE                   = milliseconds(250);
     static const double       ACTION_SIMILARITY_THRESHOLD = 0.01;
 
-    enum GameStages : int32_t { STARTING = 0, GAME_INFO_SETUP, IN_PROGRESS, ENDED };
+    enum GameStages : int32_t { STARTING = 0, GAME_INFO_SETUP, WAITING_NEW_ROUND, ROUND_IN_PROGRESS, ENDED };
 
-    class CannotFindButtonException : public std::runtime_error {
+    class CannotFindButtonException : public std::exception {
         public:
-            explicit CannotFindButtonException(const std::string& arg) : runtime_error(arg) {}
+            explicit CannotFindButtonException() = default;
+
+            [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot find the button"; }
+    };
+
+    class ButtonDidNotMoveException : public std::exception {
+        public:
+            explicit ButtonDidNotMoveException() = default;
+
+            [[nodiscard]] auto what() const noexcept -> const char* override { return "The button did not move from last round"; }
     };
 
     class Session {
@@ -55,11 +64,11 @@ namespace GameSession {
             Game                          _game;
             GameStages                    _gameStage = GameStages::STARTING;
             sharedConstMat_t              _currentScreenshot;
+            int32_t                       _currentButtonNum = 0;
             int32_t                       _currentPlayerNum = 0;
             ActionType                    _currentAction    = ActionType::NONE;
             cv::Mat                       _lastWaitingActionImg;
-
-            auto _assignButton(const cv::Mat& screenshot) -> void;
+            
             auto _determineGameOver() -> void;
             auto _determinePlayerAction(const cv::Mat& screenshot, int32_t playerNum) -> void;
             auto _getButtonPosition(const cv::Mat& screenshot) -> int32_t;
@@ -68,9 +77,9 @@ namespace GameSession {
             auto _getRiver(const cv::Mat& screenshot) -> void;
             auto _harvestGameInfo(const cv::Mat& screenshot) -> void;
             auto _isNextActionTriggered(const cv::Mat& screenshot) -> bool;
-            auto _startRound(const cv::Mat& screenshot) -> void;
             auto _trackCurrentRound(const cv::Mat& screenshot) -> void;
             auto _waitGameStart(const cv::Mat& screenshot) -> void;
+            auto _waitNewRound(const cv::Mat& screenshot) -> void;
             auto _waitShowdown(const cv::Mat& screenshot) -> void;
     };
 }  // namespace GameSession

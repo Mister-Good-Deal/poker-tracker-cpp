@@ -8,7 +8,10 @@
 namespace GameSession {
     using GameHandler::Hand;
     using GameHandler::invalid_player_name;
+    using GameHandler::Round;
     using OCR::CannotReadCardImageException;
+    using OCR::CannotReadGameActionImageException;
+    using OCR::CannotReadPlayerBetImageException;
     using OCR::ExceptionWithImage;
     using Utilities::Image::writeLogImage;
     using Utilities::Strings::InvalidNumberException;
@@ -16,6 +19,8 @@ namespace GameSession {
     using Logger = Logger::Quill;
 
     using enum RoundAction::ActionType;
+    using enum Round::Street;
+    using enum GameStages;
 
     // @todo get window size from windowId if not provided
     Session::Session(std::string_view roomName, uint64_t windowId, windowSize_t windowSize) :
@@ -42,27 +47,22 @@ namespace GameSession {
     auto Session::run() -> void {
         _currentScreenshot = _getScreenshot();
 
-        while (_gameStage != GameStages::ENDED) {
+        while (_gameStage != ENDED) {
             DISPLAY_VIDEO("game", _scraper.getWindowElementsView(*_currentScreenshot));
 
             switch (_gameStage) {
-                case GameStages::STARTING: _waitGameStart(*_currentScreenshot); break;
-                case GameStages::GAME_INFO_SETUP: _harvestGameInfo(*_currentScreenshot); break;
-                case GameStages::IN_PROGRESS:
-                    if (!_game.getCurrentRound().isInProgress()) {
-                        LOG_DEBUG(Logger::getLogger(), "Round recap:\n{}", _game.getCurrentRound().toJson().dump(4));
-
-                        _determineGameOver();
-
-                        if (!_game.isOver()) { _startRound(*_currentScreenshot); }
-                    } else if (_isNextActionTriggered(*_currentScreenshot)) {
+                case STARTING: _waitGameStart(*_currentScreenshot); [[fallthrough]];
+                case GAME_INFO_SETUP: _harvestGameInfo(*_currentScreenshot); [[fallthrough]];
+                case WAITING_NEW_ROUND: _waitNewRound(*_currentScreenshot); break;
+                case ROUND_IN_PROGRESS:
+                    if (_isNextActionTriggered(*_currentScreenshot)) {
                         _trackCurrentRound(*_currentScreenshot);
                     } else if (_game.getCurrentRound().waitingShowdown()) {
                         _waitShowdown(*_currentScreenshot);
                     }
 
-                    break;
-                case GameStages::ENDED: break;
+                    [[fallthrough]];
+                case ENDED: break;
             }
 
             std::this_thread::sleep_for(_tickRate);
@@ -74,11 +74,6 @@ namespace GameSession {
     // Used for testing by mocking this method
     auto Session::_getScreenshot() -> sharedConstMat_t { return _scraper.getScreenshot(_windowId); }
 
-    auto Session::_assignButton(const cv::Mat& screenshot) -> void {
-        _currentPlayerNum     = _getButtonPosition(screenshot);
-        _lastWaitingActionImg = _scraper.getPlayerActionImg(screenshot, _currentPlayerNum);
-    }
-
     auto Session::_determineGameOver() -> void {
         const auto& players = _game.getPlayers();
 
@@ -86,32 +81,27 @@ namespace GameSession {
 
         if (std::count_if(players.begin(), players.end(), winnerFinder) == 1) {
             _game.end();
-            _gameStage = GameStages::ENDED;
+            _gameStage = ENDED;
         }
     }
 
     auto Session::_determinePlayerAction(const cv::Mat& screenshot, int32_t playerNum) -> void {
+        auto& round = _game.getCurrentRound();
         // readPlayerBet may fail, so we keep the action until we can read the bet and reset the action to NONE in case of success
+        LOG_INFO(Logger::getLogger(), "Tracking action of player_{} ({} == {})", playerNum, _currentPlayerNum, playerNum);
         if (_currentAction == NONE) { _currentAction = _ocr->readGameAction(_scraper.getPlayerActionImg(screenshot, playerNum)); }
-
         switch (_currentAction) {
-            case FOLD: _game.getCurrentRound().fold(playerNum); break;
-            case CHECK: _game.getCurrentRound().check(playerNum); break;
-            case CALL:
-                _game.getCurrentRound().call(playerNum, _ocr->readPlayerBet(_scraper.getPlayerBetImg(screenshot, playerNum)));
-                break;
-            case BET:
-                _game.getCurrentRound().bet(playerNum, _ocr->readPlayerBet(_scraper.getPlayerBetImg(screenshot, playerNum)));
-                break;
-            case RAISE:
-                _game.getCurrentRound().raiseTo(playerNum, _ocr->readPlayerBet(_scraper.getPlayerBetImg(screenshot, playerNum)));
-                break;
-            default: _currentAction = NONE;
+            case FOLD: round.fold(playerNum); break;
+            case CHECK: round.check(playerNum); break;
+            case CALL: round.call(playerNum); break;
+            case BET: round.bet(playerNum, _ocr->readPlayerBet(_scraper.getPlayerBetImg(screenshot, playerNum))); break;
+            case RAISE: round.raise(playerNum, _ocr->readPlayerBet(_scraper.getPlayerBetImg(screenshot, playerNum))); break;
+            default: throw std::runtime_error("Unknown action");  // Should never happen
         }
 
-        LOG_INFO(Logger::getLogger(), "{}", _game.getCurrentRound().getLastAction());
+        LOG_INFO(Logger::getLogger(), "{}", round.getLastAction());
 
-        _currentPlayerNum     = _game.getCurrentRound().getNextPlayerNum(_currentPlayerNum);
+        _currentPlayerNum     = round.getNextPlayerNum(_currentPlayerNum);
         _lastWaitingActionImg = _scraper.getPlayerActionImg(screenshot, _currentPlayerNum);
         _currentAction        = NONE;
     }
@@ -123,7 +113,7 @@ namespace GameSession {
             return i;
         }
 
-        throw CannotFindButtonException("Could not determine button position");
+        throw CannotFindButtonException();
     }
 
     auto Session::_getFlop(const cv::Mat& screenshot) -> void {
@@ -172,59 +162,60 @@ namespace GameSession {
             _game.setMultipliers(2);
             // Get player stacks
             _game.setInitialStack(_ocr->readAverageStack(_scraper.getAverageStackImg(screenshot)));
-            // Get player names
+            // Get player names and initialize the game
             _game.init(_ocr->readPlayerName(_scraper.getPlayer1NameImg(screenshot)),
                        _ocr->readPlayerName(_scraper.getPlayer2NameImg(screenshot)),
                        _ocr->readPlayerName(_scraper.getPlayer3NameImg(screenshot)));
-            // End the initialization
-            LOG_INFO(Logger::getLogger(),
-                     "Game information harvested successfully\n\tBuy-in: {}\n\tPrize pool: {}\n\tInitial stack: "
-                     "{}\n\tPlayer 1: {}\n\tPlayer 2: {}\n\tPlayer 3: {}",
-                     _game.getBuyIn(),
-                     _game.getBuyIn() * _game.getMultipliers(),
-                     _game.getInitialStack(),
-                     _game.getPlayer1().getName(),
-                     _game.getPlayer2().getName(),
-                     _game.getPlayer3().getName());
+            // End the initialization, wait for the first round to start
+            LOG_INFO(Logger::getLogger(), "{}", _game);
 
-            _gameStage = GameStages::IN_PROGRESS;
-            // Start the 1st round
-            _startRound(screenshot);
+            _gameStage = WAITING_NEW_ROUND;
         } catch (const ExceptionWithImage& e) {
             LOG_DEBUG(Logger::getLogger(), "{}", e.what());
 
-            writeLogImage(e.getImage(), LOGS_DIR, e.getCategory());
+            writeLogImage(e.getImage(), LOGS_DIR, e.getCategory(), _currentPlayerNum);
         }
     }
 
     auto Session::_isNextActionTriggered(const cv::Mat& screenshot) -> bool {
-        return !_ocr->isSimilar(
-            _scraper.getPlayerActionImg(screenshot, _currentPlayerNum), _lastWaitingActionImg, ACTION_SIMILARITY_THRESHOLD);
-    }
+        auto currentActionImg      = _scraper.getPlayerActionImg(screenshot, _currentPlayerNum);
+        bool isNextActionTriggered = !_ocr->isSimilar(currentActionImg, _lastWaitingActionImg, ACTION_SIMILARITY_THRESHOLD);
 
-    auto Session::_startRound(const cv::Mat& screenshot) -> void {
-        // Get button position
-        _assignButton(screenshot);
-        // Get round blind level
-        auto blinds = _ocr->readBlindRange(_scraper.getBlindAmountImg(screenshot));
-        // Get hand
-        auto firstCard  = _ocr->readCard(_scraper.getFirstCardImg(screenshot));
-        auto secondCard = _ocr->readCard(_scraper.getSecondCardImg(screenshot));
-        Hand hand       = {firstCard, secondCard};
-        // Start round, _currentPlayerPlayingNum is set to the button position by _assignButton call
-        _game.newRound(blinds, hand, _currentPlayerNum);
-        LOG_INFO(Logger::getLogger(), "Starting new round: [blinds {}] [hand {}] [button {}]", blinds, hand, _currentPlayerNum);
-        // Get flop
-        _getFlop(screenshot);
+        _lastWaitingActionImg = currentActionImg;
+
+        return isNextActionTriggered;
     }
 
     auto Session::_trackCurrentRound(const cv::Mat& screenshot) -> void {
         try {
+            auto& round       = _game.getCurrentRound();
+            auto  startStreet = round.getCurrentStreet();
+
             _determinePlayerAction(screenshot, _currentPlayerNum);
+
+            // If the round is over, determine if the game is over or wait for a new round
+            if (!round.isInProgress()) {
+                LOG_DEBUG(Logger::getLogger(), "Round recap:\n{}", round.toJson().dump(4));
+
+                _determineGameOver();
+
+                if (!_game.isOver()) { _gameStage = WAITING_NEW_ROUND; }
+            } else if (startStreet != round.getCurrentStreet()) {
+                // If the street changed get the board cards
+                switch (round.getCurrentStreet()) {
+                    case FLOP: _getFlop(screenshot); break;
+                    case TURN: _getTurn(screenshot); break;
+                    case RIVER: _getRiver(screenshot); break;
+                    default: break;
+                }
+            }
+        } catch (const CannotReadCardImageException& e) {
+            LOG_DEBUG(Logger::getLogger(), "{}", e.what());
         } catch (const ExceptionWithImage& e) {
+            // Should be CannotReadGameActionImageException or CannotReadPlayerBetImageException
             LOG_DEBUG(Logger::getLogger(), "{}", e.what());
 
-            writeLogImage(e.getImage(), LOGS_DIR, e.getCategory());
+            writeLogImage(e.getImage(), LOGS_DIR, e.getCategory(), _currentPlayerNum);
         }
     }
 
@@ -233,17 +224,41 @@ namespace GameSession {
             // Get hand
             auto firstCard  = _ocr->readCard(_scraper.getFirstCardImg(screenshot));
             auto secondCard = _ocr->readCard(_scraper.getSecondCardImg(screenshot));
-            // Check if hand has been dealt, if not, wait
-            if (firstCard.isUnknown() || secondCard.isUnknown()) { return; }
+            // Get button position
+            _getButtonPosition(*_currentScreenshot);
+            // If both hand and button position are valid, the game has started
+            LOG_INFO(Logger::getLogger(), "Game started");
 
-            auto buttonPosition = _getButtonPosition(*_currentScreenshot);
-
-            LOG_INFO(Logger::getLogger(), "Game started, player {} is the button", buttonPosition);
-
-            _gameStage = GameStages::GAME_INFO_SETUP;
+            _gameStage = GAME_INFO_SETUP;
         } catch (const CannotFindButtonException& e) {
             LOG_DEBUG(Logger::getLogger(), "Waiting game start, button not found");
-        } catch (const ExceptionWithImage& e) { LOG_DEBUG(Logger::getLogger(), "Waiting game start, hand not distributed"); }
+        } catch (const CannotReadCardImageException& e) { LOG_DEBUG(Logger::getLogger(), "Waiting game start, hand not distributed"); }
+    }
+
+    auto Session::_waitNewRound(const cv::Mat& screenshot) -> void {
+        try {
+            // Get hand
+            auto firstCard  = _ocr->readCard(_scraper.getFirstCardImg(screenshot));
+            auto secondCard = _ocr->readCard(_scraper.getSecondCardImg(screenshot));
+            Hand hand       = {firstCard, secondCard};
+            // Get round blind level
+            auto blinds = _ocr->readBlindRange(_scraper.getBlindAmountImg(screenshot));
+            // Get button position
+            auto buttonPosition = _getButtonPosition(*_currentScreenshot);
+            // If the button position did not change, the new round did not start
+            if (buttonPosition == _currentButtonNum) { throw ButtonDidNotMoveException(); }
+            // Update current button and current player position
+            _currentButtonNum     = buttonPosition;
+            _currentPlayerNum     = buttonPosition;
+            _lastWaitingActionImg = _scraper.getPlayerActionImg(screenshot, _currentPlayerNum);
+            // Start round
+            LOG_INFO(Logger::getLogger(), "New round: [blinds {}] [hand {}] [dealer (player_{})]", blinds, hand, _currentButtonNum);
+
+            _game.newRound(blinds, hand, _currentButtonNum);
+            _gameStage = ROUND_IN_PROGRESS;
+        } catch (const CannotFindButtonException& e) {
+            LOG_DEBUG(Logger::getLogger(), "Button not found");
+        } catch (const CannotReadCardImageException& e) { LOG_DEBUG(Logger::getLogger(), "Waiting hand distribution"); }
     }
 
     auto Session::_waitShowdown(const cv::Mat& screenshot) -> void {
@@ -260,7 +275,7 @@ namespace GameSession {
                     auto hand = _ocr->readHand(_scraper.getPlayerCardsImg(screenshot, playerNum));
 
                     round.setPlayerHand(hand, playerNum);
-
+                    // @todo Player fmt print with modifier generic and real name ?
                     LOG_INFO(Logger::getLogger(), "player_{} hand: {}-{}", playerNum, hand.getCards()[0], hand.getCards()[1]);
                 }
             }
