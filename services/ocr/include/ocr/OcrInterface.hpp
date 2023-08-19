@@ -23,7 +23,7 @@ namespace OCR {
     class ExceptionWithImage : public std::exception {
         public:
             explicit ExceptionWithImage(const cv::Mat& image, std::string_view category) :
-                _image(image.clone()), _category(category) {}
+              _image(image.clone()), _category(category) {}
 
             [[nodiscard]] auto getImage() const noexcept -> const cv::Mat& { return _image; }
             [[nodiscard]] auto getCategory() const noexcept -> const std::string& { return _category; }
@@ -78,7 +78,7 @@ namespace OCR {
     class CannotReadCardRankImageException : public CannotReadCardImageException {
         public:
             explicit CannotReadCardRankImageException(UnknownCardRankException exception, const cv::Mat& image) :
-                CannotReadCardImageException(image), _exception(std::move(exception)) {}
+              CannotReadCardImageException(image), _exception(std::move(exception)) {}
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read card rank"; }
 
@@ -96,7 +96,7 @@ namespace OCR {
     class CannotReadGameActionImageException : public ExceptionWithImage {
         public:
             explicit CannotReadGameActionImageException(const cv::Mat& image, std::string_view action) :
-                ExceptionWithImage(image, "gameAction"), _action(action) {}
+              ExceptionWithImage(image, "gameAction"), _action(action) {}
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read game action"; }
 
@@ -198,14 +198,17 @@ namespace OCR {
             [[nodiscard]] virtual auto readIntRange(const cv::Mat& intRangeImage) const -> intRange;
             [[nodiscard]] virtual auto readFloatNumbers(const cv::Mat& floatNumberImage) const -> double;
             [[nodiscard]] virtual auto readDuration(const cv::Mat& clockImage) const -> seconds;
-            [[nodiscard]] auto         isSimilar(const cv::Mat& firstImage, const cv::Mat& secondImage,
-                                                 double threshold = SIMILARITY_THRESHOLD, cv::InputArray& mask = cv::noArray()) const -> bool;
+            [[nodiscard]] auto         isSimilar(const cv::Mat&  firstImage,
+                                                 const cv::Mat&  secondImage,
+                                                 double          threshold = SIMILARITY_THRESHOLD,
+                                                 cv::InputArray& mask      = cv::noArray()) const -> bool;
 
         protected:
             auto _cropCentered(cv::Mat& firstImage, cv::Mat& secondImage) const -> void;
 
             [[nodiscard]] auto _cardOcr() const -> const cv::Ptr<OCRTesseract>& { return _tesseractCard; }
-            [[nodiscard]] auto _similarityScore(const cv::Mat& firstImage, const cv::Mat& secondImage,
+            [[nodiscard]] auto _similarityScore(const cv::Mat&  firstImage,
+                                                const cv::Mat&  secondImage,
                                                 cv::InputArray& mask = cv::noArray()) const -> double;
 
         private:

@@ -55,13 +55,13 @@ namespace GameSession {
             Game                          _game;
             GameStages                    _gameStage = GameStages::STARTING;
             sharedConstMat_t              _currentScreenshot;
-            int32_t                       _currentPlayerNum        = 0;
-            ActionType                    _currentAction           = ActionType::NONE;
+            int32_t                       _currentPlayerNum = 0;
+            ActionType                    _currentAction    = ActionType::NONE;
             cv::Mat                       _lastWaitingActionImg;
 
             auto _assignButton(const cv::Mat& screenshot) -> void;
             auto _determineGameOver() -> void;
-            auto _determinePlayerAction(const cv::Mat& screenshot, uint32_t playerNum) -> void;
+            auto _determinePlayerAction(const cv::Mat& screenshot, int32_t playerNum) -> void;
             auto _getButtonPosition(const cv::Mat& screenshot) -> int32_t;
             auto _getFlop(const cv::Mat& screenshot) -> void;
             auto _getTurn(const cv::Mat& screenshot) -> void;

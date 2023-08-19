@@ -19,7 +19,7 @@ namespace GameSession {
 
     // @todo get window size from windowId if not provided
     Session::Session(std::string_view roomName, uint64_t windowId, windowSize_t windowSize) :
-        _roomName(roomName), _windowId(windowId), _scraper(_roomName, windowSize), _ocr(OcrFactory::create(_roomName)), _game() {}
+      _roomName(roomName), _windowId(windowId), _scraper(_roomName, windowSize), _ocr(OcrFactory::create(_roomName)), _game() {}
 
     auto Session::operator=(Session&& other) noexcept -> Session& {
         if (this != &other) {
@@ -55,10 +55,10 @@ namespace GameSession {
                         _determineGameOver();
 
                         if (!_game.isOver()) { _startRound(*_currentScreenshot); }
-                    } else if (_game.getCurrentRound().waitingShowdown()) {
-                        _waitShowdown(*_currentScreenshot);
                     } else if (_isNextActionTriggered(*_currentScreenshot)) {
                         _trackCurrentRound(*_currentScreenshot);
+                    } else if (_game.getCurrentRound().waitingShowdown()) {
+                        _waitShowdown(*_currentScreenshot);
                     }
 
                     break;
@@ -90,7 +90,7 @@ namespace GameSession {
         }
     }
 
-    auto Session::_determinePlayerAction(const cv::Mat& screenshot, uint32_t playerNum) -> void {
+    auto Session::_determinePlayerAction(const cv::Mat& screenshot, int32_t playerNum) -> void {
         // readPlayerBet may fail, so we keep the action until we can read the bet and reset the action to NONE in case of success
         if (_currentAction == NONE) { _currentAction = _ocr->readGameAction(_scraper.getPlayerActionImg(screenshot, playerNum)); }
 
@@ -180,8 +180,12 @@ namespace GameSession {
             LOG_INFO(Logger::getLogger(),
                      "Game information harvested successfully\n\tBuy-in: {}\n\tPrize pool: {}\n\tInitial stack: "
                      "{}\n\tPlayer 1: {}\n\tPlayer 2: {}\n\tPlayer 3: {}",
-                     _game.getBuyIn(), _game.getBuyIn() * _game.getMultipliers(), _game.getInitialStack(),
-                     _game.getPlayer1().getName(), _game.getPlayer2().getName(), _game.getPlayer3().getName());
+                     _game.getBuyIn(),
+                     _game.getBuyIn() * _game.getMultipliers(),
+                     _game.getInitialStack(),
+                     _game.getPlayer1().getName(),
+                     _game.getPlayer2().getName(),
+                     _game.getPlayer3().getName());
 
             _gameStage = GameStages::IN_PROGRESS;
             // Start the 1st round
@@ -194,8 +198,8 @@ namespace GameSession {
     }
 
     auto Session::_isNextActionTriggered(const cv::Mat& screenshot) -> bool {
-        return !_ocr->isSimilar(_scraper.getPlayerActionImg(screenshot, _currentPlayerNum), _lastWaitingActionImg,
-                                ACTION_SIMILARITY_THRESHOLD);
+        return !_ocr->isSimilar(
+            _scraper.getPlayerActionImg(screenshot, _currentPlayerNum), _lastWaitingActionImg, ACTION_SIMILARITY_THRESHOLD);
     }
 
     auto Session::_startRound(const cv::Mat& screenshot) -> void {

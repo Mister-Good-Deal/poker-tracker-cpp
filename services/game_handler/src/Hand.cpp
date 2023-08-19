@@ -11,7 +11,7 @@ namespace GameHandler {
     using enum Card::Rank;
 
     Hand::Hand(const Card& firstCard, const Card& secondCard) :
-        _firstCard(firstCard), _secondCard(secondCard), _cards({&firstCard, &secondCard}) {
+      _firstCard(firstCard), _secondCard(secondCard), _cards({&firstCard, &secondCard}) {
         if (firstCard == secondCard) { throw invalid_hand(fmt::format("The two given cards are the same ({:s})", firstCard)); }
 
         _processHand();

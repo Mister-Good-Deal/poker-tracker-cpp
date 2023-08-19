@@ -24,8 +24,8 @@ namespace GameHandler {
         auto nameList = {player1Name, player2Name, player3Name};
 
         if (any_of(nameList, [](const auto& name) { return name.empty(); })) {
-            throw invalid_player_name(fmt::format("A player's name is empty, player_1 `{}`, player_2 `{}`, player_3 `{}`", player1Name,
-                                                  player2Name, player3Name));
+            throw invalid_player_name(fmt::format(
+                "A player's name is empty, player_1 `{}`, player_2 `{}`, player_3 `{}`", player1Name, player2Name, player3Name));
         }
 
         _players[0] = Player(player1Name, 1);

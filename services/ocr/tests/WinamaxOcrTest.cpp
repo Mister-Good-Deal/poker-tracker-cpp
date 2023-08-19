@@ -51,8 +51,8 @@ TEST(WinamaxOcrTest, readCardRankShouldWork) {
 TEST(WinamaxOcrTest, readCardRankShouldThrowErrorOnUnknowRankColor) {
     auto unknown = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/suits/unknown.png");
 
-    EXPECT_THROW_WITH_MESSAGE(auto rank = Env::winamaxOcr().readCardRank(unknown), CannotReadCardRankImageException,
-                              "Cannot read card rank");
+    EXPECT_THROW_WITH_MESSAGE(
+        auto rank = Env::winamaxOcr().readCardRank(unknown), CannotReadCardRankImageException, "Cannot read card rank");
 }
 
 TEST(WinamaxOcrTest, readCardSuitShouldWork) {
@@ -71,8 +71,8 @@ TEST(WinamaxOcrTest, readCardSuitShouldWork) {
 TEST(WinamaxOcrTest, DISABLED_readCardSuitShouldThrowErrorOnUnknowSuitColor) {
     auto unknown = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/suits/unknown.png");
 
-    EXPECT_THROW_WITH_MESSAGE(auto suit = Env::winamaxOcr().readCardSuit(unknown), CannotReadCardSuitImageException,
-                              "Cannot read card suit");
+    EXPECT_THROW_WITH_MESSAGE(
+        auto suit = Env::winamaxOcr().readCardSuit(unknown), CannotReadCardSuitImageException, "Cannot read card suit");
 }
 
 TEST(WinamaxOcrTest, readCardShouldWork) {

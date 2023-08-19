@@ -452,11 +452,11 @@ TEST(RoundTest, GeneratedByAI_case1JsonRepresentationShouldBeCorrect) {
     Player player1("player 1", 1);
     Player player2("player 2", 2);
     Player player3("player 3", 3);
-    
+
     player1.setStack(1000);
     player2.setStack(1000);
     player3.setStack(1000);
-    
+
     std::array<Player, 3> players = {player1, player2, player3};
 
     Round round(Blinds{50, 100}, players, {card("QC"), card("5H")}, 1);
@@ -501,7 +501,7 @@ TEST(RoundTest, GeneratedByAI_case1JsonRepresentationShouldBeCorrect) {
 
     round.setPlayerHand({card("7C"), card("4S")}, 3);  // Player 3's hand
     round.showdown();
-    // Player 1 wins the pot. 
+    // Player 1 wins the pot.
     // Stacks after showdown: player_1=1750, player_2=950, player_3=300
 
     // language=json
@@ -569,13 +569,13 @@ TEST(RoundTest, GeneratedByAI_case6JsonRepresentationShouldBeCorrect) {
     Player player1("player 1", 1);
     Player player2("player 2", 2);
     Player player3("player 3", 3);
-    
+
     player1.setStack(1000);
     player2.setStack(1000);
     player3.setStack(1000);
-    
+
     std::array<Player, 3> players = {player1, player2, player3};
-    
+
     Round round(Blinds{50, 100}, players, {card("AD"), card("6H")}, 2);
 
     // Run a scenario
@@ -584,7 +584,7 @@ TEST(RoundTest, GeneratedByAI_case6JsonRepresentationShouldBeCorrect) {
     round.raise(2, 300);
     round.fold(3);
     round.call(1, 300);
-    //End of Pre-flop, Street pot: 650
+    // End of Pre-flop, Street pot: 650
     EXPECT_EQ(round.getPot(), 650);
     EXPECT_EQ(round.getCurrentPlayerStack(1), 700);
     EXPECT_EQ(round.getCurrentPlayerStack(2), 700);
@@ -595,7 +595,7 @@ TEST(RoundTest, GeneratedByAI_case6JsonRepresentationShouldBeCorrect) {
     round.check(1);
     round.bet(2, 400);
     round.fold(1);
-    //End of Flop, Street pot: 400
+    // End of Flop, Street pot: 400
 
     // Player 2 wins the pot
     EXPECT_EQ(round.getPot(), 1050);
@@ -652,7 +652,6 @@ TEST(RoundTest, GeneratedByAI_case6JsonRepresentationShouldBeCorrect) {
 
     EXPECT_EQ(round.toJson(), expectedJson);
 }
-
 
 //  @todo add all-in scenario and showdown case
 

@@ -139,7 +139,10 @@ namespace OCR {
         if (firstImage.rows != secondImage.rows || firstImage.cols != secondImage.cols) {
             LOG_DEBUG(Logger::getLogger(),
                       "The images size are not equals in similarity images computation ({}x{} != {}x{}), cropping the bigger one.",
-                      firstImage.rows, firstImage.cols, secondImage.rows, secondImage.cols);
+                      firstImage.rows,
+                      firstImage.cols,
+                      secondImage.rows,
+                      secondImage.cols);
 
             firstImageCopy  = firstImage.clone();
             secondImageCopy = secondImage.clone();

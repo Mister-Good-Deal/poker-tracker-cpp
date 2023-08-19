@@ -15,7 +15,7 @@ namespace GameHandler {
             RoundAction(const RoundAction& other)     = default;
             RoundAction(RoundAction&& other) noexcept = default;
             RoundAction(ActionType action, Player player, seconds time, int32_t amount = 0) :
-                _action(action), _player(std::move(player)), _time(time), _amount(amount){};
+              _action(action), _player(std::move(player)), _time(time), _amount(amount){};
 
             virtual ~RoundAction() = default;
 
@@ -64,10 +64,14 @@ namespace fmt {
 
     template<> struct formatter<RoundAction> : formatter<string_view> {
             template<typename FormatContext> auto format(const RoundAction& action, FormatContext& ctx) const {
-                return action.getAmount() == 0 ? fmt::format_to(ctx.out(), "Player {} {} after {}", action.getPlayer().getNumber(),
-                                                                action.getAction(), action.getTime())
-                                               : fmt::format_to(ctx.out(), "Player {} {} {} after {}", action.getPlayer().getNumber(),
-                                                                action.getAction(), action.getAmount(), action.getTime());
+                return action.getAmount() == 0 ? fmt::format_to(
+                           ctx.out(), "Player {} {} after {}", action.getPlayer().getNumber(), action.getAction(), action.getTime())
+                                               : fmt::format_to(ctx.out(),
+                                                                "Player {} {} {} after {}",
+                                                                action.getPlayer().getNumber(),
+                                                                action.getAction(),
+                                                                action.getAmount(),
+                                                                action.getTime());
             }
     };
 }  // namespace fmt
