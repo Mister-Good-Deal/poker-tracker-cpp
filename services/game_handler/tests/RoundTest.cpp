@@ -453,7 +453,7 @@ TEST(RoundTest, case5JsonRepresentationShouldBeCorrect) {
     Player player1("player 1", 1);
     Player player2("player 2", 2);
     Player player3("player 3", 3);
-    
+
     player1.setStack(280);
     player2.setStack(300);
     player3.setStack(320);
@@ -519,11 +519,11 @@ TEST(RoundTest, case6JsonRepresentationShouldBeCorrect) {
     Player player1("player 1", 1);
     Player player2("player 2", 2);
     Player player3("player 3", 3);
-    
+
     player1.setStack(260);
     player2.setStack(340);
     player3.setStack(300);
-    
+
     std::array<Player, 3> players = {player1, player2, player3};
 
     Round round(Blinds{10, 20}, players, {card("5C"), card("KC")}, 1);
@@ -534,26 +534,26 @@ TEST(RoundTest, case6JsonRepresentationShouldBeCorrect) {
     round.raise(1, 40);
     round.fold(2);
     round.call(3);
-    
+
     // Flop
     round.getBoard().setFlop({card("QH"), card("9S"), card("4C")});
     round.check(3);
     round.bet(1, 30);
     round.call(3);
-    
+
     // Turn
     round.getBoard().setTurn(card("TS"));
     round.check(3);
     round.check(1);
-    
+
     // River
     round.getBoard().setRiver(card("9H"));
     round.check(3);
     round.check(1);
-    
+
     // Showdown
     EXPECT_TRUE(round.waitingShowdown());
-    
+
     round.setPlayerHand({card("3C"), card("2C")}, 3);
     round.showdown();
 
@@ -827,7 +827,7 @@ TEST(RoundTest, GeneratedByAI_case11JsonRepresentationShouldBeCorrect) {
     Player player1("player_1", 1);
     Player player2("player_2", 2);
     Player player3("player_3", 3);
-    
+
     player1.setStack(1000);
     player2.setStack(1000);
     player3.setStack(1000);
@@ -839,7 +839,7 @@ TEST(RoundTest, GeneratedByAI_case11JsonRepresentationShouldBeCorrect) {
     // Run a scenario
 
     // Pre-flop
-    round.raise(2, 300); // The button always playing 1st
+    round.raise(2, 300);  // The button always playing 1st
     round.fold(3);
     round.call(1);
     // End of Pre-flop: Pot: 650,  Street pot: 650
@@ -850,7 +850,7 @@ TEST(RoundTest, GeneratedByAI_case11JsonRepresentationShouldBeCorrect) {
 
     // Flop
     round.getBoard().setFlop({card("4H"), card("8S"), card("JS")});
-    round.bet(2, 200); // The button always playing 1st
+    round.bet(2, 200);  // The button always playing 1st
     round.fold(1);
     // End of Flop: Pot: 850,  Street pot: 200
 
@@ -908,7 +908,6 @@ TEST(RoundTest, GeneratedByAI_case11JsonRepresentationShouldBeCorrect) {
 
     EXPECT_JSON_EQ(expectedJson, round.toJson());
 }
-
 
 //  @todo add all-in scenario and showdown case
 

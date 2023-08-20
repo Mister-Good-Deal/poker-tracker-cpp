@@ -314,7 +314,7 @@ namespace GameHandler {
 
         // iterate through the players in round from last to first and add them to the _ranking stack
         for (auto& player : players) {
-            if (players.size() > 1 && !_ranking.top().empty()
+            if (!_ranking.empty() && players.size() > 1 && !_ranking.top().empty()
                 && _board.compareHands(player.hand, _getPlayerStatus(_ranking.top().front()).hand) == 0) {
                 _ranking.top().emplace_back(player.getNumber());
             } else {

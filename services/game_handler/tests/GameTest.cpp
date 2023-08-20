@@ -2,6 +2,7 @@
 
 #include <game_handler/CardFactory.hpp>
 #include <game_handler/Game.hpp>
+#include <utilities/GtestMacros.hpp>
 
 using GameHandler::Blinds;
 using GameHandler::Board;
@@ -30,9 +31,9 @@ TEST(GameTest, jsonRepresentationShouldBeCorrect) {
 
         // Pre-flop
         round1.check(1);
-        round1.raise(2, 250);
+        round1.raise(2, 300);
         round1.fold(3);
-        round1.call(1, 300);
+        round1.call(1);
         // Flop
         round1.getBoard().setFlop({card("AS"), card("AC"), card("3C")});
         round1.check(1);
@@ -52,18 +53,18 @@ TEST(GameTest, jsonRepresentationShouldBeCorrect) {
 
         // Pre-flop
         round2.raise(2, 500);
-        round2.call(3, 500);
-        round2.raise(1, 1400);
-        round2.call(3, 300);
+        round2.call(3);
+        round2.raise(1, 1600);
+        round2.call(3);
         // Flop
         round2.getBoard().setFlop({card("AS"), card("KS"), card("KH")});
         // Turn
         round2.getBoard().setTurn(card("8C"));
         // River
         round2.getBoard().setRiver(card("7C"));
-
-        round2.setPlayer2Hand({card("TS"), card("TH")});
-        round2.setPlayer3Hand({card("9S"), card("9H")});
+        // Showdown
+        round2.setPlayerHand({card("TS"), card("TH")}, 2);
+        round2.setPlayerHand({card("9S"), card("9H")}, 3);
         round2.showdown();
     }
 
@@ -78,7 +79,7 @@ TEST(GameTest, jsonRepresentationShouldBeCorrect) {
                     "actions": {
                         "pre_flop": [
                             { "action": "Check", "player": "player_1", "elapsed_time": 0 },
-                            { "action": "Raise", "player": "player_2", "elapsed_time": 0, "amount": 250 },
+                            { "action": "Raise", "player": "player_2", "elapsed_time": 0, "amount": 300 },
                             { "action": "Fold", "player": "player_3", "elapsed_time": 0 },
                             { "action": "Call", "player": "player_1", "elapsed_time": 0, "amount": 300 }
                         ],
@@ -123,8 +124,8 @@ TEST(GameTest, jsonRepresentationShouldBeCorrect) {
                     "actions": {
                         "pre_flop": [
                             { "action": "Raise", "player": "player_2", "elapsed_time": 0, "amount": 500 },
-                            { "action": "Call", "player": "player_3", "elapsed_time": 0, "amount": 500 },
-                            { "action": "Raise", "player": "player_1", "elapsed_time": 0, "amount": 1400 },
+                            { "action": "Call", "player": "player_3", "elapsed_time": 0, "amount": 400 },
+                            { "action": "Raise", "player": "player_1", "elapsed_time": 0, "amount": 1600 },
                             { "action": "Call", "player": "player_3", "elapsed_time": 0, "amount": 300 }
                         ],
                         "flop": [],
@@ -178,6 +179,6 @@ TEST(GameTest, jsonRepresentationShouldBeCorrect) {
         }
     )"_json;
 
-    EXPECT_EQ(game.toJson(), expectedJson);
+    EXPECT_JSON_EQ(game.toJson(), expectedJson);
 }
 // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
