@@ -118,12 +118,12 @@ namespace GameHandler {
             [[nodiscard]] auto getPot() const -> int32_t { return _pot; }
             [[nodiscard]] auto getLastAction() -> RoundAction { return _currentAction; };
             [[nodiscard]] auto getCurrentPlayerStack(int32_t playerNum) const -> int32_t;
-            [[nodiscard]] auto getNextPlayerNum(int32_t playerNum) const -> int32_t;
             [[nodiscard]] auto isInProgress() const -> bool { return !_ended; }
             [[nodiscard]] auto waitingShowdown() const -> bool;
             [[nodiscard]] auto getInRoundPlayersNum() const -> std::vector<int32_t>;
             [[nodiscard]] auto getPlayerHand(int32_t playerNum) const -> Hand { return _getPlayerStatus(playerNum).hand; }
             [[nodiscard]] auto getCurrentStreet() const -> Street { return _currentStreet; }
+            [[nodiscard]] auto getCurrentPlayerNum() const -> int32_t { return _currentPlayerNum; }
 
             auto call(int32_t playerNum) -> void;
             auto bet(int32_t playerNum, int32_t amount) -> void;
@@ -139,25 +139,27 @@ namespace GameHandler {
             round_actions_t          _actions;
             Board                    _board;
             ranking_t                _ranking;
-            Blinds                   _blinds         = Blinds(0, 0);
-            int32_t                  _pot            = 0;
-            int32_t                  _streetPot      = 0;
-            int32_t                  _frozenPot      = 0;
-            int32_t                  _dealerNumber   = 0;
-            int32_t                  _lastBetOrRaise = 0;
-            Hand                     _hand           = Hand();
-            Street                   _currentStreet  = Street::PREFLOP;
-            time_point<system_clock> _lastActionTime = system_clock::now();
-            std::array<Player, 3>*   _players        = nullptr;  // The Game class owns the players, so we use a pointer here
-            players_status_ptr       _playersStatus  = nullptr;
-            RoundAction              _currentAction  = RoundAction();
-            RoundAction              _lastAction     = RoundAction();
-            bool                     _ended          = false;
+            Blinds                   _blinds           = Blinds(0, 0);
+            int32_t                  _pot              = 0;
+            int32_t                  _streetPot        = 0;
+            int32_t                  _frozenPot        = 0;
+            int32_t                  _dealerNumber     = 0;
+            int32_t                  _lastBetOrRaise   = 0;
+            int32_t                  _currentPlayerNum = 0;
+            Hand                     _hand             = Hand();
+            Street                   _currentStreet    = Street::PREFLOP;
+            time_point<system_clock> _lastActionTime   = system_clock::now();
+            std::array<Player, 3>*   _players          = nullptr;  // The Game class owns the players, so we use a pointer here
+            players_status_ptr       _playersStatus    = nullptr;
+            RoundAction              _currentAction    = RoundAction();
+            RoundAction              _lastAction       = RoundAction();
+            bool                     _ended            = false;
 
             [[nodiscard]] auto _hasWon() const -> bool;
             [[nodiscard]] auto _toJson(const ranking_t& ranking) const -> json;
             [[nodiscard]] auto _getStacksVariation() const -> json;
             [[nodiscard]] auto _getPlayerStatus(int32_t playerNum) const -> PlayerStatus;
+            [[nodiscard]] auto _getNextPlayerNum(int32_t playerNum) const -> int32_t;
             [[nodiscard]] auto _isStreetOver() const -> bool;
 
             auto _getPlayer(int32_t playerNum) -> Player&;

@@ -515,6 +515,109 @@ TEST(RoundTest, case5JsonRepresentationShouldBeCorrect) {
     EXPECT_JSON_EQ(expectedJson, round.toJson());
 }
 
+TEST(RoundTest, case6JsonRepresentationShouldBeCorrect) {
+    Player player1("player 1", 1);
+    Player player2("player 2", 2);
+    Player player3("player 3", 3);
+    
+    player1.setStack(260);
+    player2.setStack(340);
+    player3.setStack(300);
+    
+    std::array<Player, 3> players = {player1, player2, player3};
+
+    Round round(Blinds{10, 20}, players, {card("5C"), card("KC")}, 1);
+
+    // Run a scenario
+
+    // Pre-flop
+    round.raise(1, 40);
+    round.fold(2);
+    round.call(3);
+    
+    // Flop
+    round.getBoard().setFlop({card("QH"), card("9S"), card("4C")});
+    round.check(3);
+    round.bet(1, 30);
+    round.call(3);
+    
+    // Turn
+    round.getBoard().setTurn(card("TS"));
+    round.check(3);
+    round.check(1);
+    
+    // River
+    round.getBoard().setRiver(card("9H"));
+    round.check(3);
+    round.check(1);
+    
+    // Showdown
+    EXPECT_TRUE(round.waitingShowdown());
+    
+    round.setPlayerHand({card("3C"), card("2C")}, 3);
+    round.showdown();
+
+    // language=json
+    auto expectedJson = R"(
+        {
+            "actions": {
+                "pre_flop": [
+                    { "action": "Raise", "player": "player_1", "elapsed_time": 0, "amount": 40 },
+                    { "action": "Fold", "player": "player_2", "elapsed_time": 0 },
+                    { "action": "Call", "player": "player_3", "elapsed_time": 0 }
+                ],
+                "flop": [
+                    { "action": "Check", "player": "player_3", "elapsed_time": 0 },
+                    { "action": "Bet", "player": "player_1", "elapsed_time": 0, "amount": 30 },
+                    { "action": "Call", "player": "player_3", "elapsed_time": 0 }
+                ],
+                "turn": [
+                    { "action": "Check", "player": "player_3", "elapsed_time": 0 },
+                    { "action": "Check", "player": "player_1", "elapsed_time": 0 }
+                ],
+                "river": [
+                    { "action": "Check", "player": "player_3", "elapsed_time": 0 },                    
+                    { "action": "Check", "player": "player_1", "elapsed_time": 0 }
+                ]                
+            },
+            "board": [
+                { "shortName": "QH", "rank": "Queen", "suit": "Heart" },
+                { "shortName": "9S", "rank": "Nine", "suit": "Spade" },
+                { "shortName": "4C", "rank": "Four", "suit": "Club" },
+                { "shortName": "TS", "rank": "Ten", "suit": "Spade" },
+                { "shortName": "9H", "rank": "Nine", "suit": "Heart" }
+            ],
+            "hands": {
+                "player_1": [
+                    { "shortName": "5C", "rank": "Five", "suit": "Club" },
+                    { "shortName": "KC", "rank": "King", "suit": "Club" }
+                ],
+                "player_2": [],
+                "player_3": [                   
+                    { "shortName": "3C", "rank": "Three", "suit": "Club" },
+                    { "shortName": "2C", "rank": "Two", "suit": "Club" }
+                ]
+            },
+            "pot": 150,            
+            "blinds": { "small": 10, "big": 20 },
+            "won": true,
+            "positions": {
+                "dealer": "player_1",
+                "small_blind": "player_2",
+                "big_blind": "player_3"
+            },
+            "ranking": [["player_1"], ["player_3"], ["player_2"]],
+            "stacks": [
+                { "player": "player_1", "stack": 340, "balance": 80 },
+                { "player": "player_2", "stack": 330, "balance": -10 },
+                { "player": "player_3", "stack": 230, "balance": -70 }
+            ]
+        }
+    )"_json;
+
+    EXPECT_JSON_EQ(expectedJson, round.toJson());
+}
+
 TEST(RoundTest, GeneratedByAI_case1JsonRepresentationShouldBeCorrect) {
     Player player1("player 1", 1);
     Player player2("player 2", 2);

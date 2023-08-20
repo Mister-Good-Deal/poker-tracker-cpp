@@ -20,6 +20,7 @@ namespace GameHandler {
 
     Round::Round(const Blinds& blinds, std::array<Player, 3>& players, Hand hand, int32_t dealerNumber) :
       _blinds(blinds), _players(&players), _lastActionTime(system_clock::now()), _hand(hand), _dealerNumber(dealerNumber),
+      _currentPlayerNum(dealerNumber),
       _playersStatus(std::make_unique<players_status_t>(players_status_t{
           {PlayerStatus{players[0], dealerNumber}, PlayerStatus{players[1], dealerNumber}, PlayerStatus{players[2], dealerNumber}}})) {
         _getPlayerStatus(1).hand = std::move(hand);
@@ -28,18 +29,19 @@ namespace GameHandler {
 
     auto Round::operator=(const Round& other) -> Round& {
         if (this != &other) {
-            _actions        = other._actions;
-            _board          = other._board;
-            _ranking        = other._ranking;
-            _blinds         = other._blinds;
-            _pot            = other._pot;
-            _currentStreet  = other._currentStreet;
-            _lastActionTime = other._lastActionTime;
-            _players        = other._players;
-            _ended          = other._ended;
-            _hand           = other._hand;
-            _dealerNumber   = other._dealerNumber;
-            _playersStatus  = std::make_unique<players_status_t>(*_playersStatus);
+            _actions          = other._actions;
+            _board            = other._board;
+            _ranking          = other._ranking;
+            _blinds           = other._blinds;
+            _pot              = other._pot;
+            _currentStreet    = other._currentStreet;
+            _lastActionTime   = other._lastActionTime;
+            _players          = other._players;
+            _ended            = other._ended;
+            _hand             = other._hand;
+            _dealerNumber     = other._dealerNumber;
+            _currentPlayerNum = other._currentPlayerNum;
+            _playersStatus    = std::make_unique<players_status_t>(*_playersStatus);
         }
 
         return *this;
@@ -47,18 +49,19 @@ namespace GameHandler {
 
     auto Round::operator=(Round&& other) noexcept -> Round& {
         if (this != &other) {
-            _actions        = std::move(other._actions);
-            _board          = std::move(other._board);
-            _ranking        = std::move(other._ranking);
-            _playersStatus  = std::move(other._playersStatus);
-            _hand           = std::move(other._hand);
-            _dealerNumber   = other._dealerNumber;
-            _blinds         = other._blinds;
-            _pot            = other._pot;
-            _currentStreet  = other._currentStreet;
-            _lastActionTime = other._lastActionTime;
-            _players        = other._players;
-            _ended          = other._ended;
+            _actions          = std::move(other._actions);
+            _board            = std::move(other._board);
+            _ranking          = std::move(other._ranking);
+            _playersStatus    = std::move(other._playersStatus);
+            _hand             = std::move(other._hand);
+            _dealerNumber     = other._dealerNumber;
+            _currentPlayerNum = other._currentPlayerNum;
+            _blinds           = other._blinds;
+            _pot              = other._pot;
+            _currentStreet    = other._currentStreet;
+            _lastActionTime   = other._lastActionTime;
+            _players          = other._players;
+            _ended            = other._ended;
         }
 
         return *this;
@@ -83,9 +86,10 @@ namespace GameHandler {
         _lastAction    = _currentAction;
         _currentAction = _actions.at(_currentStreet).emplace_back(BET, player, _getAndResetLastActionTime(), amount);
         player.hasBet(amount);
-        _lastBetOrRaise  = amount;
-        _pot            += amount;
-        _streetPot      += amount;
+        _lastBetOrRaise    = amount;
+        _pot              += amount;
+        _streetPot        += amount;
+        _currentPlayerNum  = _getNextPlayerNum(_currentPlayerNum);
     }
 
     auto Round::raise(int32_t playerNum, int32_t amount) -> void {
@@ -95,9 +99,10 @@ namespace GameHandler {
         _lastAction    = _currentAction;
         _currentAction = _actions.at(_currentStreet).emplace_back(RAISE, player, _getAndResetLastActionTime(), amount);
         player.hasRaised(amount);
-        _lastBetOrRaise  = amount;
-        _pot            += computedAmount;
-        _streetPot      += computedAmount;
+        _lastBetOrRaise    = amount;
+        _pot              += computedAmount;
+        _streetPot        += computedAmount;
+        _currentPlayerNum  = _getNextPlayerNum(_currentPlayerNum);
     }
 
     auto Round::check(int32_t playerNum) -> void {
@@ -122,20 +127,6 @@ namespace GameHandler {
     }
 
     auto Round::showdown() -> void { _endRound(); }
-
-    auto Round::getNextPlayerNum(int32_t playerNum) const -> int32_t {
-        if (playerNum <= 0 || playerNum > 3) { throw std::invalid_argument("The given player number is invalid"); }
-
-        int32_t nextPlayerNum = (playerNum % 3) + 1;
-
-        while (nextPlayerNum != playerNum) {
-            if (_getPlayerStatus(nextPlayerNum).inRound) { return nextPlayerNum; }
-
-            nextPlayerNum = (nextPlayerNum % 3) + 1;
-        }
-
-        throw std::runtime_error("No next player found");
-    }
 
     auto Round::getInRoundPlayersNum() const -> std::vector<int32_t> {
         std::vector<int32_t> inRoundPlayersNum;
@@ -205,6 +196,20 @@ namespace GameHandler {
         return _playersStatus->at(playerNum - 1);
     }
 
+    auto Round::_getNextPlayerNum(int32_t currentPlayerNum) const -> int32_t {
+        if (currentPlayerNum <= 0 || currentPlayerNum > 3) { throw std::invalid_argument("The given player number is invalid"); }
+
+        int32_t nextPlayerNum = (currentPlayerNum % 3) + 1;
+
+        while (nextPlayerNum != currentPlayerNum) {
+            if (_getPlayerStatus(nextPlayerNum).inRound) { return nextPlayerNum; }
+
+            nextPlayerNum = (nextPlayerNum % 3) + 1;
+        }
+
+        throw std::runtime_error("No next player found");
+    }
+
     auto Round::_getAndResetLastActionTime() -> seconds {
         auto now            = system_clock::now();
         auto lastActionTime = duration_cast<seconds>(now - _lastActionTime);
@@ -248,7 +253,11 @@ namespace GameHandler {
      * @return void
      */
     auto Round::_determineStreetOver() -> void {
-        if (_isStreetOver()) { _endStreet(); }
+        if (_isStreetOver()) {
+            _endStreet();
+        } else {
+            _currentPlayerNum = _getNextPlayerNum(_currentPlayerNum);
+        }
     }
 
     auto Round::_determineRoundOver() -> void {
@@ -268,13 +277,16 @@ namespace GameHandler {
             case SHOWDOWN: break;
         }
 
-        _lastAction = RoundAction();
-        _streetPot  = 0;
-        _frozenPot  = _pot;
-
-        for (auto& player : *_playersStatus) { player.streetReset(); }
-
         _determineRoundOver();
+
+        if (!_ended) {
+            _lastAction       = RoundAction();
+            _streetPot        = 0;
+            _frozenPot        = _pot;
+            _currentPlayerNum = _getNextPlayerNum(_dealerNumber);
+
+            for (auto& player : *_playersStatus) { player.streetReset(); }
+        }
     }
 
     auto Round::_endRound() -> void {
@@ -312,12 +324,8 @@ namespace GameHandler {
     }
 
     auto Round::_payBlinds() -> void {
-        auto dealer = find_if(*_playersStatus, [&](const PlayerStatus& player) { return player.position == DEALER; });
-
-        if (dealer == _playersStatus->end()) { throw std::runtime_error("No dealer found"); }
-
-        auto& SBPlayer = _getPlayerStatus(getNextPlayerNum(dealer->getNumber()));
-        auto& BBPlayer = _getPlayerStatus(getNextPlayerNum(SBPlayer.getNumber()));  // Can be the dealer if there are only 2 players
+        auto& SBPlayer = _getPlayerStatus(_getNextPlayerNum(_dealerNumber));
+        auto& BBPlayer = _getPlayerStatus(_getNextPlayerNum(SBPlayer.getNumber()));  // Can be the dealer if there are only 2 players
 
         SBPlayer.payBlind(_blinds.SB());
         BBPlayer.payBlind(_blinds.BB());
