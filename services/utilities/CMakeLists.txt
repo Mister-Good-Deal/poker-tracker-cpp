@@ -10,6 +10,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Libs dependencies
 #-----------------------------------------------------------------------------------------------------------------------
 
+find_package(nlohmann_json CONFIG REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(GTest REQUIRED)
 
@@ -38,7 +39,7 @@ target_include_directories(
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
 
-target_link_libraries(utilities PUBLIC opencv_core opencv_imgproc opencv_imgcodecs opencv_highgui opencv_videoio GTest::gtest GTest::gmock)
+target_link_libraries(utilities PUBLIC opencv_core opencv_imgproc opencv_imgcodecs opencv_highgui opencv_videoio GTest::gtest GTest::gmock nlohmann_json::nlohmann_json)
 
 # @todo needed until no .cpp file extension in SRC files
 set_target_properties(utilities PROPERTIES LINKER_LANGUAGE CXX)
