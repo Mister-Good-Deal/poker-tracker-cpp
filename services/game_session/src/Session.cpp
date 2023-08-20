@@ -9,11 +9,13 @@ namespace GameSession {
     using GameHandler::Hand;
     using GameHandler::invalid_player_name;
     using GameHandler::Round;
-    using OCR::CannotReadCardImageException;
+    using OCR::CannotReadBoardCardImageException;
     using OCR::CannotReadGameActionImageException;
     using OCR::CannotReadPlayerBetImageException;
+    using OCR::CannotReadPlayerCardImageException;
     using OCR::ExceptionWithImage;
-    using Utilities::Image::writeLogImage;
+    using Utilities::Image::writeLogGameImage;
+    using Utilities::Image::writeLogPlayerImage;
     using Utilities::Strings::InvalidNumberException;
 
     using Logger = Logger::Quill;
@@ -55,10 +57,10 @@ namespace GameSession {
                 case GAME_INFO_SETUP: _harvestGameInfo(*_currentScreenshot); [[fallthrough]];
                 case WAITING_NEW_ROUND: _waitNewRound(*_currentScreenshot); break;
                 case ROUND_IN_PROGRESS:
-                    if (_isNextActionTriggered(*_currentScreenshot)) {
-                        _trackCurrentRound(*_currentScreenshot);
-                    } else if (_game.getCurrentRound().waitingShowdown()) {
+                    if (_game.getCurrentRound().waitingShowdown()) {
                         _waitShowdown(*_currentScreenshot);
+                    } else if (_isNextActionTriggered(*_currentScreenshot)) {
+                        _trackCurrentRound(*_currentScreenshot);
                     }
 
                     [[fallthrough]];
@@ -88,8 +90,8 @@ namespace GameSession {
     auto Session::_determinePlayerAction(const cv::Mat& screenshot, int32_t playerNum) -> void {
         auto& round = _game.getCurrentRound();
         // readPlayerBet may fail, so we keep the action until we can read the bet and reset the action to NONE in case of success
-        LOG_INFO(Logger::getLogger(), "Tracking action of player_{} ({} == {})", playerNum, _currentPlayerNum, playerNum);
         if (_currentAction == NONE) { _currentAction = _ocr->readGameAction(_scraper.getPlayerActionImg(screenshot, playerNum)); }
+
         switch (_currentAction) {
             case FOLD: round.fold(playerNum); break;
             case CHECK: round.check(playerNum); break;
@@ -101,7 +103,7 @@ namespace GameSession {
 
         LOG_INFO(Logger::getLogger(), "{}", round.getLastAction());
 
-        _currentPlayerNum     = round.getNextPlayerNum(_currentPlayerNum);
+        _currentPlayerNum     = round.getCurrentPlayerNum();
         _lastWaitingActionImg = _scraper.getPlayerActionImg(screenshot, _currentPlayerNum);
         _currentAction        = NONE;
     }
@@ -117,9 +119,9 @@ namespace GameSession {
     }
 
     auto Session::_getFlop(const cv::Mat& screenshot) -> void {
-        auto card1 = _ocr->readCard(_scraper.getBoardCard1Img(screenshot));
-        auto card2 = _ocr->readCard(_scraper.getBoardCard2Img(screenshot));
-        auto card3 = _ocr->readCard(_scraper.getBoardCard3Img(screenshot));
+        auto card1 = _ocr->readBoardCard(_scraper.getBoardCard1Img(screenshot));
+        auto card2 = _ocr->readBoardCard(_scraper.getBoardCard2Img(screenshot));
+        auto card3 = _ocr->readBoardCard(_scraper.getBoardCard3Img(screenshot));
 
         _game.getCurrentRound().getBoard().setFlop({card1, card2, card3});
 
@@ -127,7 +129,7 @@ namespace GameSession {
     }
 
     auto Session::_getTurn(const cv::Mat& screenshot) -> void {
-        auto card = _ocr->readCard(_scraper.getBoardCard4Img(screenshot));
+        auto card = _ocr->readBoardCard(_scraper.getBoardCard4Img(screenshot));
 
         _game.getCurrentRound().getBoard().setTurn(card);
 
@@ -135,7 +137,7 @@ namespace GameSession {
     }
 
     auto Session::_getRiver(const cv::Mat& screenshot) -> void {
-        auto card = _ocr->readCard(_scraper.getBoardCard5Img(screenshot));
+        auto card = _ocr->readBoardCard(_scraper.getBoardCard5Img(screenshot));
 
         _game.getCurrentRound().getBoard().setRiver(card);
 
@@ -173,7 +175,7 @@ namespace GameSession {
         } catch (const ExceptionWithImage& e) {
             LOG_DEBUG(Logger::getLogger(), "{}", e.what());
 
-            writeLogImage(e.getImage(), LOGS_DIR, e.getCategory(), _currentPlayerNum);
+            writeLogGameImage(e.getImage(), LOGS_DIR, e.getCategory());
         }
     }
 
@@ -209,21 +211,23 @@ namespace GameSession {
                     default: break;
                 }
             }
-        } catch (const CannotReadCardImageException& e) {
-            LOG_DEBUG(Logger::getLogger(), "{}", e.what());
+        } catch (const CannotReadBoardCardImageException& e) {
+            LOG_DEBUG(Logger::getLogger(), "trackCurrentRound, {}", e.what());
+
+            writeLogGameImage(e.getImage(), LOGS_DIR, e.getCategory());
         } catch (const ExceptionWithImage& e) {
             // Should be CannotReadGameActionImageException or CannotReadPlayerBetImageException
             LOG_DEBUG(Logger::getLogger(), "{}", e.what());
 
-            writeLogImage(e.getImage(), LOGS_DIR, e.getCategory(), _currentPlayerNum);
+            writeLogPlayerImage(e.getImage(), LOGS_DIR, e.getCategory(), _currentPlayerNum);
         }
     }
 
     auto Session::_waitGameStart(const cv::Mat& screenshot) -> void {
         try {
             // Get hand
-            auto firstCard  = _ocr->readCard(_scraper.getFirstCardImg(screenshot));
-            auto secondCard = _ocr->readCard(_scraper.getSecondCardImg(screenshot));
+            auto firstCard  = _ocr->readPlayerCard(_scraper.getFirstCardImg(screenshot));
+            auto secondCard = _ocr->readPlayerCard(_scraper.getSecondCardImg(screenshot));
             // Get button position
             _getButtonPosition(*_currentScreenshot);
             // If both hand and button position are valid, the game has started
@@ -232,14 +236,16 @@ namespace GameSession {
             _gameStage = GAME_INFO_SETUP;
         } catch (const CannotFindButtonException& e) {
             LOG_DEBUG(Logger::getLogger(), "Waiting game start, button not found");
-        } catch (const CannotReadCardImageException& e) { LOG_DEBUG(Logger::getLogger(), "Waiting game start, hand not distributed"); }
+        } catch (const CannotReadPlayerCardImageException& e) {
+            LOG_DEBUG(Logger::getLogger(), "Waiting game start, hand not distributed");
+        }
     }
 
     auto Session::_waitNewRound(const cv::Mat& screenshot) -> void {
         try {
             // Get hand
-            auto firstCard  = _ocr->readCard(_scraper.getFirstCardImg(screenshot));
-            auto secondCard = _ocr->readCard(_scraper.getSecondCardImg(screenshot));
+            auto firstCard  = _ocr->readPlayerCard(_scraper.getFirstCardImg(screenshot));
+            auto secondCard = _ocr->readPlayerCard(_scraper.getSecondCardImg(screenshot));
             Hand hand       = {firstCard, secondCard};
             // Get round blind level
             auto blinds = _ocr->readBlindRange(_scraper.getBlindAmountImg(screenshot));
@@ -258,16 +264,19 @@ namespace GameSession {
             _gameStage = ROUND_IN_PROGRESS;
         } catch (const CannotFindButtonException& e) {
             LOG_DEBUG(Logger::getLogger(), "Button not found");
-        } catch (const CannotReadCardImageException& e) { LOG_DEBUG(Logger::getLogger(), "Waiting hand distribution"); }
+        } catch (const CannotReadPlayerCardImageException& e) { LOG_DEBUG(Logger::getLogger(), "Waiting hand distribution"); }
     }
 
     auto Session::_waitShowdown(const cv::Mat& screenshot) -> void {
         try {
+            LOG_DEBUG(Logger::getLogger(), "waitShowdown");
             auto&       round = _game.getCurrentRound();
             const auto& board = round.getBoard();
             // Check board cards
             if (board.getTurn().isUnknown()) { _getTurn(screenshot); }
             if (board.getRiver().isUnknown()) { _getRiver(screenshot); }
+            LOG_DEBUG(Logger::getLogger(), "Turn is : {}", board.getTurn());
+            LOG_DEBUG(Logger::getLogger(), "River is : {}", board.getRiver());
             // Get player hands
             for (auto playerNum : _game.getCurrentRound().getInRoundPlayersNum()) {
                 if (playerNum == 1) { continue; }  // Skip player 1, as it is the bot
@@ -281,6 +290,6 @@ namespace GameSession {
             }
 
             round.showdown();
-        } catch (const CannotReadCardImageException& e) { LOG_DEBUG(Logger::getLogger(), "Waiting showdown"); }
+        } catch (const CannotReadBoardCardImageException& e) { LOG_DEBUG(Logger::getLogger(), "Waiting showdown"); }
     }
 }  // namespace GameSession
