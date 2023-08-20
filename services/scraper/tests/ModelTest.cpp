@@ -6,10 +6,10 @@ using nlohmann::json;
 using Scraper::Model;
 using Scraper::windowSize_t;
 
-class ScraperTest : public ::testing::Test {};
+class ModelTest : public ::testing::Test {};
 
 // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
-TEST(ModelTest, displayScreenshot) {
+TEST(ModelTest, DISABLED_displayScreenshot) {
     Model scraper("Winamax", {3840, 1080});
 
     for (const auto& [id, window] : scraper.getActiveWindows()) {
@@ -20,7 +20,7 @@ TEST(ModelTest, displayScreenshot) {
     //    cv::waitKey(-1);
 }
 
-TEST(ModelTest, displayAllElements) {
+TEST(ModelTest, DISABLED_displayAllElements) {
     Model scraper("Winamax", {3840, 1080});
 
     std::ifstream fileReader(std::string(WINAMAX_DIR) + "/models/3840x1080.json");
@@ -43,7 +43,7 @@ TEST(ModelTest, displayAllElements) {
     cv::waitKey(-1);
 }
 
-TEST(ModelTest, checkPlayerButtonScapping) {
+TEST(ModelTest, DISABLED_checkPlayerButtonScapping) {
     Model scraper("Winamax", {3840, 1080});
 
     std::ifstream fileReader(std::string(WINAMAX_DIR) + "/models/3840x1080.json");

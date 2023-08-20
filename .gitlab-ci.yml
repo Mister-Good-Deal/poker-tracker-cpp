@@ -160,6 +160,24 @@ test_ocr:
     - if: $CI_COMMIT_MESSAGE !~ /\/no\-test/m
   needs:
     - build_linux
+      
+test_scrapper:
+  stage: test
+  tags:
+    - tests
+  script:
+    # @fixme Need to required tests for all subproject with --test-dir
+    - ctest --test-dir $BUILD_PATH_LINUX-release/services/scrapper --output-on-failure --extra-verbose -j ${MAX_MULTI_THREADS_CORE}
+      --output-junit scrapper_ctest.xml --no-compress-output
+  artifacts:
+    reports:
+      junit: $BUILD_PATH_LINUX-release/services/scrapper/scrapper_ctest.xml
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /\/(build|packaging)\-only/m
+      when: never
+    - if: $CI_COMMIT_MESSAGE !~ /\/no\-test/m
+  needs:
+    - build_linux
 
 graph_dependencies:
   stage: documentation
