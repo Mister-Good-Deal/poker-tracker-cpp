@@ -64,13 +64,13 @@ namespace GameHandler {
         return *this;
     }
 
-    auto Round::call(int32_t playerNum, int32_t amount) -> void {
+    auto Round::call(int32_t playerNum) -> void {
         auto& player         = _getPlayerStatus(playerNum);
-        auto  computedAmount = amount - player.totalStreetBet;
+        auto  computedAmount = std::min(_lastBetOrRaise, player.getStack()) - player.totalStreetBet;
 
         _lastAction    = _currentAction;
-        _currentAction = _actions.at(_currentStreet).emplace_back(CALL, player, _getAndResetLastActionTime(), amount);
-        player.hasCalled(amount);
+        _currentAction = _actions.at(_currentStreet).emplace_back(CALL, player, _getAndResetLastActionTime(), computedAmount);
+        player.hasCalled(computedAmount);
         _pot       += computedAmount;
         _streetPot += computedAmount;
 
@@ -83,8 +83,9 @@ namespace GameHandler {
         _lastAction    = _currentAction;
         _currentAction = _actions.at(_currentStreet).emplace_back(BET, player, _getAndResetLastActionTime(), amount);
         player.hasBet(amount);
-        _pot       += amount;
-        _streetPot += amount;
+        _lastBetOrRaise  = amount;
+        _pot            += amount;
+        _streetPot      += amount;
     }
 
     auto Round::raise(int32_t playerNum, int32_t amount) -> void {
@@ -94,8 +95,9 @@ namespace GameHandler {
         _lastAction    = _currentAction;
         _currentAction = _actions.at(_currentStreet).emplace_back(RAISE, player, _getAndResetLastActionTime(), amount);
         player.hasRaised(amount);
-        _pot       += computedAmount;
-        _streetPot += computedAmount;
+        _lastBetOrRaise  = amount;
+        _pot            += computedAmount;
+        _streetPot      += computedAmount;
     }
 
     auto Round::check(int32_t playerNum) -> void {
@@ -320,8 +322,9 @@ namespace GameHandler {
         SBPlayer.payBlind(_blinds.SB());
         BBPlayer.payBlind(_blinds.BB());
 
-        _streetPot += SBPlayer.totalBet + BBPlayer.totalBet;
-        _pot        = _streetPot;
+        _lastBetOrRaise  = _blinds.BB();  // @todo see complex scenario when BB Player cannot pay all the BB
+        _streetPot      += SBPlayer.totalBet + BBPlayer.totalBet;
+        _pot             = _streetPot;
     }
 
     auto Round::_updateStacks() -> void {

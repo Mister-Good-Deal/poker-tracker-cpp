@@ -73,8 +73,8 @@ namespace GameHandler {
             }
 
             auto hasCalled(int32_t amount) -> void {
-                totalBet       += amount - totalStreetBet;
-                totalStreetBet  = amount;
+                totalBet       += amount;
+                totalStreetBet += amount;
                 isAllIn         = totalBet == initialStack;
                 lastAction      = ActionType::CALL;
 
@@ -125,7 +125,7 @@ namespace GameHandler {
             [[nodiscard]] auto getPlayerHand(int32_t playerNum) const -> Hand { return _getPlayerStatus(playerNum).hand; }
             [[nodiscard]] auto getCurrentStreet() const -> Street { return _currentStreet; }
 
-            auto call(int32_t playerNum, int32_t amount) -> void;
+            auto call(int32_t playerNum) -> void;
             auto bet(int32_t playerNum, int32_t amount) -> void;
             auto raise(int32_t playerNum, int32_t amount) -> void;
             auto check(int32_t playerNum) -> void;
@@ -144,6 +144,7 @@ namespace GameHandler {
             int32_t                  _streetPot      = 0;
             int32_t                  _frozenPot      = 0;
             int32_t                  _dealerNumber   = 0;
+            int32_t                  _lastBetOrRaise = 0;
             Hand                     _hand           = Hand();
             Street                   _currentStreet  = Street::PREFLOP;
             time_point<system_clock> _lastActionTime = system_clock::now();
