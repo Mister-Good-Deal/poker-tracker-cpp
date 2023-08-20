@@ -58,10 +58,9 @@ namespace OCR {
     }
 
     auto WinamaxOcr::readCardRank(const cv::Mat& rankImage) const -> Card::Rank {
-        try {
-            auto rank = _cardOcr()->run(rankImage, OCR_MIN_CONFIDENCE);
-            return Card::charToRank(rank[0]);
-        } catch (const UnknownCardRankException& e) { throw CannotReadCardRankImageException(e, rankImage); }
+        auto rank = _cardOcr()->run(rankImage, OCR_MIN_CONFIDENCE);
+
+        return Card::charToRank(rank[0]);
     }
 
     auto WinamaxOcr::readCardSuit(const cv::Mat& suitImage) const -> Card::Suit {
@@ -87,7 +86,7 @@ namespace OCR {
         } else if (std::tie(middlePixelColorB, middlePixelColorG, middlePixelColorR) <= BLACK_INTENSITY_THRESHOLD) {
             return SPADE;
         } else {
-            throw CannotReadCardSuitImageException(suitImage);
+            throw UnknownCardSuitException(middlePixelColor);
         }
     }
 

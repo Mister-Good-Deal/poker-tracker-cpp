@@ -7,9 +7,8 @@
 #include <utilities/GtestMacros.hpp>
 
 using GameHandler::Factory::card;
-using OCR::CannotReadCardRankImageException;
-using OCR::CannotReadCardSuitImageException;
 using OCR::UnknownCardRankException;
+using OCR::UnknownCardSuitException;
 using OCR::WinamaxOcr;
 
 using enum GameHandler::Card::Suit;
@@ -51,8 +50,7 @@ TEST(WinamaxOcrTest, readCardRankShouldWork) {
 TEST(WinamaxOcrTest, readCardRankShouldThrowErrorOnUnknowRankColor) {
     auto unknown = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/suits/unknown.png");
 
-    EXPECT_THROW_WITH_MESSAGE(
-        auto rank = Env::winamaxOcr().readCardRank(unknown), CannotReadCardRankImageException, "Cannot read card rank");
+    EXPECT_THROW(auto rank = Env::winamaxOcr().readCardRank(unknown), UnknownCardRankException);
 }
 
 TEST(WinamaxOcrTest, readCardSuitShouldWork) {
@@ -71,8 +69,7 @@ TEST(WinamaxOcrTest, readCardSuitShouldWork) {
 TEST(WinamaxOcrTest, DISABLED_readCardSuitShouldThrowErrorOnUnknowSuitColor) {
     auto unknown = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/suits/unknown.png");
 
-    EXPECT_THROW_WITH_MESSAGE(
-        auto suit = Env::winamaxOcr().readCardSuit(unknown), CannotReadCardSuitImageException, "Cannot read card suit");
+    EXPECT_THROW(auto suit = Env::winamaxOcr().readCardSuit(unknown), UnknownCardSuitException);
 }
 
 TEST(WinamaxOcrTest, readCardShouldWork) {
@@ -82,11 +79,11 @@ TEST(WinamaxOcrTest, readCardShouldWork) {
     auto twoOfHeart      = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards/2H.png");
     auto kingOfClub      = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards/KC.png");
 
-    EXPECT_EQ(Env::winamaxOcr().readCard(heightOfDiamond), card("8D"));
-    EXPECT_EQ(Env::winamaxOcr().readCard(nineOfSpade), card("9S"));
-    EXPECT_EQ(Env::winamaxOcr().readCard(aceOfSpade), card("AS"));
-    EXPECT_EQ(Env::winamaxOcr().readCard(twoOfHeart), card("2H"));
-    EXPECT_EQ(Env::winamaxOcr().readCard(kingOfClub), card("KC"));
+    EXPECT_EQ(Env::winamaxOcr().readPlayerCard(heightOfDiamond), card("8D"));
+    EXPECT_EQ(Env::winamaxOcr().readPlayerCard(nineOfSpade), card("9S"));
+    EXPECT_EQ(Env::winamaxOcr().readPlayerCard(aceOfSpade), card("AS"));
+    EXPECT_EQ(Env::winamaxOcr().readPlayerCard(twoOfHeart), card("2H"));
+    EXPECT_EQ(Env::winamaxOcr().readPlayerCard(kingOfClub), card("KC"));
 }
 
 TEST(WinamaxOcrTest, readActionShouldWork) {

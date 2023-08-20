@@ -28,18 +28,33 @@ namespace OCR {
         _tesseractDuration     = cv::text::OCRTesseract::create(nullptr, "eng", "0123456789: ", OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
     }
 
-    auto OCR::OcrInterface::readCard(const cv::Mat& cardImage) const -> Card {
-        cv::Mat rankImage = cardImage(getRankCardArea());
-        cv::Mat suitImage = cardImage(getSuitCardArea());
+    auto OCR::OcrInterface::readBoardCard(const cv::Mat& cardImage) const -> Card {
+        try {
+            cv::Mat rankImage = cardImage(getRankCardArea());
+            cv::Mat suitImage = cardImage(getSuitCardArea());
 
-        return {readCardRank(rankImage), readCardSuit(suitImage)};
+            return {readCardRank(rankImage), readCardSuit(suitImage)};
+        } catch (const UnknownCardRankException& e) {
+            throw CannotReadBoardCardRankImageException(e, cardImage);
+        } catch (const UnknownCardSuitException& e) { throw CannotReadBoardCardSuitImageException(e, cardImage); }
+    }
+
+    auto OCR::OcrInterface::readPlayerCard(const cv::Mat& cardImage) const -> Card {
+        try {
+            cv::Mat rankImage = cardImage(getRankCardArea());
+            cv::Mat suitImage = cardImage(getSuitCardArea());
+
+            return {readCardRank(rankImage), readCardSuit(suitImage)};
+        } catch (const UnknownCardRankException& e) {
+            throw CannotReadPlayerCardRankImageException(e, cardImage);
+        } catch (const UnknownCardSuitException& e) { throw CannotReadPlayerCardSuitImageException(e, cardImage); }
     }
 
     auto OcrInterface::readHand(const cv::Mat& handImage) const -> Hand {
         cv::Mat firstCardImage  = handImage({0, 0, _cardWidth, handImage.rows});
         cv::Mat secondCardImage = handImage({handImage.cols - _cardWidth, 0, _cardWidth, handImage.rows});
 
-        return {readCard(firstCardImage), readCard(secondCardImage)};
+        return {readPlayerCard(firstCardImage), readPlayerCard(secondCardImage)};
     }
 
     auto OcrInterface::readWord(const cv::Mat& wordImage) const -> std::string {
