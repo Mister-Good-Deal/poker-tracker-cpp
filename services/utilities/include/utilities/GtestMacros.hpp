@@ -11,6 +11,7 @@ namespace Utilities::Gtest {
         if (json1.is_object() && json2.is_object()) {
             for (const auto& [key, value] : json1.items()) {
                 auto currentPath = fmt::format("{}.{}", path, key);
+
                 if (json2.contains(key)) {
                     compareJson(value, json2.at(key), currentPath, differences);
                 } else {
@@ -19,13 +20,15 @@ namespace Utilities::Gtest {
             }
             for (const auto& [key, value] : json2.items()) {
                 auto currentPath = fmt::format("{}.{}", path, key);
-                if (!json1.contains(key)) { differences += fmt::format("Extra key in json2: {}\n", currentPath); }
+
+                if (!json1.contains(key)) { differences += fmt::format("Extra key in json2: {} = {}\n", currentPath, value); }
             }
         } else if (json1.is_array() && json2.is_array()) {
             for (size_t i = 0; i < std::max(json1.size(), json2.size()); ++i) {
                 auto currentPath = fmt::format("{}[{}]", path, i);
+
                 if (i >= json1.size()) {
-                    differences += fmt::format("Extra element in json2 at: {}\n", currentPath);
+                    differences += fmt::format("Extra element in json2 at: {} => {}\n", currentPath, json2[i].dump());
                 } else if (i >= json2.size()) {
                     differences += fmt::format("Missing element in json2 at: {}\n", currentPath);
                 } else if (json1[i] != json2[i]) {
@@ -36,7 +39,7 @@ namespace Utilities::Gtest {
             differences += fmt::format("Difference at {}: Expected: {}, Actual: {}\n", path, json1.dump(), json2.dump());
         }
     }
-};  // namespace Utilities::Gtest
+}  // namespace Utilities::Gtest
 
 #define EXPECT_THROW_WITH_MESSAGE(code, exception_type, expected_message) \
     do {                                                                  \
