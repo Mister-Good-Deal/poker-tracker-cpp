@@ -20,6 +20,7 @@ namespace GameHandler {
     class Board {
         public:
             using board_t     = std::array<Card, BOARD_CARDS_NUMBER>;        // Flop + turn + river
+            using flop_t      = std::array<Card, FLOP_CARDS_NUMBER>;         // Flop
             using best_hand_t = std::array<Card, COMPARISON_CARDS_NUMBER>;   // 5 best cards of hand + board cards
             using all_cards_t = std::array<Card, TOTAL_CARDS_SIZE>;          // Hand + board cards
             using rank_f_t    = std::array<int32_t, RANK_CARDS_NUMBER + 1>;  // Ranks frequencies +1 for the ace
@@ -37,6 +38,8 @@ namespace GameHandler {
             auto operator=(Board&& other) noexcept -> Board&;
 
             [[nodiscard]] auto getCards() const -> board_t { return _cards; }
+            [[nodiscard]] auto isFlopEmpty() const -> bool;
+            [[nodiscard]] auto getFlop() const -> flop_t { return {_cards[0], _cards[1], _cards[2]}; }
             [[nodiscard]] auto getTurn() const -> Card { return _cards[3]; }
             [[nodiscard]] auto getRiver() const -> Card { return _cards[4]; }
             [[nodiscard]] auto hasPossibleStraight() const -> bool { return _possibleStraight; }

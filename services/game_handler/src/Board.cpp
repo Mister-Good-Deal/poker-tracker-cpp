@@ -66,6 +66,10 @@ namespace GameHandler {
         _updateStats();
     }
 
+    auto Board::isFlopEmpty() const -> bool {
+        return any_of(getFlop(), [](const Card& card) { return card.isUnknown(); });
+    }
+
     auto Board::getHighCardRank() -> Card::Rank {
         return max_element(_cards, [](const Card& A, const Card& B) { return A.getRank() < B.getRank(); })->getRank();
     }
