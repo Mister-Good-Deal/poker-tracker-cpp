@@ -69,7 +69,7 @@ namespace GameHandler {
 
     auto Round::call(int32_t playerNum) -> void {
         auto& player         = _getPlayerStatus(playerNum);
-        auto  computedAmount = std::min(_lastBetOrRaise, player.getStack()) - player.totalStreetBet;
+        auto  computedAmount = std::min(_lastBetOrRaise - player.totalStreetBet, player.getStack());
 
         _lastAction    = _currentAction;
         _currentAction = _actions.at(_currentStreet).emplace_back(CALL, player, _getAndResetLastActionTime(), computedAmount);
@@ -139,6 +139,10 @@ namespace GameHandler {
     }
 
     auto Round::getCurrentPlayerStack(int32_t playerNum) const -> int32_t { return _getPlayerStatus(playerNum).getStack(); }
+
+    auto Round::allPlayersAreAllIn() const -> bool {
+        return all_of(*_playersStatus, [](const PlayerStatus& player) { return player.isAllIn; });
+    }
 
     auto Round::waitingShowdown() const -> bool {
         return !_ended

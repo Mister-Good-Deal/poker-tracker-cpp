@@ -564,12 +564,12 @@ TEST(RoundTest, case6JsonRepresentationShouldBeCorrect) {
                 "pre_flop": [
                     { "action": "Raise", "player": "player_1", "elapsed_time": 0, "amount": 40 },
                     { "action": "Fold", "player": "player_2", "elapsed_time": 0 },
-                    { "action": "Call", "player": "player_3", "elapsed_time": 0 }
+                    { "action": "Call", "player": "player_3", "elapsed_time": 0 , "amount": 20 }
                 ],
                 "flop": [
                     { "action": "Check", "player": "player_3", "elapsed_time": 0 },
                     { "action": "Bet", "player": "player_1", "elapsed_time": 0, "amount": 30 },
-                    { "action": "Call", "player": "player_3", "elapsed_time": 0 }
+                    { "action": "Call", "player": "player_3", "elapsed_time": 0, "amount": 30 }
                 ],
                 "turn": [
                     { "action": "Check", "player": "player_3", "elapsed_time": 0 },

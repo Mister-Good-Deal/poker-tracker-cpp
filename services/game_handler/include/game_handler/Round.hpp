@@ -115,8 +115,9 @@ namespace GameHandler {
             auto operator=(Round&& other) noexcept -> Round&;
 
             [[nodiscard]] auto getBoard() -> Board& { return _board; }
+            [[nodiscard]] auto getBoard() const -> const Board& { return _board; }
             [[nodiscard]] auto getPot() const -> int32_t { return _pot; }
-            [[nodiscard]] auto getLastAction() -> RoundAction { return _currentAction; };
+            [[nodiscard]] auto getLastAction() const -> RoundAction { return _currentAction; };
             [[nodiscard]] auto getCurrentPlayerStack(int32_t playerNum) const -> int32_t;
             [[nodiscard]] auto isInProgress() const -> bool { return !_ended; }
             [[nodiscard]] auto waitingShowdown() const -> bool;
@@ -124,6 +125,7 @@ namespace GameHandler {
             [[nodiscard]] auto getPlayerHand(int32_t playerNum) const -> Hand { return _getPlayerStatus(playerNum).hand; }
             [[nodiscard]] auto getCurrentStreet() const -> Street { return _currentStreet; }
             [[nodiscard]] auto getCurrentPlayerNum() const -> int32_t { return _currentPlayerNum; }
+            [[nodiscard]] auto allPlayersAreAllIn() const -> bool;
 
             auto call(int32_t playerNum) -> void;
             auto bet(int32_t playerNum, int32_t amount) -> void;
@@ -180,6 +182,7 @@ namespace GameHandler {
 namespace fmt {
     using GameHandler::Blinds;
     using GameHandler::Position;
+    using GameHandler::Round;
 
     template<> struct formatter<Position> : formatter<string_view> {
             template<typename FormatContext> auto format(Position position, FormatContext& ctx) const {
@@ -198,6 +201,22 @@ namespace fmt {
     template<> struct formatter<Blinds> : formatter<string_view> {
             template<typename FormatContext> auto format(const Blinds& blinds, FormatContext& ctx) const {
                 return fmt::format_to(ctx.out(), "({}-{})", blinds.SB(), blinds.BB());
+            }
+    };
+
+    template<> struct formatter<Round::Street> : formatter<string_view> {
+            template<typename FormatContext> auto format(const Round::Street& street, FormatContext& ctx) const {
+                string_view name = "unknown";
+
+                switch (street) {
+                    case Round::PREFLOP: name = "pre-flop"; break;
+                    case Round::FLOP: name = "flop"; break;
+                    case Round::TURN: name = "turn"; break;
+                    case Round::RIVER: name = "river"; break;
+                    case Round::SHOWDOWN: name = "showdown"; break;
+                }
+
+                return formatter<string_view>::format(name, ctx);
             }
     };
 }  // namespace fmt
