@@ -33,11 +33,11 @@ TEST(ModelTest, DISABLED_displayAllElements) {
     cv::Mat screenshot_5 = cv::imread(std::string(WINAMAX_DIR) + "/screen_5.png");
     cv::Mat screenshot_6 = cv::imread(std::string(WINAMAX_DIR) + "/screen_6.png");
 
-    //    cv::imshow("screen_1", scraper.getWindowElementsView(screenshot_1));
-    //    cv::imshow("screen_2", scraper.getWindowElementsView(screenshot_2));
-    //    cv::imshow("screen_3", scraper.getWindowElementsView(screenshot_3));
-    //    cv::imshow("screen_4", scraper.getWindowElementsView(screenshot_4));
-    //    cv::imshow("screen_5", scraper.getWindowElementsView(screenshot_5));
+    cv::imshow("screen_1", scraper.getWindowElementsView(screenshot_1));
+    cv::imshow("screen_2", scraper.getWindowElementsView(screenshot_2));
+    cv::imshow("screen_3", scraper.getWindowElementsView(screenshot_3));
+    cv::imshow("screen_4", scraper.getWindowElementsView(screenshot_4));
+    cv::imshow("screen_5", scraper.getWindowElementsView(screenshot_5));
     cv::imshow("screen_6", scraper.getWindowElementsView(screenshot_6));
 
     cv::waitKey(-1);
@@ -80,12 +80,14 @@ TEST(ModelTest, jsonRepresentationShouldBeCorrect) {
     scraper.setPlayer2ActionCoord(cv::Rect(1234, 1234, 1234, 1234));
     scraper.setPlayer2BetCoord(cv::Rect(890, 2800, 4789, 1325));
     scraper.setPlayer2ButtonCoord(cv::Rect(101, 2909, 969, 2530));
+    scraper.setPlayer2CardsCoord(cv::Rect(1019, 3809, 55, 50));
     scraper.setPlayer2HandCoord(cv::Rect(1019, 3809, 3050, 120));
     scraper.setPlayer2NameCoord(cv::Rect(2014, 1900, 3976, 3500));
     scraper.setPlayer2StackCoord(cv::Rect(3245, 4580, 4056, 1890));
     scraper.setPlayer3ActionCoord(cv::Rect(1234, 1234, 1234, 1234));
     scraper.setPlayer3BetCoord(cv::Rect(4320, 4057, 1290, 3495));
     scraper.setPlayer3ButtonCoord(cv::Rect(1487, 3679, 3031, 201));
+    scraper.setPlayer3CardsCoord(cv::Rect(1200, 1380, 55, 50));
     scraper.setPlayer3HandCoord(cv::Rect(1235, 3909, 4503, 2364));
     scraper.setPlayer3NameCoord(cv::Rect(157, 3470, 2450, 880));
     scraper.setPlayer3StackCoord(cv::Rect(2301, 4809, 4670, 2450));
@@ -117,12 +119,14 @@ TEST(ModelTest, jsonRepresentationShouldBeCorrect) {
                 "player2Action": { "topLeft": { "x": 1234, "y": 1234 }, "width": 1234, "height": 1234 },
                 "player2Bet": { "topLeft": { "x": 890, "y": 2800 }, "width": 4789, "height": 1325 },
                 "player2Button": { "topLeft": { "x": 101, "y": 2909 }, "width": 969, "height": 2530 },
-                "player2Hand": { "topLeft": { "x": 1019, "y": 3809 }, "width": 3050, "height": 120 },
+                "player2Cards": { "topLeft": { "x": 1019, "y": 3809 }, "width": 55, "height": 50 },              
+                "player2Hand": { "topLeft": { "x": 1019, "y": 3809 }, "width": 3050, "height": 120 },                
                 "player2Name": { "topLeft": { "x": 2014, "y": 1900 }, "width": 3976, "height": 3500 },
                 "player2Stack": { "topLeft": { "x": 3245, "y": 4580 }, "width": 4056, "height": 1890 },
                 "player3Action": { "topLeft": { "x": 1234, "y": 1234 }, "width": 1234, "height": 1234 },
                 "player3Bet": { "topLeft": { "x": 4320, "y": 4057 }, "width": 1290, "height": 3495 },
                 "player3Button": { "topLeft": { "x": 1487, "y": 3679 }, "width": 3031, "height": 201 },
+                "player3Cards": { "topLeft": { "x": 1200, "y": 1380 }, "width": 55, "height": 50 },
                 "player3Hand": { "topLeft": { "x": 1235, "y": 3909 }, "width": 4503, "height": 2364 },
                 "player3Name": { "topLeft": { "x": 157, "y": 3470 }, "width": 2450, "height": 880 },
                 "player3Stack": { "topLeft": { "x": 2301, "y": 4809 }, "width": 4670, "height": 2450 },
@@ -163,12 +167,14 @@ TEST(ModelTest, loadFromJsonShouldSetCorrectAttributes) {
                 "player2Action": { "topLeft": { "x": 1234, "y": 1234 }, "width": 1234, "height": 1234 },
                 "player2Bet": { "topLeft": { "x": 2827, "y": 3131 }, "width": 3233, "height": 3335 },
                 "player2Button": { "topLeft": { "x": 2215, "y": 2317 }, "width": 2419, "height": 2521 },
+                "player2Cards": { "topLeft": { "x": 1019, "y": 3809 }, "width": 55, "height": 50 },
                 "player2Hand": { "topLeft": { "x": 3131, "y": 3335 }, "width": 3437, "height": 3539 },
                 "player2Name": { "topLeft": { "x": 1617, "y": 1819 }, "width": 2011, "height": 2113 },
                 "player2Stack": { "topLeft": { "x": 2521, "y": 2725 }, "width": 2827, "height": 2929 },
                 "player3Action": { "topLeft": { "x": 1234, "y": 1234 }, "width": 1234, "height": 1234 },
                 "player3Bet": { "topLeft": { "x": 2929, "y": 3233 }, "width": 3335, "height": 3437 },
                 "player3Button": { "topLeft": { "x": 2317, "y": 2521 }, "width": 2623, "height": 2725 },
+                "player3Cards": { "topLeft": { "x": 1200, "y": 1380 }, "width": 55, "height": 50 },
                 "player3Hand": { "topLeft": { "x": 3233, "y": 3437 }, "width": 3621, "height": 3623 },
                 "player3Name": { "topLeft": { "x": 1819, "y": 2011 }, "width": 2113, "height": 2215 },
                 "player3Stack": { "topLeft": { "x": 2623, "y": 2827 }, "width": 2929, "height": 3131 },
@@ -200,12 +206,14 @@ TEST(ModelTest, loadFromJsonShouldSetCorrectAttributes) {
     EXPECT_EQ(scraper.getPlayer2ActionCoord(), cv::Rect(1234, 1234, 1234, 1234));
     EXPECT_EQ(scraper.getPlayer2BetCoord(), cv::Rect(2827, 3131, 3233, 3335));
     EXPECT_EQ(scraper.getPlayer2ButtonCoord(), cv::Rect(2215, 2317, 2419, 2521));
+    EXPECT_EQ(scraper.getPlayer2CardsCoord(), cv::Rect(1019, 3809, 55, 50));
     EXPECT_EQ(scraper.getPlayer2HandCoord(), cv::Rect(3131, 3335, 3437, 3539));
     EXPECT_EQ(scraper.getPlayer2NameCoord(), cv::Rect(1617, 1819, 2011, 2113));
     EXPECT_EQ(scraper.getPlayer2StackCoord(), cv::Rect(2521, 2725, 2827, 2929));
     EXPECT_EQ(scraper.getPlayer3ActionCoord(), cv::Rect(1234, 1234, 1234, 1234));
     EXPECT_EQ(scraper.getPlayer3BetCoord(), cv::Rect(2929, 3233, 3335, 3437));
     EXPECT_EQ(scraper.getPlayer3ButtonCoord(), cv::Rect(2317, 2521, 2623, 2725));
+    EXPECT_EQ(scraper.getPlayer3CardsCoord(), cv::Rect(1200, 1380, 55, 50));
     EXPECT_EQ(scraper.getPlayer3HandCoord(), cv::Rect(3233, 3437, 3621, 3623));
     EXPECT_EQ(scraper.getPlayer3NameCoord(), cv::Rect(1819, 2011, 2113, 2215));
     EXPECT_EQ(scraper.getPlayer3StackCoord(), cv::Rect(2623, 2827, 2929, 3131));

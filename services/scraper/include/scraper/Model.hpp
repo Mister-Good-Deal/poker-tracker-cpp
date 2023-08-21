@@ -74,12 +74,14 @@ namespace Scraper {
             auto getPlayer2ActionCoord() const -> const cv::Rect& { return _player2ActionCoord; }
             auto getPlayer2BetCoord() const -> const cv::Rect& { return _player2BetCoord; }
             auto getPlayer2ButtonCoord() const -> const cv::Rect& { return _player2ButtonCoord; }
+            auto getPlayer2CardsCoord() const -> const cv::Rect& { return _player2CardsCoord; }
             auto getPlayer2HandCoord() const -> const cv::Rect& { return _player2HandCoord; }
             auto getPlayer2NameCoord() const -> const cv::Rect& { return _player2NameCoord; }
             auto getPlayer2StackCoord() const -> const cv::Rect& { return _player2StackCoord; }
             auto getPlayer3ActionCoord() const -> const cv::Rect& { return _player3ActionCoord; }
             auto getPlayer3BetCoord() const -> const cv::Rect& { return _player3BetCoord; }
             auto getPlayer3ButtonCoord() const -> const cv::Rect& { return _player3ButtonCoord; }
+            auto getPlayer3CardsCoord() const -> const cv::Rect& { return _player3CardsCoord; }
             auto getPlayer3HandCoord() const -> const cv::Rect& { return _player3HandCoord; }
             auto getPlayer3NameCoord() const -> const cv::Rect& { return _player3NameCoord; }
             auto getPlayer3StackCoord() const -> const cv::Rect& { return _player3StackCoord; }
@@ -88,36 +90,38 @@ namespace Scraper {
             auto getRoomName() const -> const std::string& { return _roomName; }
             auto getWindowSize() const -> const windowSize_t& { return _windowSize; }
 
-            void setAverageStackCoord(const cv::Rect& averageStackCoord) { _averageStackCoord = averageStackCoord; }
-            void setBlindAmountCoord(const cv::Rect& blindAmountCoord) { _blindAmountCoord = blindAmountCoord; }
-            void setBlindLevelCoord(const cv::Rect& blindLevelCoord) { _blindLevelCoord = blindLevelCoord; }
-            void setBlindLevelTimeCoord(const cv::Rect& blindLevelTimeCoord) { _blindLevelTimeCoord = blindLevelTimeCoord; }
-            void setBoardCard1Coord(const cv::Rect& boardCard1Coord) { _boardCard1Coord = boardCard1Coord; }
-            void setBoardCard2Coord(const cv::Rect& boardCard2Coord) { _boardCard2Coord = boardCard2Coord; }
-            void setBoardCard3Coord(const cv::Rect& boardCard3Coord) { _boardCard3Coord = boardCard3Coord; }
-            void setBoardCard4Coord(const cv::Rect& boardCard4Coord) { _boardCard4Coord = boardCard4Coord; }
-            void setBoardCard5Coord(const cv::Rect& boardCard5Coord) { _boardCard5Coord = boardCard5Coord; }
-            void setFirstCardCoord(const cv::Rect& firstCardCoord) { _firstCardCoord = firstCardCoord; }
-            void setSecondCardCoord(const cv::Rect& secondCardCoord) { _secondCardCoord = secondCardCoord; }
-            void setPlayer1ActionCoord(const cv::Rect& player1ActionCoord) { _player1ActionCoord = player1ActionCoord; }
-            void setPlayer1BetCoord(const cv::Rect& player1BetCoord) { _player1BetCoord = player1BetCoord; }
-            void setPlayer1ButtonCoord(const cv::Rect& player1ButtonCoord) { _player1ButtonCoord = player1ButtonCoord; }
-            void setPlayer1NameCoord(const cv::Rect& player1NameCoord) { _player1NameCoord = player1NameCoord; }
-            void setPlayer1StackCoord(const cv::Rect& player1StackCoord) { _player1StackCoord = player1StackCoord; }
-            void setPlayer2ActionCoord(const cv::Rect& player2ActionCoord) { _player2ActionCoord = player2ActionCoord; }
-            void setPlayer2BetCoord(const cv::Rect& player2BetCoord) { _player2BetCoord = player2BetCoord; }
-            void setPlayer2ButtonCoord(const cv::Rect& player2ButtonCoord) { _player2ButtonCoord = player2ButtonCoord; }
-            void setPlayer2HandCoord(const cv::Rect& player2HandCoord) { _player2HandCoord = player2HandCoord; }
-            void setPlayer2NameCoord(const cv::Rect& player2NameCoord) { _player2NameCoord = player2NameCoord; }
-            void setPlayer2StackCoord(const cv::Rect& player2StackCoord) { _player2StackCoord = player2StackCoord; }
-            void setPlayer3ActionCoord(const cv::Rect& player3ActionCoord) { _player3ActionCoord = player3ActionCoord; }
-            void setPlayer3BetCoord(const cv::Rect& player3BetCoord) { _player3BetCoord = player3BetCoord; }
-            void setPlayer3ButtonCoord(const cv::Rect& player3ButtonCoord) { _player3ButtonCoord = player3ButtonCoord; }
-            void setPlayer3HandCoord(const cv::Rect& player3HandCoord) { _player3HandCoord = player3HandCoord; }
-            void setPlayer3NameCoord(const cv::Rect& player3NameCoord) { _player3NameCoord = player3NameCoord; }
-            void setPlayer3StackCoord(const cv::Rect& player3StackCoord) { _player3StackCoord = player3StackCoord; }
-            void setPotCoord(const cv::Rect& potCoord) { _potCoord = potCoord; }
-            void setPrizePoolCoord(const cv::Rect& prizePoolCoord) { _prizePoolCoord = prizePoolCoord; }
+            void setAverageStackCoord(const cv::Rect& imgROI) { _averageStackCoord = imgROI; }
+            void setBlindAmountCoord(const cv::Rect& imgROI) { _blindAmountCoord = imgROI; }
+            void setBlindLevelCoord(const cv::Rect& imgROI) { _blindLevelCoord = imgROI; }
+            void setBlindLevelTimeCoord(const cv::Rect& imgROI) { _blindLevelTimeCoord = imgROI; }
+            void setBoardCard1Coord(const cv::Rect& imgROI) { _boardCard1Coord = imgROI; }
+            void setBoardCard2Coord(const cv::Rect& imgROI) { _boardCard2Coord = imgROI; }
+            void setBoardCard3Coord(const cv::Rect& imgROI) { _boardCard3Coord = imgROI; }
+            void setBoardCard4Coord(const cv::Rect& imgROI) { _boardCard4Coord = imgROI; }
+            void setBoardCard5Coord(const cv::Rect& imgROI) { _boardCard5Coord = imgROI; }
+            void setFirstCardCoord(const cv::Rect& imgROI) { _firstCardCoord = imgROI; }
+            void setSecondCardCoord(const cv::Rect& imgROI) { _secondCardCoord = imgROI; }
+            void setPlayer1ActionCoord(const cv::Rect& imgROI) { _player1ActionCoord = imgROI; }
+            void setPlayer1BetCoord(const cv::Rect& imgROI) { _player1BetCoord = imgROI; }
+            void setPlayer1ButtonCoord(const cv::Rect& imgROI) { _player1ButtonCoord = imgROI; }
+            void setPlayer1NameCoord(const cv::Rect& imgROI) { _player1NameCoord = imgROI; }
+            void setPlayer1StackCoord(const cv::Rect& imgROI) { _player1StackCoord = imgROI; }
+            void setPlayer2ActionCoord(const cv::Rect& imgROI) { _player2ActionCoord = imgROI; }
+            void setPlayer2BetCoord(const cv::Rect& imgROI) { _player2BetCoord = imgROI; }
+            void setPlayer2ButtonCoord(const cv::Rect& imgROI) { _player2ButtonCoord = imgROI; }
+            void setPlayer2CardsCoord(const cv::Rect& imgROI) { _player2CardsCoord = imgROI; }
+            void setPlayer2HandCoord(const cv::Rect& imgROI) { _player2HandCoord = imgROI; }
+            void setPlayer2NameCoord(const cv::Rect& imgROI) { _player2NameCoord = imgROI; }
+            void setPlayer2StackCoord(const cv::Rect& imgROI) { _player2StackCoord = imgROI; }
+            void setPlayer3ActionCoord(const cv::Rect& imgROI) { _player3ActionCoord = imgROI; }
+            void setPlayer3BetCoord(const cv::Rect& imgROI) { _player3BetCoord = imgROI; }
+            void setPlayer3ButtonCoord(const cv::Rect& imgROI) { _player3ButtonCoord = imgROI; }
+            void setPlayer3CardsCoord(const cv::Rect& imgROI) { _player3CardsCoord = imgROI; }
+            void setPlayer3HandCoord(const cv::Rect& imgROI) { _player3HandCoord = imgROI; }
+            void setPlayer3NameCoord(const cv::Rect& imgROI) { _player3NameCoord = imgROI; }
+            void setPlayer3StackCoord(const cv::Rect& imgROI) { _player3StackCoord = imgROI; }
+            void setPotCoord(const cv::Rect& imgROI) { _potCoord = imgROI; }
+            void setPrizePoolCoord(const cv::Rect& imgROI) { _prizePoolCoord = imgROI; }
             void setRoomName(const std::string& roomName) { _roomName = roomName; }
             void setWindowSize(const windowSize_t& windowSize) { _windowSize = windowSize; }
 
@@ -162,17 +166,19 @@ namespace Scraper {
             auto getPrizePoolImg(const cv::Mat& img) const -> const cv::Mat { return img(getPrizePoolCoord()); };
 
             // Convenient methods to get coordinates with a player number
-            auto getPlayerHandCoord(uint32_t playerNum) const -> const cv::Rect&;
-            auto getPlayerActionCoord(uint32_t playerNum) const -> const cv::Rect&;
-            auto getPlayerBetCoord(uint32_t playerNum) const -> const cv::Rect&;
-            auto getPlayerButtonCoord(uint32_t playerNum) const -> const cv::Rect&;
-            auto getPlayerStackCoord(uint32_t playerNum) const -> const cv::Rect&;
+            auto getPlayerCardsCoord(int32_t playerNum) const -> const cv::Rect&;
+            auto getPlayerHandCoord(int32_t playerNum) const -> const cv::Rect&;
+            auto getPlayerActionCoord(int32_t playerNum) const -> const cv::Rect&;
+            auto getPlayerBetCoord(int32_t playerNum) const -> const cv::Rect&;
+            auto getPlayerButtonCoord(int32_t playerNum) const -> const cv::Rect&;
+            auto getPlayerStackCoord(int32_t playerNum) const -> const cv::Rect&;
             // For the image extraction
-            auto getPlayerCardsImg(const cv::Mat& img, uint32_t num) -> const cv::Mat { return img(getPlayerHandCoord(num)); }
-            auto getPlayerActionImg(const cv::Mat& img, uint32_t num) -> const cv::Mat { return img(getPlayerActionCoord(num)); }
-            auto getPlayerBetImg(const cv::Mat& img, uint32_t num) -> const cv::Mat { return img(getPlayerBetCoord(num)); }
-            auto getPlayerButtonImg(const cv::Mat& img, uint32_t num) -> const cv::Mat { return img(getPlayerButtonCoord(num)); }
-            auto getPlayerStackImg(const cv::Mat& img, uint32_t num) -> const cv::Mat { return img(getPlayerStackCoord(num)); }
+            auto getPlayerCardsImg(const cv::Mat& img, int32_t num) -> const cv::Mat { return img(getPlayerCardsCoord(num)); }
+            auto getPlayerHandImg(const cv::Mat& img, int32_t num) -> const cv::Mat { return img(getPlayerHandCoord(num)); }
+            auto getPlayerActionImg(const cv::Mat& img, int32_t num) -> const cv::Mat { return img(getPlayerActionCoord(num)); }
+            auto getPlayerBetImg(const cv::Mat& img, int32_t num) -> const cv::Mat { return img(getPlayerBetCoord(num)); }
+            auto getPlayerButtonImg(const cv::Mat& img, int32_t num) -> const cv::Mat { return img(getPlayerButtonCoord(num)); }
+            auto getPlayerStackImg(const cv::Mat& img, int32_t num) -> const cv::Mat { return img(getPlayerStackCoord(num)); }
 
             auto getActiveWindows() -> windows_t;
             auto getScreenshot(uint64_t windowId) -> sharedConstMat_t;
@@ -207,12 +213,14 @@ namespace Scraper {
             cv::Rect _player2ActionCoord;
             cv::Rect _player2BetCoord;
             cv::Rect _player2ButtonCoord;
+            cv::Rect _player2CardsCoord;
             cv::Rect _player2HandCoord;
             cv::Rect _player2NameCoord;
             cv::Rect _player2StackCoord;
             cv::Rect _player3ActionCoord;
             cv::Rect _player3BetCoord;
             cv::Rect _player3ButtonCoord;
+            cv::Rect _player3CardsCoord;
             cv::Rect _player3HandCoord;
             cv::Rect _player3NameCoord;
             cv::Rect _player3StackCoord;
