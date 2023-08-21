@@ -8,7 +8,6 @@
 namespace GameSession {
     using GameHandler::Hand;
     using GameHandler::invalid_player_name;
-    using GameHandler::Round;
     using OCR::CannotReadBoardCardImageException;
     using OCR::CannotReadGameActionImageException;
     using OCR::CannotReadPlayerBetImageException;
@@ -52,12 +51,16 @@ namespace GameSession {
         while (_gameStage != ENDED) {
             DISPLAY_VIDEO("game", _scraper.getWindowElementsView(*_currentScreenshot));
 
+            auto& round = _game.getCurrentRound();
+
             switch (_gameStage) {
                 case STARTING: _waitGameStart(*_currentScreenshot); [[fallthrough]];
                 case GAME_INFO_SETUP: _harvestGameInfo(*_currentScreenshot); [[fallthrough]];
                 case WAITING_NEW_ROUND: _waitNewRound(*_currentScreenshot); break;
                 case ROUND_IN_PROGRESS:
-                    if (_game.getCurrentRound().waitingShowdown()) {
+                    _getStreetCards(*_currentScreenshot, round);
+
+                    if (round.waitingShowdown()) {
                         _waitShowdown(*_currentScreenshot);
                     } else if (_isNextActionTriggered(*_currentScreenshot)) {
                         _trackCurrentRound(*_currentScreenshot);
@@ -144,6 +147,16 @@ namespace GameSession {
         LOG_INFO(Logger::getLogger(), "River: {}", card);
     }
 
+    auto Session::_getStreetCards(const cv::Mat& screenshot, const Round& round) -> void {
+        try {
+            if (round.getCurrentStreet() >= FLOP && round.getBoard().isFlopEmpty()) { _getFlop(screenshot); }
+            if (round.getCurrentStreet() >= TURN && round.getBoard().getTurn().isUnknown()) { _getTurn(screenshot); }
+            if (round.getCurrentStreet() >= RIVER && round.getBoard().getRiver().isUnknown()) { _getRiver(screenshot); }
+        } catch (const CannotReadBoardCardImageException& e) {
+            LOG_DEBUG(Logger::getLogger(), "Cannot read {} card", round.getCurrentStreet());
+        }
+    }
+
     /**
      * The _harvestGameInfo function is responsible for extracting game information from a given screenshot.
      *
@@ -192,9 +205,8 @@ namespace GameSession {
         try {
             auto& round       = _game.getCurrentRound();
             auto  startStreet = round.getCurrentStreet();
-
-            _determinePlayerAction(screenshot, _currentPlayerNum);
-
+            // During the showdown process we must check if the round is over, @todo refactor this
+            if (!round.isInProgress()) { _determinePlayerAction(screenshot, _currentPlayerNum); }
             // If the round is over, determine if the game is over or wait for a new round
             if (!round.isInProgress()) {
                 LOG_DEBUG(Logger::getLogger(), "Round recap:\n{}", round.toJson().dump(4));
@@ -203,18 +215,8 @@ namespace GameSession {
 
                 if (!_game.isOver()) { _gameStage = WAITING_NEW_ROUND; }
             } else if (startStreet != round.getCurrentStreet()) {
-                // If the street changed get the board cards
-                switch (round.getCurrentStreet()) {
-                    case FLOP: _getFlop(screenshot); break;
-                    case TURN: _getTurn(screenshot); break;
-                    case RIVER: _getRiver(screenshot); break;
-                    default: break;
-                }
+                _getStreetCards(screenshot, round);
             }
-        } catch (const CannotReadBoardCardImageException& e) {
-            LOG_DEBUG(Logger::getLogger(), "trackCurrentRound, {}", e.what());
-
-            writeLogGameImage(e.getImage(), LOGS_DIR, e.getCategory());
         } catch (const ExceptionWithImage& e) {
             // Should be CannotReadGameActionImageException or CannotReadPlayerBetImageException
             LOG_DEBUG(Logger::getLogger(), "{}", e.what());
@@ -252,7 +254,11 @@ namespace GameSession {
             // Get button position
             auto buttonPosition = _getButtonPosition(*_currentScreenshot);
             // If the button position did not change, the new round did not start
-            if (buttonPosition == _currentButtonNum) { throw ButtonDidNotMoveException(); }
+            if (buttonPosition == _currentButtonNum) {
+                LOG_DEBUG(Logger::getLogger(), "Waiting new round, button did not move");
+
+                return;
+            }
             // Update current button and current player position
             _currentButtonNum     = buttonPosition;
             _currentPlayerNum     = buttonPosition;
@@ -263,8 +269,10 @@ namespace GameSession {
             _game.newRound(blinds, hand, _currentButtonNum);
             _gameStage = ROUND_IN_PROGRESS;
         } catch (const CannotFindButtonException& e) {
-            LOG_DEBUG(Logger::getLogger(), "Button not found");
-        } catch (const CannotReadPlayerCardImageException& e) { LOG_DEBUG(Logger::getLogger(), "Waiting hand distribution"); }
+            LOG_DEBUG(Logger::getLogger(), "Waiting new round, cannot find the button");
+        } catch (const CannotReadPlayerCardImageException& e) {
+            LOG_DEBUG(Logger::getLogger(), "Waiting new round, hand not distributed");
+        }
     }
 
     auto Session::_waitShowdown(const cv::Mat& screenshot) -> void {
@@ -272,24 +280,39 @@ namespace GameSession {
             LOG_DEBUG(Logger::getLogger(), "waitShowdown");
             auto&       round = _game.getCurrentRound();
             const auto& board = round.getBoard();
-            // Check board cards
-            if (board.getTurn().isUnknown()) { _getTurn(screenshot); }
-            if (board.getRiver().isUnknown()) { _getRiver(screenshot); }
-            LOG_DEBUG(Logger::getLogger(), "Turn is : {}", board.getTurn());
-            LOG_DEBUG(Logger::getLogger(), "River is : {}", board.getRiver());
+            // Wait board cards
+            if (board.isFlopEmpty() || board.getTurn().isUnknown() || board.getRiver().isUnknown()) {
+                _getStreetCards(screenshot, round);
+
+                return;
+            }
             // Get player hands
             for (auto playerNum : _game.getCurrentRound().getInRoundPlayersNum()) {
                 if (playerNum == 1) { continue; }  // Skip player 1, as it is the bot
                 if (!round.getPlayerHand(playerNum).isSet()) {
-                    auto hand = _ocr->readHand(_scraper.getPlayerCardsImg(screenshot, playerNum));
+                    try {
+                        Hand hand;
+                        // When all players are all in, the cards are shown in the same position as hand, else they are shown lower
+                        if (round.allPlayersAreAllIn()) {
+                            hand = _ocr->readHand(_scraper.getPlayerHandImg(screenshot, playerNum));
+                        } else {
+                            hand = _ocr->readHand(_scraper.getPlayerCardsImg(screenshot, playerNum));
+                        }
 
-                    round.setPlayerHand(hand, playerNum);
-                    // @todo Player fmt print with modifier generic and real name ?
-                    LOG_INFO(Logger::getLogger(), "player_{} hand: {}-{}", playerNum, hand.getCards()[0], hand.getCards()[1]);
+                        round.setPlayerHand(hand, playerNum);
+
+                        LOG_INFO(Logger::getLogger(), "player_{} hand: {}-{}", playerNum, hand.getCards()[0], hand.getCards()[1]);
+                    } catch (const CannotReadPlayerCardImageException& e) {
+                        LOG_DEBUG(Logger::getLogger(), "Cannot read player_{} cards", playerNum);
+
+                        writeLogPlayerImage(e.getImage(), LOGS_DIR, e.getCategory(), playerNum);
+
+                        throw;
+                    }
                 }
             }
 
             round.showdown();
-        } catch (const CannotReadBoardCardImageException& e) { LOG_DEBUG(Logger::getLogger(), "Waiting showdown"); }
+        } catch (const CannotReadPlayerCardImageException& e) { LOG_DEBUG(Logger::getLogger(), "Waiting showdown"); }
     }
 }  // namespace GameSession

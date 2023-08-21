@@ -7,6 +7,7 @@
 namespace GameSession {
     using GameHandler::Game;
     using GameHandler::Player;
+    using GameHandler::Round;
     using GameHandler::RoundAction;
     using OCR::OcrInterface;
     using OCR::Factory::OcrFactory;
@@ -27,13 +28,6 @@ namespace GameSession {
             explicit CannotFindButtonException() = default;
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot find the button"; }
-    };
-
-    class ButtonDidNotMoveException : public std::exception {
-        public:
-            explicit ButtonDidNotMoveException() = default;
-
-            [[nodiscard]] auto what() const noexcept -> const char* override { return "The button did not move from last round"; }
     };
 
     class Session {
@@ -68,13 +62,14 @@ namespace GameSession {
             int32_t                       _currentPlayerNum = 0;
             ActionType                    _currentAction    = ActionType::NONE;
             cv::Mat                       _lastWaitingActionImg;
-            
+
             auto _determineGameOver() -> void;
             auto _determinePlayerAction(const cv::Mat& screenshot, int32_t playerNum) -> void;
             auto _getButtonPosition(const cv::Mat& screenshot) -> int32_t;
             auto _getFlop(const cv::Mat& screenshot) -> void;
             auto _getTurn(const cv::Mat& screenshot) -> void;
             auto _getRiver(const cv::Mat& screenshot) -> void;
+            auto _getStreetCards(const cv::Mat& screenshot, const Round& round) -> void;
             auto _harvestGameInfo(const cv::Mat& screenshot) -> void;
             auto _isNextActionTriggered(const cv::Mat& screenshot) -> bool;
             auto _trackCurrentRound(const cv::Mat& screenshot) -> void;
