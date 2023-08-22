@@ -166,11 +166,11 @@ namespace Scraper {
             auto getPrizePoolImg(const cv::Mat& img) const -> const cv::Mat { return img(getPrizePoolCoord()); };
 
             // Convenient methods to get coordinates with a player number
-            auto getPlayerCardsCoord(int32_t playerNum) const -> const cv::Rect&;
-            auto getPlayerHandCoord(int32_t playerNum) const -> const cv::Rect&;
             auto getPlayerActionCoord(int32_t playerNum) const -> const cv::Rect&;
             auto getPlayerBetCoord(int32_t playerNum) const -> const cv::Rect&;
             auto getPlayerButtonCoord(int32_t playerNum) const -> const cv::Rect&;
+            auto getPlayerCardsCoord(int32_t playerNum) const -> const cv::Rect&;
+            auto getPlayerHandCoord(int32_t playerNum) const -> const cv::Rect&;
             auto getPlayerStackCoord(int32_t playerNum) const -> const cv::Rect&;
             // For the image extraction
             auto getPlayerCardsImg(const cv::Mat& img, int32_t num) -> const cv::Mat { return img(getPlayerCardsCoord(num)); }

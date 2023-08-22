@@ -203,22 +203,6 @@ namespace Scraper {
         return elementsView;
     }
 
-    auto Model::getPlayerCardsCoord(int32_t playerNum) const -> const cv::Rect& {
-        switch (playerNum) {
-            case 2: return _player2CardsCoord;
-            case 3: return _player3CardsCoord;
-            default: throw std::invalid_argument("Invalid player number");
-        }
-    }
-
-    auto Model::getPlayerHandCoord(int32_t playerNum) const -> const cv::Rect& {
-        switch (playerNum) {
-            case 2: return _player2HandCoord;
-            case 3: return _player3HandCoord;
-            default: throw std::invalid_argument("Invalid player number");
-        }
-    }
-
     auto Model::getPlayerActionCoord(int32_t playerNum) const -> const cv::Rect& {
         switch (playerNum) {
             case 1: return _player1ActionCoord;
@@ -237,20 +221,36 @@ namespace Scraper {
         }
     }
 
-    auto Model::getPlayerStackCoord(int32_t playerNum) const -> const cv::Rect& {
-        switch (playerNum) {
-            case 1: return _player1StackCoord;
-            case 2: return _player2StackCoord;
-            case 3: return _player3StackCoord;
-            default: throw std::invalid_argument("Invalid player number");
-        }
-    }
-
     auto Model::getPlayerButtonCoord(int32_t playerNum) const -> const cv::Rect& {
         switch (playerNum) {
             case 1: return _player1ButtonCoord;
             case 2: return _player2ButtonCoord;
             case 3: return _player3ButtonCoord;
+            default: throw std::invalid_argument("Invalid player number");
+        }
+    }
+
+    auto Model::getPlayerCardsCoord(int32_t playerNum) const -> const cv::Rect& {
+        switch (playerNum) {
+            case 2: return _player2CardsCoord;
+            case 3: return _player3CardsCoord;
+            default: throw std::invalid_argument("Invalid player number");
+        }
+    }
+
+    auto Model::getPlayerHandCoord(int32_t playerNum) const -> const cv::Rect& {
+        switch (playerNum) {
+            case 2: return _player2HandCoord;
+            case 3: return _player3HandCoord;
+            default: throw std::invalid_argument("Invalid player number");
+        }
+    }
+
+    auto Model::getPlayerStackCoord(int32_t playerNum) const -> const cv::Rect& {
+        switch (playerNum) {
+            case 1: return _player1StackCoord;
+            case 2: return _player2StackCoord;
+            case 3: return _player3StackCoord;
             default: throw std::invalid_argument("Invalid player number");
         }
     }
