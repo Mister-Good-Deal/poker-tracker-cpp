@@ -71,9 +71,9 @@ namespace OCR {
         const cv::Vec3b CLUB_COLOR    = {55, 255, 255};   // Green
         const cv::Vec3b SPADE_COLOR   = {0, 0, 0};        // Black
 
-        const int32_t MAX_HUE_VALUE        = 180;  // The maximum Hue value in openCV color space
-        const int32_t LUMINOSITY_THRESHOLD = 10;   // Lower will be darker
-        const int32_t COLOR_THRESHOLD      = 17;   // This represents the hue 'cone'
+        const int32_t MAX_HUE_VALUE   = 180;                          // The maximum Hue value in openCV color space
+        const int32_t COLOR_THRESHOLD = 17;                           // This represents the hue 'cone'
+        const auto    BLACK_THRESHOLD = std::make_tuple(20, 20, 20);  // Each max component value of the HSV color space
 
         cv::Mat hsvImage;
 
@@ -82,7 +82,7 @@ namespace OCR {
         auto middlePixelColor = hsvImage.at<cv::Vec3b>(suitImage.cols / 2, suitImage.rows / 2);
 
         // Check the luminosity (V value)
-        if (middlePixelColor[2] < LUMINOSITY_THRESHOLD) { return SPADE; }  // Black
+        if (std::tie(middlePixelColor[0], middlePixelColor[1], middlePixelColor[2]) < BLACK_THRESHOLD) { return SPADE; }  // Black
 
         // Check the hue (H value) within the cylindrical HSV color model
         int hue = middlePixelColor[0];
@@ -100,8 +100,6 @@ namespace OCR {
 
     auto WinamaxOcr::readGameAction(const cv::Mat& gameActionImage) const -> ActionType {
         auto action = readWord(_extractYellowText(*_resizedImage(gameActionImage)));
-
-        LOG_DEBUG(Logger::getLogger(), "Text action read = {}", action);
 
         if (action == "CALL") {
             return CALL;
