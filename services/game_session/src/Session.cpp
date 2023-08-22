@@ -206,7 +206,7 @@ namespace GameSession {
             auto& round       = _game.getCurrentRound();
             auto  startStreet = round.getCurrentStreet();
             // During the showdown process we must check if the round is over, @todo refactor this
-            if (!round.isInProgress()) { _determinePlayerAction(screenshot, _currentPlayerNum); }
+            if (round.isInProgress()) { _determinePlayerAction(screenshot, _currentPlayerNum); }
             // If the round is over, determine if the game is over or wait for a new round
             if (!round.isInProgress()) {
                 LOG_DEBUG(Logger::getLogger(), "Round recap:\n{}", round.toJson().dump(4));
@@ -301,9 +301,9 @@ namespace GameSession {
 
                         round.setPlayerHand(hand, playerNum);
 
-                        LOG_INFO(Logger::getLogger(), "player_{} hand: {}-{}", playerNum, hand.getCards()[0], hand.getCards()[1]);
+                        LOG_INFO(Logger::getLogger(), "player {} hand: {}-{}", playerNum, hand.getCards()[0], hand.getCards()[1]);
                     } catch (const CannotReadPlayerCardImageException& e) {
-                        LOG_DEBUG(Logger::getLogger(), "Cannot read player_{} cards", playerNum);
+                        LOG_DEBUG(Logger::getLogger(), "{}. Player {}", playerNum, e.what());
 
                         writeLogPlayerImage(e.getImage(), LOGS_DIR, e.getCategory(), playerNum);
 

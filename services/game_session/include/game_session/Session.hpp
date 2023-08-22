@@ -18,7 +18,7 @@ namespace GameSession {
     using sharedConstMat_t = Scraper::Model::sharedConstMat_t;
     using ActionType       = GameHandler::RoundAction::ActionType;
 
-    static const milliseconds TICK_RATE                   = milliseconds(250);
+    static const milliseconds TICK_RATE                   = milliseconds(500);
     static const double       ACTION_SIMILARITY_THRESHOLD = 0.01;
 
     enum GameStages : int32_t { STARTING = 0, GAME_INFO_SETUP, WAITING_NEW_ROUND, ROUND_IN_PROGRESS, ENDED };
