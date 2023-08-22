@@ -93,7 +93,14 @@ namespace GameSession {
     auto Session::_determinePlayerAction(const cv::Mat& screenshot, int32_t playerNum) -> void {
         auto& round = _game.getCurrentRound();
         // readPlayerBet may fail, so we keep the action until we can read the bet and reset the action to NONE in case of success
-        if (_currentAction == NONE) { _currentAction = _ocr->readGameAction(_scraper.getPlayerActionImg(screenshot, playerNum)); }
+        if (_currentAction == NONE) { // @todo check if this is needed
+            // Special case of all in, we can't read the action, so we check if the player stack is all in
+            if (_ocr->isAllIn(_scraper.getPlayerStackImg(screenshot, playerNum))) {
+                _currentAction = CALL;
+            } else {
+                _currentAction = _ocr->readGameAction(_scraper.getPlayerActionImg(screenshot, playerNum));
+            }
+        }
 
         switch (_currentAction) {
             case FOLD: round.fold(playerNum); break;
