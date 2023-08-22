@@ -2,6 +2,7 @@
 
 #include <opencv4/opencv2/highgui.hpp>
 
+#include <fmt/core.h>
 #include <utilities/Time.hpp>
 
 #ifdef DISPLAY_OPENCV_IMG
@@ -24,8 +25,8 @@
 namespace Utilities::Image {
     using Time::getMsTimestamp;
 
-    static inline constexpr auto cvColorToString(const cv::Vec3b& color) -> std::string {
-        return "(" + std::to_string(color[0]) + ", " + std::to_string(color[1]) + ", " + std::to_string(color[2]) + ")";
+    static inline constexpr auto cvColorToString(const cv::Vec3b& color, std::string_view colorSpace = "BGR") -> std::string {
+        return fmt::format("{}({}, {}, {})", colorSpace, color[0], color[1], color[2]);
     }
 
     static inline auto writeLogPlayerImage(const cv::Mat&   image,

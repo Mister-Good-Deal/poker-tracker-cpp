@@ -17,14 +17,15 @@ namespace OCR {
     using GameHandler::RoundAction;
     using GameHandler::UnknownCardRankException;
     using std::chrono::seconds;
+    using Utilities::Image::cvColorToString;
 
     using ActionType = RoundAction::ActionType;
     using intRange   = std::pair<int32_t, int32_t>;
 
     class UnknownCardSuitException : public std::exception {
         public:
-            explicit UnknownCardSuitException(const cv::Vec3b& pixel) :
-              _pixel(pixel), _message(fmt::format("Unknown card suit (pixel: {})", Utilities::Image::cvColorToString(pixel))) {}
+            explicit UnknownCardSuitException(const cv::Vec3b& pixel, std::string_view colorSpace) :
+              _pixel(pixel), _message(fmt::format("Unknown card suit, pixel = {})", cvColorToString(pixel, colorSpace))) {}
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return _message.c_str(); }
 
@@ -91,23 +92,27 @@ namespace OCR {
     class CannotReadPlayerCardRankImageException : public CannotReadPlayerCardImageException {
         public:
             explicit CannotReadPlayerCardRankImageException(UnknownCardRankException exception, const cv::Mat& image) :
-              CannotReadPlayerCardImageException(image), _exception(std::move(exception)) {}
+              CannotReadPlayerCardImageException(image), _message(fmt::format("Cannot read player card. {}", _exception.what())),
+              _exception(std::move(exception)) {}
 
-            [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read player card rank"; }
+            [[nodiscard]] auto what() const noexcept -> const char* override { return _message.c_str(); }
 
         private:
             UnknownCardRankException _exception;
+            std::string              _message;
     };
 
     class CannotReadPlayerCardSuitImageException : public CannotReadPlayerCardImageException {
         public:
             explicit CannotReadPlayerCardSuitImageException(UnknownCardSuitException exception, const cv::Mat& image) :
-              CannotReadPlayerCardImageException(image), _exception(std::move(exception)) {}
+              CannotReadPlayerCardImageException(image), _message(fmt::format("Cannot read player card. {}", _exception.what())),
+              _exception(std::move(exception)) {}
 
-            [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read player card suit"; }
+            [[nodiscard]] auto what() const noexcept -> const char* override { return _message.c_str(); }
 
         private:
             UnknownCardSuitException _exception;
+            std::string              _message;
     };
 
     class CannotReadBoardCardImageException : public ExceptionWithImage {
