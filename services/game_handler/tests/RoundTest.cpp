@@ -618,6 +618,96 @@ TEST(RoundTest, case6JsonRepresentationShouldBeCorrect) {
     EXPECT_JSON_EQ(expectedJson, round.toJson());
 }
 
+TEST(RoundTest, case7JsonRepresentationShouldBeCorrect) {
+    Player player1("player 1", 1);
+    Player player2("player 2", 2);
+    Player player3("player 3", 3);
+
+    player1.setStack(340);
+    player2.setStack(330);
+    player3.setStack(230);
+
+    std::array<Player, 3> players = {player1, player2, player3};
+
+    Round round(Blinds{10, 20}, players, {card("5C"), card("KH")}, 2);
+
+    // Run a scenario
+
+    // Pre-flop
+    round.raise(2, 330);
+    round.call(3);
+    round.fold(1);
+
+    // Flop
+    round.getBoard().setFlop({card("6C"), card("9S"), card("6H")});
+
+    // Turn
+    round.getBoard().setTurn(card("2S"));
+
+    // River
+    round.getBoard().setRiver(card("3C"));
+
+    // Showdown
+    EXPECT_TRUE(round.waitingShowdown());
+
+    round.setPlayerHand({card("KS"), card("7S")}, 2);
+    round.setPlayerHand({card("8D"), card("8C")}, 3);
+    round.showdown();
+
+    // language=json
+    auto expectedJson = R"(
+        {
+            "actions": {
+                "pre_flop": [
+                    { "action": "Raise", "player": "player_2", "elapsed_time": 0, "amount": 330 },
+                    { "action": "Call", "player": "player_3", "elapsed_time": 0, "amount": 220 },
+                    { "action": "Fold", "player": "player_1", "elapsed_time": 0 }
+                ],
+                "flop": [],
+                "turn": [],
+                "river": []
+            },
+            "board": [
+                { "shortName": "6C", "rank": "Six", "suit": "Club" },
+                { "shortName": "9S", "rank": "Nine", "suit": "Spade" },
+                { "shortName": "6H", "rank": "Six", "suit": "Heart" },
+                { "shortName": "2S", "rank": "Two", "suit": "Spade" },
+                { "shortName": "3C", "rank": "Three", "suit": "Club" }
+            ],
+            "hands": {
+                "player_1": [
+                    { "shortName": "5C", "rank": "Five", "suit": "Club" },
+                    { "shortName": "KH", "rank": "King", "suit": "Heart" }
+                ],
+                "player_2": [
+                    { "shortName": "KS", "rank": "King", "suit": "Spade" },
+                    { "shortName": "7S", "rank": "Seven", "suit": "Spade" }
+                ],
+                "player_3": [
+                    { "shortName": "8D", "rank": "Eight", "suit": "Diamond" },
+                    { "shortName": "8C", "rank": "Eight", "suit": "Club" }
+                ]
+            },
+            "pot": 580,
+            "blinds": { "small": 10, "big": 20 },
+            "won": false,
+            "positions": {
+                "dealer": "player_2",
+                "small_blind": "player_3",
+                "big_blind": "player_1"
+            },
+            "ranking": [["player_3"], ["player_2"], ["player_1"]],
+            "stacks": [
+                { "player": "player_1", "stack": 320, "balance": -20 },
+                { "player": "player_2", "stack": 100, "balance": -230 },
+                { "player": "player_3", "stack": 480, "balance": 250 }
+            ]
+        }
+    )"_json;
+
+    EXPECT_JSON_EQ(expectedJson, round.toJson());
+}
+
 TEST(RoundTest, GeneratedByAI_case1JsonRepresentationShouldBeCorrect) {
     Player player1("player 1", 1);
     Player player2("player 2", 2);
