@@ -32,6 +32,7 @@ namespace OCR {
             [[nodiscard]] auto getSuitCardArea() const -> cv::Rect override;
             [[nodiscard]] auto hasButton(const cv::Mat& buttonImage) const -> bool override;
             [[nodiscard]] auto hasFolded(const cv::Mat& handImage) const -> bool override;
+            [[nodiscard]] auto isAllIn(const cv::Mat& playerStackImg) const -> bool override;
             [[nodiscard]] auto readAverageStack(const cv::Mat& averageStackImage) const -> int32_t override;
             [[nodiscard]] auto readBigBlind(const cv::Mat& blindRangeImage) const -> int32_t override;
             [[nodiscard]] auto readBlindLevel(const cv::Mat& blindLevelImage) const -> int32_t override;
@@ -55,6 +56,7 @@ namespace OCR {
             auto _extractWhiteTextDarkBackground(cv::Mat& img) const -> cv::Mat&;
             auto _extractWhiteTextLightBackground(cv::Mat& img) const -> cv::Mat&;
             auto _extractYellowText(cv::Mat& img) const -> cv::Mat&;
+            auto _extractRedText(cv::Mat& img) const -> cv::Mat&;
             auto _colorRangeThreshold(cv::Mat& img, const cv::Scalar& colorLower, const cv::Scalar& colorUpper) const -> cv::Mat&;
             auto _trimSalt(cv::Mat& img, int32_t minClusterSize = DEFAULT_MIN_CLUSTER_SIZE) const -> cv::Mat&;
             auto _applyDilation(cv::Mat& img, int32_t kernelSize = DEFAULT_DILATATION_KERNEL_SIZE) const -> cv::Mat&;

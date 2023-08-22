@@ -183,6 +183,12 @@ TEST(WinamaxOcrTest, playerHasFoldedShouldWork) {
     EXPECT_FALSE(Env::winamaxOcr().hasFolded(cardsSkin));
 }
 
+TEST(WinamaxOcrTest, playerIsAllInShouldWork) {
+    auto stack = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/all_in.png");
+
+    EXPECT_TRUE(Env::winamaxOcr().isAllIn(stack));
+}
+
 TEST(WinamaxOcrTest, playerButtonDetectionShouldWork) {
     auto button   = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/screen_btn.png");
     auto noButton = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/screen_no_btn.png");

@@ -176,6 +176,10 @@ namespace OCR {
     auto WinamaxOcr::getButtonImg() const -> cv::Mat { return cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/" + DEFAULT_BUTTON_IMG); }
     auto WinamaxOcr::hasFolded(const cv::Mat& handImage) const -> bool { return !isSimilar(handImage, _cardsSkin); }
 
+    auto WinamaxOcr::isAllIn(const cv::Mat& playerStackImg) const -> bool {
+        return readWord(_extractRedText(*_resizedImage(playerStackImg))) == "ALL-IN";
+    }
+
     // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
     auto WinamaxOcr::getRankCardArea() const -> cv::Rect { return {0, 0, 20, 23}; }
     auto WinamaxOcr::getSuitCardArea() const -> cv::Rect { return {2, 25, 14, 16}; }
@@ -196,6 +200,11 @@ namespace OCR {
     auto WinamaxOcr::_extractYellowText(cv::Mat& img) const -> cv::Mat& {
         return _colorRangeThreshold(img, {20, 100, 100}, {30, 255, 255});
     }
+
+    auto WinamaxOcr::_extractRedText(cv::Mat& img) const -> cv::Mat& {
+        return _colorRangeThreshold(img, {170, 100, 100}, {180, 255, 255});
+    }
+
     // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
 
     auto WinamaxOcr::_colorRangeThreshold(cv::Mat& img, const cv::Scalar& colorLower, const cv::Scalar& colorUpper) const -> cv::Mat& {

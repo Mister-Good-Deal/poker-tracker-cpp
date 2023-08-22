@@ -240,6 +240,7 @@ namespace OCR {
             [[nodiscard]] virtual auto readSmallBlind(const cv::Mat& blindRangeImage) const -> int32_t       = 0;
             [[nodiscard]] virtual auto hasFolded(const cv::Mat& handImage) const -> bool                     = 0;
             [[nodiscard]] virtual auto hasButton(const cv::Mat& buttonImage) const -> bool                   = 0;
+            [[nodiscard]] virtual auto isAllIn(const cv::Mat& playerStackImg) const -> bool                  = 0;
 
             [[nodiscard]] virtual auto readBoardCard(const cv::Mat& cardImage) const -> Card;
             [[nodiscard]] virtual auto readPlayerCard(const cv::Mat& cardImage) const -> Card;
