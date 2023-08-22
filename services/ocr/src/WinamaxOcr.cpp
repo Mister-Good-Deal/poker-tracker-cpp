@@ -5,6 +5,7 @@
 #include <utilities/Strings.hpp>
 
 namespace OCR {
+    using std::min;
     using Utilities::Strings::InvalidNumberException;
 
     using Logger = Logger::Quill;
@@ -64,29 +65,36 @@ namespace OCR {
     }
 
     auto WinamaxOcr::readCardSuit(const cv::Mat& suitImage) const -> Card::Suit {
-        const int32_t COLOR_INTENSITY_THRESHOLD = 130;
-        const auto    BLACK_INTENSITY_THRESHOLD = std::make_tuple(20, 20, 20);
-        // Winamax BGR color format
-        const cv::Vec3i HEART_COLOR   = {27, 6, 177};   // Red
-        const cv::Vec3i DIAMOND_COLOR = {131, 49, 12};  // Blue
-        const cv::Vec3i CLUB_COLOR    = {46, 138, 0};   // Green
-        const cv::Vec3i SPADE_COLOR   = {0, 0, 0};      // Black
+        // OpenCV uses HSV values in the range: H: 0-180, S: 0-255, V: 0-255
+        const cv::Vec3b HEART_COLOR   = {0, 255, 255};    // Red
+        const cv::Vec3b DIAMOND_COLOR = {120, 255, 255};  // Blue
+        const cv::Vec3b CLUB_COLOR    = {55, 255, 255};   // Green
+        const cv::Vec3b SPADE_COLOR   = {0, 0, 0};        // Black
 
-        auto middlePixelColor  = suitImage.at<cv::Vec3b>(suitImage.cols / 2, suitImage.rows / 2);
-        auto middlePixelColorB = static_cast<int32_t>(middlePixelColor[0]);
-        auto middlePixelColorG = static_cast<int32_t>(middlePixelColor[1]);
-        auto middlePixelColorR = static_cast<int32_t>(middlePixelColor[2]);
+        const int32_t MAX_HUE_VALUE        = 180;  // The maximum Hue value in openCV color space
+        const int32_t LUMINOSITY_THRESHOLD = 10;   // Lower will be darker
+        const int32_t COLOR_THRESHOLD      = 17;   // This represents the hue 'cone'
 
-        if (middlePixelColorR >= COLOR_INTENSITY_THRESHOLD) {
+        cv::Mat hsvImage;
+
+        cv::cvtColor(suitImage, hsvImage, cv::COLOR_BGR2HSV);
+
+        auto middlePixelColor = hsvImage.at<cv::Vec3b>(suitImage.cols / 2, suitImage.rows / 2);
+
+        // Check the luminosity (V value)
+        if (middlePixelColor[2] < LUMINOSITY_THRESHOLD) { return SPADE; }  // Black
+
+        // Check the hue (H value) within the cylindrical HSV color model
+        int hue = middlePixelColor[0];
+
+        if (min(abs(hue - HEART_COLOR[0]), MAX_HUE_VALUE - abs(hue - HEART_COLOR[0])) < COLOR_THRESHOLD) {  // Red
             return HEART;
-        } else if (middlePixelColorB >= COLOR_INTENSITY_THRESHOLD) {
+        } else if (min(abs(hue - DIAMOND_COLOR[0]), MAX_HUE_VALUE - abs(hue - DIAMOND_COLOR[0])) < COLOR_THRESHOLD) {  // Blue
             return DIAMOND;
-        } else if (middlePixelColorG >= COLOR_INTENSITY_THRESHOLD) {
+        } else if (min(abs(hue - CLUB_COLOR[0]), MAX_HUE_VALUE - abs(hue - CLUB_COLOR[0])) < COLOR_THRESHOLD) {  // Green
             return CLUB;
-        } else if (std::tie(middlePixelColorB, middlePixelColorG, middlePixelColorR) <= BLACK_INTENSITY_THRESHOLD) {
-            return SPADE;
         } else {
-            throw UnknownCardSuitException(middlePixelColor);
+            throw UnknownCardSuitException(middlePixelColor, "HSV");
         }
     }
 
@@ -97,7 +105,7 @@ namespace OCR {
 
         if (action == "CALL") {
             return CALL;
-        } else if (action == "CHECK") {
+        } else if (action == "CHECK" || action == "MONTRE") {
             return CHECK;
         } else if (action == "FOLD") {
             return FOLD;
