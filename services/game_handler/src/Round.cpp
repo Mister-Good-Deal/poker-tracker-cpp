@@ -140,15 +140,7 @@ namespace GameHandler {
 
     auto Round::getCurrentPlayerStack(int32_t playerNum) const -> int32_t { return _getPlayerStatus(playerNum).getStack(); }
 
-    auto Round::allPlayersAreAllIn() const -> bool {
-        return all_of(*_playersStatus, [](const PlayerStatus& player) { return player.isAllIn; });
-    }
-
-    auto Round::waitingShowdown() const -> bool {
-        return !_ended
-            && (_currentStreet == Street::SHOWDOWN
-                || (_isStreetOver() && any_of(*_playersStatus, [](const PlayerStatus& player) { return player.isAllIn; })));
-    }
+    auto Round::waitingShowdown() const -> bool { return !_ended && _currentStreet == Street::SHOWDOWN; }
 
     auto Round::toJson() const -> json {
         if (_ranking.empty()) { throw std::runtime_error("The round's ranking has not been set"); }
@@ -273,12 +265,17 @@ namespace GameHandler {
     auto Round::_endStreet() -> void {
         _updatePlayersMaxWinnable();
 
+        auto playersInRound = count_if(*_playersStatus, [](const PlayerStatus& player) { return player.inRound; });
+        auto playersAllIn   = count_if(*_playersStatus, [](const PlayerStatus& player) { return player.isAllIn; });
+
+        if (playersInRound >= 2 && playersInRound - playersAllIn <= 1) { _currentStreet = SHOWDOWN; }
+
         switch (_currentStreet) {
+            case SHOWDOWN: break;
             case PREFLOP: _currentStreet = FLOP; break;
             case FLOP: _currentStreet = TURN; break;
             case TURN: _currentStreet = RIVER; break;
             case RIVER: _currentStreet = SHOWDOWN; break;
-            case SHOWDOWN: break;
         }
 
         _determineRoundOver();
@@ -313,10 +310,10 @@ namespace GameHandler {
         for (const auto& playerStatus : *_playersStatus) {
             if (playerStatus.inRound) { players.push_back(playerStatus); }
         }
+        // Sort players by hand strength desc
+        sort(players, [&](const PlayerStatus& p1, const PlayerStatus& p2) { return _board.compareHands(p2.hand, p1.hand) > 0; });
 
-        sort(players, [&](const PlayerStatus& p1, const PlayerStatus& p2) { return _board.compareHands(p1.hand, p2.hand); });
-
-        // iterate through the players in round from last to first and add them to the _ranking stack
+        // Iterate through the players in round from last to first and add them to the _ranking stack
         for (auto& player : players) {
             if (!_ranking.empty() && players.size() > 1 && !_ranking.top().empty()
                 && _board.compareHands(player.hand, _getPlayerStatus(_ranking.top().front()).hand) == 0) {

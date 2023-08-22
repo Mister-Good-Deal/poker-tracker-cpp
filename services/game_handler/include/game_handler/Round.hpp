@@ -125,7 +125,6 @@ namespace GameHandler {
             [[nodiscard]] auto getPlayerHand(int32_t playerNum) const -> Hand { return _getPlayerStatus(playerNum).hand; }
             [[nodiscard]] auto getCurrentStreet() const -> Street { return _currentStreet; }
             [[nodiscard]] auto getCurrentPlayerNum() const -> int32_t { return _currentPlayerNum; }
-            [[nodiscard]] auto allPlayersAreAllIn() const -> bool;
 
             auto call(int32_t playerNum) -> void;
             auto bet(int32_t playerNum, int32_t amount) -> void;
