@@ -58,12 +58,12 @@ namespace GameSession {
                 case GAME_INFO_SETUP: _harvestGameInfo(*_currentScreenshot); [[fallthrough]];
                 case WAITING_NEW_ROUND: _waitNewRound(*_currentScreenshot); break;
                 case ROUND_IN_PROGRESS:
-                    _getStreetCards(*_currentScreenshot, round);
-
                     if (round.waitingShowdown()) {
                         _waitShowdown(*_currentScreenshot);
-                    } else if (_isNextActionTriggered(*_currentScreenshot)) {
-                        _trackCurrentRound(*_currentScreenshot);
+                    } else {
+                        _getStreetCards(*_currentScreenshot, round);  // Always get sure to get the street cards
+
+                        if (_isNextActionTriggered(*_currentScreenshot)) { _trackCurrentRound(*_currentScreenshot); }
                     }
 
                     [[fallthrough]];
@@ -292,10 +292,10 @@ namespace GameSession {
                 if (!round.getPlayerHand(playerNum).isSet()) {
                     try {
                         Hand hand;
-                        // When all players are all in, the cards are shown in the same position as hand, else they are shown lower
-                        if (round.allPlayersAreAllIn()) {
+                        // Cards can be a bit lowered when the hand loses, so we try to read both positions
+                        try {
                             hand = _ocr->readHand(_scraper.getPlayerHandImg(screenshot, playerNum));
-                        } else {
+                        } catch (const CannotReadPlayerCardImageException& e) {
                             hand = _ocr->readHand(_scraper.getPlayerCardsImg(screenshot, playerNum));
                         }
 
@@ -303,7 +303,7 @@ namespace GameSession {
 
                         LOG_INFO(Logger::getLogger(), "player {} hand: {}-{}", playerNum, hand.getCards()[0], hand.getCards()[1]);
                     } catch (const CannotReadPlayerCardImageException& e) {
-                        LOG_DEBUG(Logger::getLogger(), "{}. Player {}", playerNum, e.what());
+                        LOG_DEBUG(Logger::getLogger(), "{}. Player {}", e.what(), playerNum);
 
                         writeLogPlayerImage(e.getImage(), LOGS_DIR, e.getCategory(), playerNum);
 
