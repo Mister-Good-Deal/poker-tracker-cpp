@@ -123,6 +123,7 @@ namespace GameHandler {
             [[nodiscard]] auto waitingShowdown() const -> bool;
             [[nodiscard]] auto getInRoundPlayersNum() const -> std::vector<int32_t>;
             [[nodiscard]] auto getPlayerHand(int32_t playerNum) const -> Hand { return _getPlayerStatus(playerNum).hand; }
+            [[nodiscard]] auto getPlayerStreetBet(int32_t playerNum) const -> int32_t;
             [[nodiscard]] auto getCurrentStreet() const -> Street { return _currentStreet; }
             [[nodiscard]] auto getCurrentPlayerNum() const -> int32_t { return _currentPlayerNum; }
 

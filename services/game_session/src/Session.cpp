@@ -62,12 +62,13 @@ namespace GameSession {
                         _waitShowdown(*_currentScreenshot);
                     } else {
                         _getStreetCards(*_currentScreenshot, round);  // Always get sure to get the street cards
+                        // @todo verify the last street card(s) (could be misread on certain frames)
 
                         if (_isNextActionTriggered(*_currentScreenshot)) { _trackCurrentRound(*_currentScreenshot); }
                     }
 
                     [[fallthrough]];
-                case ENDED: break;
+                case ENDED: LOG_DEBUG(Logger::getLogger(), "Game ended\n{}", _game.toJson().dump(4)); break;
             }
 
             std::this_thread::sleep_for(_tickRate);
@@ -93,12 +94,18 @@ namespace GameSession {
     auto Session::_determinePlayerAction(const cv::Mat& screenshot, int32_t playerNum) -> void {
         auto& round = _game.getCurrentRound();
         // readPlayerBet may fail, so we keep the action until we can read the bet and reset the action to NONE in case of success
-        if (_currentAction == NONE) { // @todo check if this is needed
-            // Special case of all in, we can't read the action, so we check if the player stack is all in
-            if (_ocr->isAllIn(_scraper.getPlayerStackImg(screenshot, playerNum))) {
-                _currentAction = CALL;
-            } else {
+        if (_currentAction == NONE) {  // @todo check if this is needed
+            try {
                 _currentAction = _ocr->readGameAction(_scraper.getPlayerActionImg(screenshot, playerNum));
+            } catch (const CannotReadGameActionImageException& e) {
+                // Special case of all in, we can't read the action, so we check if the player stack is all in or if he just called
+                // @todo optimize this, get player stack and compare it to the current one
+                if (_ocr->isAllIn(_scraper.getPlayerStackImg(screenshot, playerNum))
+                    || _ocr->readPlayerBet(_scraper.getPlayerBetImg(screenshot, playerNum)) != round.getPlayerStreetBet(playerNum)) {
+                    _currentAction = CALL;
+                } else {
+                    throw;
+                }
             }
         }
 
@@ -156,6 +163,7 @@ namespace GameSession {
 
     auto Session::_getStreetCards(const cv::Mat& screenshot, const Round& round) -> void {
         try {
+            // @todo add a _flopVerified bool flag to check cards twice
             if (round.getCurrentStreet() >= FLOP && round.getBoard().isFlopEmpty()) { _getFlop(screenshot); }
             if (round.getCurrentStreet() >= TURN && round.getBoard().getTurn().isUnknown()) { _getTurn(screenshot); }
             if (round.getCurrentStreet() >= RIVER && round.getBoard().getRiver().isUnknown()) { _getRiver(screenshot); }
@@ -300,6 +308,7 @@ namespace GameSession {
                     try {
                         Hand hand;
                         // Cards can be a bit lowered when the hand loses, so we try to read both positions
+                        // @todo refactor this, make a getPlayerHandLowerImg with a height parameter
                         try {
                             hand = _ocr->readHand(_scraper.getPlayerHandImg(screenshot, playerNum));
                         } catch (const CannotReadPlayerCardImageException& e) {
@@ -307,6 +316,7 @@ namespace GameSession {
                         }
 
                         round.setPlayerHand(hand, playerNum);
+                        // @todo verify all board cards (could be misread on certain frames)
 
                         LOG_INFO(Logger::getLogger(), "player {} hand: {}-{}", playerNum, hand.getCards()[0], hand.getCards()[1]);
                     } catch (const CannotReadPlayerCardImageException& e) {

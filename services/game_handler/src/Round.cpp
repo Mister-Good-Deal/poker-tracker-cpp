@@ -126,8 +126,6 @@ namespace GameHandler {
         _determineStreetOver();
     }
 
-    auto Round::showdown() -> void { _endRound(); }
-
     auto Round::getInRoundPlayersNum() const -> std::vector<int32_t> {
         std::vector<int32_t> inRoundPlayersNum;
 
@@ -139,8 +137,9 @@ namespace GameHandler {
     }
 
     auto Round::getCurrentPlayerStack(int32_t playerNum) const -> int32_t { return _getPlayerStatus(playerNum).getStack(); }
-
+    auto Round::getPlayerStreetBet(int32_t playerNum) const -> int32_t { return _getPlayerStatus(playerNum).totalStreetBet; }
     auto Round::waitingShowdown() const -> bool { return !_ended && _currentStreet == Street::SHOWDOWN; }
+    auto Round::showdown() -> void { _endRound(); }
 
     auto Round::toJson() const -> json {
         if (_ranking.empty()) { throw std::runtime_error("The round's ranking has not been set"); }
