@@ -100,8 +100,6 @@ namespace OCR {
         removeChar(number, 'B');
         replaceChar(number, ',', '.');
 
-        LOG_DEBUG(Logger::getLogger(), "readFloatNumbers string: {}", number);
-
         return toFloat(number);
     }
 
