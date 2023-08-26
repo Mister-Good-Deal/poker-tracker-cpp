@@ -251,18 +251,9 @@ namespace OCR {
             [[nodiscard]] virtual auto readIntRange(const cv::Mat& intRangeImage) const -> intRange;
             [[nodiscard]] virtual auto readFloatNumbers(const cv::Mat& floatNumberImage) const -> double;
             [[nodiscard]] virtual auto readDuration(const cv::Mat& clockImage) const -> seconds;
-            [[nodiscard]] auto         isSimilar(const cv::Mat&  firstImage,
-                                                 const cv::Mat&  secondImage,
-                                                 double          threshold = SIMILARITY_THRESHOLD,
-                                                 cv::InputArray& mask      = cv::noArray()) const -> bool;
 
         protected:
-            auto _cropCentered(cv::Mat& firstImage, cv::Mat& secondImage) const -> void;
-
             [[nodiscard]] auto _cardOcr() const -> const cv::Ptr<OCRTesseract>& { return _tesseractCard; }
-            [[nodiscard]] auto _similarityScore(const cv::Mat&  firstImage,
-                                                const cv::Mat&  secondImage,
-                                                cv::InputArray& mask = cv::noArray()) const -> double;
 
         private:
             cv::Ptr<OCRTesseract> _tesseractCard;

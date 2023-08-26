@@ -6,6 +6,7 @@
 
 namespace OCR {
     using std::min;
+    using Utilities::Image::isSimilar;
     using Utilities::Strings::InvalidNumberException;
 
     using Logger = Logger::Quill;
@@ -174,7 +175,10 @@ namespace OCR {
     }
 
     auto WinamaxOcr::getButtonImg() const -> cv::Mat { return cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/" + DEFAULT_BUTTON_IMG); }
-    auto WinamaxOcr::hasFolded(const cv::Mat& handImage) const -> bool { return !isSimilar(handImage, _cardsSkin); }
+    
+    auto WinamaxOcr::hasFolded(const cv::Mat& handImage) const -> bool {
+        return !isSimilar(handImage, _cardsSkin, SIMILARITY_THRESHOLD);
+    }
 
     auto WinamaxOcr::isAllIn(const cv::Mat& playerStackImg) const -> bool {
         return readWord(_extractRedText(*_resizedImage(playerStackImg))) == "ALL-IN";
