@@ -18,7 +18,9 @@ namespace GameHandler {
 
     class UnknownCardRankException : public std::exception {
         public:
-            explicit UnknownCardRankException(char rank) : _rank(rank), _message(fmt::format("Unknown card rank `{}`", _rank)) {}
+            explicit UnknownCardRankException(char rank)
+              : _rank(rank)
+              , _message(fmt::format("Unknown card rank `{}`", _rank)) {}
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return _message.c_str(); }
 
@@ -55,10 +57,14 @@ namespace GameHandler {
             }
 
         public:
-            Card() : _rank(Rank::UNDEFINED), _suit(Suit::UNKNOWN){};
+            Card()
+              : _rank(Rank::UNDEFINED)
+              , _suit(Suit::UNKNOWN) {};
             Card(const Card& other)     = default;
             Card(Card&& other) noexcept = default;
-            Card(Rank rank, Suit suit) : _rank(rank), _suit(suit){};
+            Card(Rank rank, Suit suit)
+              : _rank(rank)
+              , _suit(suit) {};
 
             virtual ~Card() = default;
 

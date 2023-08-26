@@ -17,7 +17,8 @@ namespace OCR {
     using enum cv::text::ocr_engine_mode;
     using enum cv::text::page_seg_mode;
 
-    OcrInterface::OcrInterface(int32_t cardWidth) : _cardWidth(cardWidth) {
+    OcrInterface::OcrInterface(int32_t cardWidth)
+      : _cardWidth(cardWidth) {
         // DEFAULT datapath = "/usr/local/share/tessdata"
         _tesseractCard         = cv::text::OCRTesseract::create(nullptr, "eng", "0123456789TJQKA", OEM_CUBE_ONLY, PSM_SINGLE_CHAR);
         _tesseractWord         = cv::text::OCRTesseract::create(nullptr, "eng", ALL_CHARACTERS, OEM_CUBE_ONLY, PSM_SINGLE_BLOCK);

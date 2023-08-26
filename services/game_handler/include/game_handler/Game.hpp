@@ -10,7 +10,8 @@ namespace GameHandler {
 
     class invalid_player_name : public std::runtime_error {
         public:
-            explicit invalid_player_name(const std::string& arg) : runtime_error(arg){};
+            explicit invalid_player_name(const std::string& arg)
+              : runtime_error(arg) {};
     };
 
     class Game {

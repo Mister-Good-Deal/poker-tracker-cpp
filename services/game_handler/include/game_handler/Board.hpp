@@ -68,8 +68,8 @@ namespace GameHandler {
 
         private:
             board_t  _cards;
-            rank_f_t _rankFrequencies{};
-            suit_f_t _suitFrequencies{};
+            rank_f_t _rankFrequencies {};
+            suit_f_t _suitFrequencies {};
             bool     _possibleStraight  = false;
             bool     _possibleFlush     = false;
             bool     _possibleFlushDraw = false;

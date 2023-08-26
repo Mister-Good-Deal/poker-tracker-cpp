@@ -28,6 +28,8 @@ namespace Utilities::Image {
 
     using Logger = Logger::Quill;
 
+    static constexpr double SIMILARITY_THRESHOLD = 0.15;
+
     static inline constexpr auto cvColorToString(const cv::Vec3b& color, std::string_view colorSpace = "BGR") -> std::string {
         return fmt::format("{}({}, {}, {})", colorSpace, color[0], color[1], color[2]);
     }
@@ -108,8 +110,8 @@ namespace Utilities::Image {
 
     static inline auto isSimilar(const cv::Mat&  firstImage,
                                  const cv::Mat&  secondImage,
-                                 double          threshold,
-                                 cv::InputArray& mask = cv::noArray()) -> bool {
+                                 double          threshold = SIMILARITY_THRESHOLD,
+                                 cv::InputArray& mask      = cv::noArray()) -> bool {
         return similarityScore(firstImage, secondImage, mask) <= threshold;
     }
 }  // namespace Utilities::Image

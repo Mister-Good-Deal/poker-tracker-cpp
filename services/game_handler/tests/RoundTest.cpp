@@ -17,7 +17,7 @@ class RoundTest : public ::testing::Test {};
 // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
 // @todo Run the test in background to not slow down the CI
 TEST(RoundTest, DISABLED_jsonRepresentationWithTimingsShouldBeCorrect) {
-    auto blinds = Blinds{50, 100};
+    auto blinds = Blinds {50, 100};
     auto hand   = Hand(card("AH"), card("KH"));
 
     Player player1("player 1", 1);
@@ -195,7 +195,7 @@ TEST(RoundTest, case2JsonRepresentationShouldBeCorrect) {
 
     std::array<Player, 3> players = {player1, player2, player3};
 
-    Round round(Blinds{50, 100}, players, {card("AH"), card("KH")}, 1);
+    Round round(Blinds {50, 100}, players, {card("AH"), card("KH")}, 1);
 
     // Run a scenario
 
@@ -298,7 +298,7 @@ TEST(RoundTest, case3JsonRepresentationShouldBeCorrect) {
 
     std::array<Player, 3> players = {player1, player2, player3};
 
-    Round round(Blinds{50, 100}, players, {card("7C"), card("8C")}, 2);
+    Round round(Blinds {50, 100}, players, {card("7C"), card("8C")}, 2);
 
     // Run a scenario
 
@@ -398,7 +398,7 @@ TEST(RoundTest, case4JsonRepresentationShouldBeCorrect) {
 
     std::array<Player, 3> players = {player1, player2, player3};
 
-    Round round(Blinds{10, 20}, players, {card("TH"), card("9C")}, 2);
+    Round round(Blinds {10, 20}, players, {card("TH"), card("9C")}, 2);
 
     // Run a scenario
 
@@ -460,7 +460,7 @@ TEST(RoundTest, case5JsonRepresentationShouldBeCorrect) {
 
     std::array<Player, 3> players = {player1, player2, player3};
 
-    Round round(Blinds{10, 20}, players, {card("2H"), card("3C")}, 3);
+    Round round(Blinds {10, 20}, players, {card("2H"), card("3C")}, 3);
 
     // Run a scenario
 
@@ -526,7 +526,7 @@ TEST(RoundTest, case6JsonRepresentationShouldBeCorrect) {
 
     std::array<Player, 3> players = {player1, player2, player3};
 
-    Round round(Blinds{10, 20}, players, {card("5C"), card("KC")}, 1);
+    Round round(Blinds {10, 20}, players, {card("5C"), card("KC")}, 1);
 
     // Run a scenario
 
@@ -629,7 +629,7 @@ TEST(RoundTest, case7JsonRepresentationShouldBeCorrect) {
 
     std::array<Player, 3> players = {player1, player2, player3};
 
-    Round round(Blinds{10, 20}, players, {card("5C"), card("KH")}, 2);
+    Round round(Blinds {10, 20}, players, {card("5C"), card("KH")}, 2);
 
     // Run a scenario
 
@@ -719,7 +719,7 @@ TEST(RoundTest, GeneratedByAI_case1JsonRepresentationShouldBeCorrect) {
 
     std::array<Player, 3> players = {player1, player2, player3};
 
-    Round round(Blinds{50, 100}, players, {card("QC"), card("5H")}, 1);
+    Round round(Blinds {50, 100}, players, {card("QC"), card("5H")}, 1);
 
     // Run a scenario
 
@@ -836,7 +836,7 @@ TEST(RoundTest, GeneratedByAI_case6JsonRepresentationShouldBeCorrect) {
 
     std::array<Player, 3> players = {player1, player2, player3};
 
-    Round round(Blinds{50, 100}, players, {card("AD"), card("6H")}, 2);
+    Round round(Blinds {50, 100}, players, {card("AD"), card("6H")}, 2);
 
     // Run a scenario
 
@@ -924,7 +924,7 @@ TEST(RoundTest, GeneratedByAI_case11JsonRepresentationShouldBeCorrect) {
 
     std::array<Player, 3> players = {player1, player2, player3};
 
-    Round round(Blinds{50, 100}, players, {card("7D"), card("3C")}, 2);
+    Round round(Blinds {50, 100}, players, {card("7D"), card("3C")}, 2);
 
     // Run a scenario
 

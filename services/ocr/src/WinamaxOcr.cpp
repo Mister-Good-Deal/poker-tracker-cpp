@@ -14,9 +14,10 @@ namespace OCR {
     using enum GameHandler::Card::Suit;
     using enum ActionType;
 
-    WinamaxOcr::WinamaxOcr() :
-      _cardsSkin(cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards_skins/" + DEFAULT_CARD_SKIN)), _buttonImg(getButtonImg()),
-      OcrInterface(CARD_WIDTH) {}
+    WinamaxOcr::WinamaxOcr()
+      : _cardsSkin(cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards_skins/" + DEFAULT_CARD_SKIN))
+      , _buttonImg(getButtonImg())
+      , OcrInterface(CARD_WIDTH) {}
 
     auto WinamaxOcr::operator=(WinamaxOcr&& other) noexcept -> WinamaxOcr& {
         if (this != &other) {
@@ -67,10 +68,10 @@ namespace OCR {
 
     auto WinamaxOcr::readCardSuit(const cv::Mat& suitImage) const -> Card::Suit {
         // OpenCV uses HSV values in the range: H: 0-180, S: 0-255, V: 0-255
-        const cv::Vec3b HEART_COLOR   = {0, 255, 255};    // Red
-        const cv::Vec3b DIAMOND_COLOR = {120, 255, 255};  // Blue
-        const cv::Vec3b CLUB_COLOR    = {55, 255, 255};   // Green
-        const cv::Vec3b SPADE_COLOR   = {0, 0, 0};        // Black
+        const cv::Vec3b HEART_COLOR   = {0, 255, 255};                // Red
+        const cv::Vec3b DIAMOND_COLOR = {120, 255, 255};              // Blue
+        const cv::Vec3b CLUB_COLOR    = {55, 255, 255};               // Green
+        const cv::Vec3b SPADE_COLOR   = {0, 0, 0};                    // Black
 
         const int32_t MAX_HUE_VALUE   = 180;                          // The maximum Hue value in openCV color space
         const int32_t COLOR_THRESHOLD = 17;                           // This represents the hue 'cone'
@@ -88,11 +89,11 @@ namespace OCR {
         // Check the hue (H value) within the cylindrical HSV color model
         int hue = middlePixelColor[0];
 
-        if (min(abs(hue - HEART_COLOR[0]), MAX_HUE_VALUE - abs(hue - HEART_COLOR[0])) < COLOR_THRESHOLD) {  // Red
+        if (min(abs(hue - HEART_COLOR[0]), MAX_HUE_VALUE - abs(hue - HEART_COLOR[0])) < COLOR_THRESHOLD) {             // Red
             return HEART;
         } else if (min(abs(hue - DIAMOND_COLOR[0]), MAX_HUE_VALUE - abs(hue - DIAMOND_COLOR[0])) < COLOR_THRESHOLD) {  // Blue
             return DIAMOND;
-        } else if (min(abs(hue - CLUB_COLOR[0]), MAX_HUE_VALUE - abs(hue - CLUB_COLOR[0])) < COLOR_THRESHOLD) {  // Green
+        } else if (min(abs(hue - CLUB_COLOR[0]), MAX_HUE_VALUE - abs(hue - CLUB_COLOR[0])) < COLOR_THRESHOLD) {        // Green
             return CLUB;
         } else {
             throw UnknownCardSuitException(middlePixelColor, "HSV");
@@ -175,10 +176,7 @@ namespace OCR {
     }
 
     auto WinamaxOcr::getButtonImg() const -> cv::Mat { return cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/" + DEFAULT_BUTTON_IMG); }
-    
-    auto WinamaxOcr::hasFolded(const cv::Mat& handImage) const -> bool {
-        return !isSimilar(handImage, _cardsSkin, SIMILARITY_THRESHOLD);
-    }
+    auto WinamaxOcr::hasFolded(const cv::Mat& handImage) const -> bool { return !isSimilar(handImage, _cardsSkin); }
 
     auto WinamaxOcr::isAllIn(const cv::Mat& playerStackImg) const -> bool {
         return readWord(_extractRedText(*_resizedImage(playerStackImg))) == "ALL-IN";

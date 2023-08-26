@@ -24,8 +24,9 @@ namespace OCR {
 
     class UnknownCardSuitException : public std::exception {
         public:
-            explicit UnknownCardSuitException(const cv::Vec3b& pixel, std::string_view colorSpace) :
-              _pixel(pixel), _message(fmt::format("Unknown card suit, pixel = {})", cvColorToString(pixel, colorSpace))) {}
+            explicit UnknownCardSuitException(const cv::Vec3b& pixel, std::string_view colorSpace)
+              : _pixel(pixel)
+              , _message(fmt::format("Unknown card suit, pixel = {})", cvColorToString(pixel, colorSpace))) {}
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return _message.c_str(); }
 
@@ -36,8 +37,9 @@ namespace OCR {
 
     class ExceptionWithImage : public std::exception {
         public:
-            explicit ExceptionWithImage(const cv::Mat& image, std::string_view category) :
-              _image(image.clone()), _category(category) {}
+            explicit ExceptionWithImage(const cv::Mat& image, std::string_view category)
+              : _image(image.clone())
+              , _category(category) {}
 
             [[nodiscard]] auto getImage() const noexcept -> const cv::Mat& { return _image; }
             [[nodiscard]] auto getCategory() const noexcept -> const std::string& { return _category; }
@@ -49,51 +51,58 @@ namespace OCR {
 
     class CannotReadAverageStackImageException : public ExceptionWithImage {
         public:
-            explicit CannotReadAverageStackImageException(const cv::Mat& image) : ExceptionWithImage(image, "averageStack") {}
+            explicit CannotReadAverageStackImageException(const cv::Mat& image)
+              : ExceptionWithImage(image, "averageStack") {}
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read average stack"; }
     };
 
     class CannotReadBigBlindImageException : public ExceptionWithImage {
         public:
-            explicit CannotReadBigBlindImageException(const cv::Mat& image) : ExceptionWithImage(image, "bigBlind") {}
+            explicit CannotReadBigBlindImageException(const cv::Mat& image)
+              : ExceptionWithImage(image, "bigBlind") {}
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read big blind"; }
     };
 
     class CannotReadBlindLevelImageException : public ExceptionWithImage {
         public:
-            explicit CannotReadBlindLevelImageException(const cv::Mat& image) : ExceptionWithImage(image, "blindLevel") {}
+            explicit CannotReadBlindLevelImageException(const cv::Mat& image)
+              : ExceptionWithImage(image, "blindLevel") {}
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read blind level"; }
     };
 
     class CannotReadBlindLevelDurationImageException : public ExceptionWithImage {
         public:
-            explicit CannotReadBlindLevelDurationImageException(const cv::Mat& image) : ExceptionWithImage(image, "levelDuration") {}
+            explicit CannotReadBlindLevelDurationImageException(const cv::Mat& image)
+              : ExceptionWithImage(image, "levelDuration") {}
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read blind level duration"; }
     };
 
     class CannotReadBlindRangeImageException : public ExceptionWithImage {
         public:
-            explicit CannotReadBlindRangeImageException(const cv::Mat& image) : ExceptionWithImage(image, "blindRange") {}
+            explicit CannotReadBlindRangeImageException(const cv::Mat& image)
+              : ExceptionWithImage(image, "blindRange") {}
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read blind range"; }
     };
 
     class CannotReadPlayerCardImageException : public ExceptionWithImage {
         public:
-            explicit CannotReadPlayerCardImageException(const cv::Mat& image) : ExceptionWithImage(image, "player_card") {}
+            explicit CannotReadPlayerCardImageException(const cv::Mat& image)
+              : ExceptionWithImage(image, "player_card") {}
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read player card"; }
     };
 
     class CannotReadPlayerCardRankImageException : public CannotReadPlayerCardImageException {
         public:
-            explicit CannotReadPlayerCardRankImageException(UnknownCardRankException exception, const cv::Mat& image) :
-              CannotReadPlayerCardImageException(image), _message(fmt::format("Cannot read player card. {}", _exception.what())),
-              _exception(std::move(exception)) {}
+            explicit CannotReadPlayerCardRankImageException(UnknownCardRankException exception, const cv::Mat& image)
+              : CannotReadPlayerCardImageException(image)
+              , _message(fmt::format("Cannot read player card. {}", _exception.what()))
+              , _exception(std::move(exception)) {}
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return _message.c_str(); }
 
@@ -104,9 +113,10 @@ namespace OCR {
 
     class CannotReadPlayerCardSuitImageException : public CannotReadPlayerCardImageException {
         public:
-            explicit CannotReadPlayerCardSuitImageException(UnknownCardSuitException exception, const cv::Mat& image) :
-              CannotReadPlayerCardImageException(image), _message(fmt::format("Cannot read player card. {}", _exception.what())),
-              _exception(std::move(exception)) {}
+            explicit CannotReadPlayerCardSuitImageException(UnknownCardSuitException exception, const cv::Mat& image)
+              : CannotReadPlayerCardImageException(image)
+              , _message(fmt::format("Cannot read player card. {}", _exception.what()))
+              , _exception(std::move(exception)) {}
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return _message.c_str(); }
 
@@ -117,15 +127,17 @@ namespace OCR {
 
     class CannotReadBoardCardImageException : public ExceptionWithImage {
         public:
-            explicit CannotReadBoardCardImageException(const cv::Mat& image) : ExceptionWithImage(image, "board_card") {}
+            explicit CannotReadBoardCardImageException(const cv::Mat& image)
+              : ExceptionWithImage(image, "board_card") {}
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read board card"; }
     };
 
     class CannotReadBoardCardRankImageException : public CannotReadBoardCardImageException {
         public:
-            explicit CannotReadBoardCardRankImageException(UnknownCardRankException exception, const cv::Mat& image) :
-              CannotReadBoardCardImageException(image), _exception(std::move(exception)) {}
+            explicit CannotReadBoardCardRankImageException(UnknownCardRankException exception, const cv::Mat& image)
+              : CannotReadBoardCardImageException(image)
+              , _exception(std::move(exception)) {}
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read board card rank"; }
 
@@ -135,8 +147,9 @@ namespace OCR {
 
     class CannotReadBoardCardSuitImageException : public CannotReadBoardCardImageException {
         public:
-            explicit CannotReadBoardCardSuitImageException(UnknownCardSuitException exception, const cv::Mat& image) :
-              CannotReadBoardCardImageException(image), _exception(std::move(exception)) {}
+            explicit CannotReadBoardCardSuitImageException(UnknownCardSuitException exception, const cv::Mat& image)
+              : CannotReadBoardCardImageException(image)
+              , _exception(std::move(exception)) {}
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read board card suit"; }
 
@@ -146,8 +159,9 @@ namespace OCR {
 
     class CannotReadGameActionImageException : public ExceptionWithImage {
         public:
-            explicit CannotReadGameActionImageException(const cv::Mat& image, std::string_view action) :
-              ExceptionWithImage(image, "gameAction"), _action(action) {}
+            explicit CannotReadGameActionImageException(const cv::Mat& image, std::string_view action)
+              : ExceptionWithImage(image, "gameAction")
+              , _action(action) {}
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read game action"; }
 
@@ -157,58 +171,64 @@ namespace OCR {
 
     class CannotReadPlayerBetImageException : public ExceptionWithImage {
         public:
-            explicit CannotReadPlayerBetImageException(const cv::Mat& image) : ExceptionWithImage(image, "playerBet") {}
+            explicit CannotReadPlayerBetImageException(const cv::Mat& image)
+              : ExceptionWithImage(image, "playerBet") {}
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read player bet"; }
     };
 
     class CannotReadPlayerBetInBBImageException : public ExceptionWithImage {
         public:
-            explicit CannotReadPlayerBetInBBImageException(const cv::Mat& image) : ExceptionWithImage(image, "playerBetInBB") {}
+            explicit CannotReadPlayerBetInBBImageException(const cv::Mat& image)
+              : ExceptionWithImage(image, "playerBetInBB") {}
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read player bet in BB"; }
     };
 
     class CannotReadPlayerNameImageException : public ExceptionWithImage {
         public:
-            explicit CannotReadPlayerNameImageException(const cv::Mat& image) : ExceptionWithImage(image, "playerName") {}
+            explicit CannotReadPlayerNameImageException(const cv::Mat& image)
+              : ExceptionWithImage(image, "playerName") {}
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read player name"; }
     };
 
     class CannotReadPotImageException : public ExceptionWithImage {
         public:
-            explicit CannotReadPotImageException(const cv::Mat& image) : ExceptionWithImage(image, "pot") {}
+            explicit CannotReadPotImageException(const cv::Mat& image)
+              : ExceptionWithImage(image, "pot") {}
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read pot"; }
     };
 
     class CannotReadPotInBBImageException : public ExceptionWithImage {
         public:
-            explicit CannotReadPotInBBImageException(const cv::Mat& image) : ExceptionWithImage(image, "potInBB") {}
+            explicit CannotReadPotInBBImageException(const cv::Mat& image)
+              : ExceptionWithImage(image, "potInBB") {}
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read pot in BB"; }
     };
 
     class CannotReadPrizePoolImageException : public ExceptionWithImage {
         public:
-            explicit CannotReadPrizePoolImageException(const cv::Mat& image) : ExceptionWithImage(image, "prizePool") {}
+            explicit CannotReadPrizePoolImageException(const cv::Mat& image)
+              : ExceptionWithImage(image, "prizePool") {}
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read prize pool"; }
     };
 
     class CannotReadSmallBlindImageException : public ExceptionWithImage {
         public:
-            explicit CannotReadSmallBlindImageException(const cv::Mat& image) : ExceptionWithImage(image, "smallBlind") {}
+            explicit CannotReadSmallBlindImageException(const cv::Mat& image)
+              : ExceptionWithImage(image, "smallBlind") {}
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read small blind"; }
     };
 
     class OcrInterface {
         public:
-            static constexpr double      SIMILARITY_THRESHOLD = 0.15;
-            static constexpr int32_t     OCR_MIN_CONFIDENCE   = 30;  // @todo confidence between numbers 1 and 7 is really low
-            static constexpr const char* ALL_CHARACTERS       = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_ ";
+            static constexpr int32_t     OCR_MIN_CONFIDENCE = 30;  // @todo confidence between numbers 1 and 7 is really low
+            static constexpr const char* ALL_CHARACTERS     = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_ ";
 
             explicit OcrInterface(int32_t cardWidth);
             OcrInterface(const OcrInterface&) = default;

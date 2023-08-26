@@ -12,7 +12,8 @@
 namespace Utilities::Strings {
     class InvalidNumberException : public std::runtime_error {
         public:
-            explicit InvalidNumberException(const std::string& arg) : runtime_error(arg){};
+            explicit InvalidNumberException(const std::string& arg)
+              : runtime_error(arg) {};
     };
 
     static inline auto constexpr ltrim(std::string& s) -> void {

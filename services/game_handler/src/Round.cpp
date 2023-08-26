@@ -18,11 +18,16 @@ namespace GameHandler {
     using enum Round::Street;
     using enum RoundAction::ActionType;
 
-    Round::Round(const Blinds& blinds, std::array<Player, 3>& players, Hand hand, int32_t dealerNumber) :
-      _blinds(blinds), _players(&players), _lastActionTime(system_clock::now()), _hand(hand), _dealerNumber(dealerNumber),
-      _currentPlayerNum(dealerNumber),
-      _playersStatus(std::make_unique<players_status_t>(players_status_t{
-          {PlayerStatus{players[0], dealerNumber}, PlayerStatus{players[1], dealerNumber}, PlayerStatus{players[2], dealerNumber}}})) {
+    Round::Round(const Blinds& blinds, std::array<Player, 3>& players, Hand hand, int32_t dealerNumber)
+      : _blinds(blinds)
+      , _players(&players)
+      , _lastActionTime(system_clock::now())
+      , _hand(hand)
+      , _dealerNumber(dealerNumber)
+      , _currentPlayerNum(dealerNumber)
+      , _playersStatus(std::make_unique<players_status_t>(players_status_t {{PlayerStatus {players[0], dealerNumber},
+                                                                             PlayerStatus {players[1], dealerNumber},
+                                                                             PlayerStatus {players[2], dealerNumber}}})) {
         _getPlayerStatus(1).hand = std::move(hand);
         _payBlinds();
     }
@@ -86,10 +91,10 @@ namespace GameHandler {
         _lastAction    = _currentAction;
         _currentAction = _actions.at(_currentStreet).emplace_back(BET, player, _getAndResetLastActionTime(), amount);
         player.hasBet(amount);
-        _lastBetOrRaise    = amount;
+        _lastBetOrRaise   = amount;
         _pot              += amount;
         _streetPot        += amount;
-        _currentPlayerNum  = _getNextPlayerNum(_currentPlayerNum);
+        _currentPlayerNum = _getNextPlayerNum(_currentPlayerNum);
     }
 
     auto Round::raise(int32_t playerNum, int32_t amount) -> void {
@@ -99,10 +104,10 @@ namespace GameHandler {
         _lastAction    = _currentAction;
         _currentAction = _actions.at(_currentStreet).emplace_back(RAISE, player, _getAndResetLastActionTime(), amount);
         player.hasRaised(amount);
-        _lastBetOrRaise    = amount;
+        _lastBetOrRaise   = amount;
         _pot              += computedAmount;
         _streetPot        += computedAmount;
-        _currentPlayerNum  = _getNextPlayerNum(_currentPlayerNum);
+        _currentPlayerNum = _getNextPlayerNum(_currentPlayerNum);
     }
 
     auto Round::check(int32_t playerNum) -> void {
@@ -121,7 +126,7 @@ namespace GameHandler {
         _lastAction    = _currentAction;
         _currentAction = _actions.at(_currentStreet).emplace_back(FOLD, player, _getAndResetLastActionTime());
         player.hasFolded();
-        _ranking.emplace(std::vector<int32_t>{player.getNumber()});
+        _ranking.emplace(std::vector<int32_t> {player.getNumber()});
 
         _determineStreetOver();
     }
@@ -318,7 +323,7 @@ namespace GameHandler {
                 && _board.compareHands(player.hand, _getPlayerStatus(_ranking.top().front()).hand) == 0) {
                 _ranking.top().emplace_back(player.getNumber());
             } else {
-                _ranking.emplace(std::vector<int32_t>{player.getNumber()});
+                _ranking.emplace(std::vector<int32_t> {player.getNumber()});
             }
         }
     }
@@ -330,9 +335,9 @@ namespace GameHandler {
         SBPlayer.payBlind(_blinds.SB());
         BBPlayer.payBlind(_blinds.BB());
 
-        _lastBetOrRaise  = _blinds.BB();  // @todo see complex scenario when BB Player cannot pay all the BB
+        _lastBetOrRaise = _blinds.BB();  // @todo see complex scenario when BB Player cannot pay all the BB
         _streetPot      += SBPlayer.totalBet + BBPlayer.totalBet;
-        _pot             = _streetPot;
+        _pot            = _streetPot;
     }
 
     auto Round::_updateStacks() -> void {

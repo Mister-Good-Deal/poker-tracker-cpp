@@ -5,7 +5,8 @@
 namespace OCR::Factory {
     class invalid_ocr : public std::runtime_error {
         public:
-            explicit invalid_ocr(const std::string& arg) : runtime_error(arg){};
+            explicit invalid_ocr(const std::string& arg)
+              : runtime_error(arg) {};
     };
 
     class OcrFactory {

@@ -13,7 +13,8 @@ namespace GameHandler {
 
     class invalid_hand : public std::runtime_error {
         public:
-            explicit invalid_hand(const std::string& arg) : runtime_error(arg){};
+            explicit invalid_hand(const std::string& arg)
+              : runtime_error(arg) {};
     };
 
     class Hand {

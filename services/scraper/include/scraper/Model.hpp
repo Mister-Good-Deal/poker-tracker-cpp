@@ -33,11 +33,16 @@ namespace Scraper {
 #ifdef _WIN32
             HWND ref;
 
-            WindowInfo(std::string_view title, HWND ref) : title(title), id(std::hash<std::string_view>{}(title), ref(ref)) {}
+            WindowInfo(std::string_view title, HWND ref)
+              : title(title)
+              , id(std::hash<std::string_view> {}(title), ref(ref)) {}
 #elif __linux__
             Window ref;
 
-            WindowInfo(std::string_view title, Window ref) : title(title), id(ref), ref(ref) {}
+            WindowInfo(std::string_view title, Window ref)
+              : title(title)
+              , id(ref)
+              , ref(ref) {}
 #endif
     };
 

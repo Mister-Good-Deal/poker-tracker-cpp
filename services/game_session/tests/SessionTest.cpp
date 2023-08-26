@@ -17,8 +17,8 @@ using sharedConstMat_t = Scraper::Model::sharedConstMat_t;
 
 class SessionMock : public Session {
     public:
-        SessionMock(const std::string_view& roomName, uint64_t windowId, windowSize_t windowSize) :
-          Session(roomName, windowId, windowSize) {}
+        SessionMock(const std::string_view& roomName, uint64_t windowId, windowSize_t windowSize)
+          : Session(roomName, windowId, windowSize) {}
 
         // Mocked methods
         MOCK_METHOD(sharedConstMat_t, _getScreenshot, (), (override));

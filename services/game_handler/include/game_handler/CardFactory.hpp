@@ -10,7 +10,8 @@ namespace GameHandler::Factory {
 
     class invalid_card : public std::runtime_error {
         public:
-            explicit invalid_card(const std::string& arg) : runtime_error(arg){};
+            explicit invalid_card(const std::string& arg)
+              : runtime_error(arg) {};
     };
 
     static const std::unordered_map<std::string, Card> CARD_PROTOTYPES = {

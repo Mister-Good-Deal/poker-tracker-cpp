@@ -157,7 +157,7 @@ namespace GameHandler {
     }
 
     auto Board::_computeRankFrequencies(std::optional<Hand> hand) -> rank_f_t {
-        rank_f_t frequences{};
+        rank_f_t frequences {};
 
         all_cards_t cards;
 
@@ -178,7 +178,7 @@ namespace GameHandler {
     }
 
     auto Board::_computeSuitFrequencies(std::optional<Hand> hand) -> suit_f_t {
-        suit_f_t frequences{};
+        suit_f_t frequences {};
 
         std::array<Card, BOARD_CARDS_NUMBER + HAND_CARDS_NUMBER> cards;
 

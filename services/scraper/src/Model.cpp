@@ -11,7 +11,9 @@ namespace Scraper {
 
     using Logger = Logger::Quill;
 
-    Model::Model(std::string_view roomName, windowSize_t windowSize) : _windowSize(windowSize), _roomName(roomName) {
+    Model::Model(std::string_view roomName, windowSize_t windowSize)
+      : _windowSize(windowSize)
+      , _roomName(roomName) {
         _loadDefaultModel();
     }
 
@@ -83,7 +85,7 @@ namespace Scraper {
 
 #elif __linux__
         Display*          display = XOpenDisplay(nullptr);
-        Window            parent{}, root{}, *children = nullptr;
+        Window            parent {}, root {}, *children = nullptr;
         XWindowAttributes attributes;
         uint32_t          childrenNumber = 0;
 

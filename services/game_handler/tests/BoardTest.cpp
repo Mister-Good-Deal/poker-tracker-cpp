@@ -396,7 +396,7 @@ TEST(BoardTest, straightFlushHandComparisonShouldBeCorrect) {
 
 TEST(BoardTest, HandsComparisonShouldBeCorrect) {
     Board board({card("6C"), card("9S"), card("6H"), card("2S"), card("3C")});
-    
+
     EXPECT_EQ(board.compareHands({card("KS"), card("7S")}, {card("8D"), card("8C")}), -1);
 }
 
