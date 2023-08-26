@@ -58,11 +58,11 @@ auto main() -> int {
 
             if (request->getQuery("window_id").empty()) { throw std::invalid_argument("window_id param is empty"); }
 
-            auto                  image = scraper.getScreenshot(std::stoul(request->getQuery("window_id").data()));
-            std::vector<uint32_t> buffer;
-            std::string           data;
+            auto               image = scraper.getScreenshot(std::stoul(request->getQuery("window_id").data()));
+            std::vector<uchar> buffer; // @todo originally it was std::vector<uint32_t> buffer;
+            std::string        data;
 
-            cv::imencode(".jpeg", image, buffer);
+            cv::imencode(".jpeg", *image, buffer);
 
             std::copy(buffer.cbegin(), buffer.cend(), std::back_inserter(data));
 
@@ -84,7 +84,7 @@ auto main() -> int {
 
             auto image = scraper.getScreenshot(std::stoul(request->getQuery("window_id").data()));
 
-            json windowInfo = {{"window", {{"width", image.cols}, {"height", image.rows}}}};
+            json windowInfo = {{"window", {{"width", image->cols}, {"height", image->rows}}}};
 
             response->writeHeader("Content-Type", "application/json")
                 ->writeHeader("Access-Control-Allow-Origin", "*")
@@ -145,6 +145,4 @@ auto main() -> int {
         json test = {{"message", fmt::format("test data {}", ++i)}};
         serverPtr->publish("test", test.dump());
     }
-
-    return EXIT_SUCCESS;
 }

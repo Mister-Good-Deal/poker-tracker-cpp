@@ -73,6 +73,7 @@ namespace GameHandler::Factory {
         {"AS", Card(ACE, SPADE)},
         // Undefined
         {"NA", Card(UNDEFINED, UNKNOWN)}};
+
     class CardFactory {
         public:
             CardFactory() = delete;

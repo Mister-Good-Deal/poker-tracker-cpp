@@ -3,6 +3,12 @@
 namespace GameHandler {
     using enum RoundAction::ActionType;
 
+    RoundAction::RoundAction(RoundAction::ActionType action, Player player, seconds time, int32_t amount)
+      : _action(action)
+      , _player(std::move(player))
+      , _time(time)
+      , _amount(amount) {}
+
     auto RoundAction::operator=(RoundAction&& other) noexcept -> RoundAction& {
         if (this != &other) {
             _action = other._action;
@@ -27,5 +33,4 @@ namespace GameHandler {
     auto RoundAction::_requiresAmount(ActionType action) const -> bool {
         return action == CALL || action == BET || action == RAISE || action == PAY_BIG_BLIND || action == PAY_SMALL_BLIND;
     }
-
 }  // namespace GameHandler

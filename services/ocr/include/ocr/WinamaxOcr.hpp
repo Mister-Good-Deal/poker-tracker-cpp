@@ -16,13 +16,8 @@ namespace OCR {
 
             WinamaxOcr();
             WinamaxOcr(const WinamaxOcr& other) = default;
-            WinamaxOcr(WinamaxOcr&& other) noexcept
-              : OcrInterface(std::move(other)) {
-                *this = std::move(other);
-            };
-            explicit WinamaxOcr(cv::Mat cardsSkin)
-              : _cardsSkin(std::move(cardsSkin))
-              , OcrInterface(CARD_WIDTH) {};
+            WinamaxOcr(WinamaxOcr&& other) noexcept;
+            explicit WinamaxOcr(cv::Mat cardsSkin);
 
             ~WinamaxOcr() final = default;
 

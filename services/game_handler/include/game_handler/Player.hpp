@@ -8,9 +8,7 @@ namespace GameHandler {
             Player()                        = default;
             Player(const Player& other)     = default;
             Player(Player&& other) noexcept = default;
-            Player(std::string_view name, int32_t number)
-              : _name(name)
-              , _number(number) {};
+            Player(std::string_view name, int32_t number);
 
             virtual ~Player() = default;
 

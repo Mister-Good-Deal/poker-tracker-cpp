@@ -57,14 +57,10 @@ namespace GameHandler {
             }
 
         public:
-            Card()
-              : _rank(Rank::UNDEFINED)
-              , _suit(Suit::UNKNOWN) {};
+            Card();
             Card(const Card& other)     = default;
             Card(Card&& other) noexcept = default;
-            Card(Rank rank, Suit suit)
-              : _rank(rank)
-              , _suit(suit) {};
+            Card(Rank rank, Suit suit);
 
             virtual ~Card() = default;
 
