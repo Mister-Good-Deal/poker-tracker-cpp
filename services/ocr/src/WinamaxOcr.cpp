@@ -7,7 +7,9 @@
 namespace OCR {
     using std::min;
     using Utilities::Image::isSimilar;
+    using Utilities::Image::writeLearningImage;
     using Utilities::Strings::InvalidNumberException;
+    using Utilities::Time::getMsTimestamp;
 
     using Logger = Logger::Quill;
 
@@ -23,7 +25,7 @@ namespace OCR {
       : OcrInterface(std::move(other)) {
         *this = std::move(other);
     }
-    
+
     WinamaxOcr::WinamaxOcr(cv::Mat cardsSkin)
       : _cardsSkin(std::move(cardsSkin))
       , OcrInterface(CARD_WIDTH) {}
@@ -136,7 +138,7 @@ namespace OCR {
             return readIntNumbers(_extractYellowText(*_resizedImage(playerBetImage)));
         } catch (const InvalidNumberException& e) { throw CannotReadPlayerBetImageException(playerBetImage); }
     }
-    
+
     auto WinamaxOcr::readPlayerStack(const cv::Mat& playerStackImage) const -> int32_t {
         try {
             return readIntNumbers(_extractYellowText(*_resizedImage(playerStackImage)));
@@ -150,9 +152,17 @@ namespace OCR {
     }
 
     auto WinamaxOcr::readPlayerName(const cv::Mat& playerNameImage) const -> std::string {
-        auto playerName = readWordByChar(_applyDilation(_trimSalt(_extractWhiteTextLightBackground(*_resizedImage(playerNameImage)))));
+        auto processedImg = _applyDilation(_trimSalt(_extractWhiteTextLightBackground(*_resizedImage(playerNameImage))));
+        auto playerName   = readWordByChar(processedImg);
 
-        if (playerName.empty()) { throw CannotReadPlayerNameImageException(playerNameImage); }
+        if (playerName.empty()) {
+            writeLearningImage(playerNameImage, LEARNING_DATA_DIR, "player_name", std::format("empty-{}", getMsTimestamp()));
+            writeLearningImage(processedImg, LEARNING_DATA_DIR, "player_name", std::format("empty-{}_processed", getMsTimestamp()));
+
+            throw CannotReadPlayerNameImageException(playerNameImage);
+        }
+
+        writeLearningImage(playerNameImage, LEARNING_DATA_DIR, "player_name", playerName);
 
         return playerName;
     }

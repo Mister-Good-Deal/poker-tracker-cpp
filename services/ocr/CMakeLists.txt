@@ -46,10 +46,11 @@ target_link_libraries(ocr PUBLIC logger utilities game_handler opencv_core openc
 # Resources and constants
 #-----------------------------------------------------------------------------------------------------------------------
 
-# Add the image file as a resource
 set(WINAMAX_IMAGES_DIR "${PROJECT_SOURCE_DIR}/resources/winamax")
+set(LEARNING_DATA_DIR "${PROJECT_SOURCE_DIR}/resources/learning_data")
 
 add_definitions(-DWINAMAX_IMAGES_DIR="${WINAMAX_IMAGES_DIR}")
+add_definitions(-DLEARNING_DATA_DIR="${LEARNING_DATA_DIR}")
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Tests

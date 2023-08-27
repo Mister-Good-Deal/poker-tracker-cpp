@@ -53,6 +53,20 @@ namespace Utilities::Image {
         cv::imwrite(fmt::format("{}/images/{}/_{}.png", logPath, category, getMsTimestamp()), image);
     }
 
+    static inline auto writeLearningImage(const cv::Mat&   image,
+                                          std::string_view learningPath,
+                                          std::string_view category,
+                                          std::string_view name) -> void {
+        std::filesystem::path            file(fmt::format("{}/images/{}/{}.png", learningPath, category, name));
+        std::filesystem::directory_entry directory(file.parent_path());
+
+        if (!std::filesystem::exists(file)) {
+            if (!directory.exists()) { std::filesystem::create_directory(directory); }
+
+            cv::imwrite(file, image);
+        }
+    }
+
     static inline auto writeImage(const cv::Mat& image, const std::filesystem::path& file) -> void {
         std::filesystem::directory_entry directory(file.root_directory());
 
