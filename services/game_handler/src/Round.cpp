@@ -91,10 +91,10 @@ namespace GameHandler {
         _lastAction    = _currentAction;
         _currentAction = _actions.at(_currentStreet).emplace_back(BET, player, _getAndResetLastActionTime(), amount);
         player.hasBet(amount);
-        _lastBetOrRaise   = amount;
+        _lastBetOrRaise    = amount;
         _pot              += amount;
         _streetPot        += amount;
-        _currentPlayerNum = _getNextPlayerNum(_currentPlayerNum);
+        _currentPlayerNum  = _getNextPlayerNum(_currentPlayerNum);
     }
 
     auto Round::raise(int32_t playerNum, int32_t amount) -> void {
@@ -104,10 +104,10 @@ namespace GameHandler {
         _lastAction    = _currentAction;
         _currentAction = _actions.at(_currentStreet).emplace_back(RAISE, player, _getAndResetLastActionTime(), amount);
         player.hasRaised(amount);
-        _lastBetOrRaise   = amount;
+        _lastBetOrRaise    = amount;
         _pot              += computedAmount;
         _streetPot        += computedAmount;
-        _currentPlayerNum = _getNextPlayerNum(_currentPlayerNum);
+        _currentPlayerNum  = _getNextPlayerNum(_currentPlayerNum);
     }
 
     auto Round::check(int32_t playerNum) -> void {
@@ -142,7 +142,6 @@ namespace GameHandler {
     }
 
     auto Round::getCurrentPlayerStack(int32_t playerNum) const -> int32_t { return _getPlayerStatus(playerNum).getStack(); }
-    auto Round::getPlayerStreetBet(int32_t playerNum) const -> int32_t { return _getPlayerStatus(playerNum).totalStreetBet; }
     auto Round::waitingShowdown() const -> bool { return !_ended && _currentStreet == Street::SHOWDOWN; }
     auto Round::showdown() -> void { _endRound(); }
 
@@ -223,21 +222,23 @@ namespace GameHandler {
         auto isInRound  = [](const PlayerStatus& player) { return player.inRound; };
         auto hasChecked = [](const PlayerStatus& player) { return !player.inRound || player.isAllIn || player.lastAction == CHECK; };
         auto hasPlayed  = [](const PlayerStatus& player) { return !player.inRound || player.isAllIn || player.lastAction != NONE; };
-
+        // All in players are considered in the round, hasPlayed and hasChecked
         auto roundPlayersCount    = count_if(*_playersStatus, isInRound);
         auto allPlayersPlayed     = all_of(*_playersStatus, hasPlayed);
         auto allPlayersHasChecked = all_of(*_playersStatus, hasChecked);
 
-        bool currentPlayerCalled       = _currentAction.getAction() == CALL;
-        bool currentPlayerFold         = _currentAction.getAction() == FOLD;
-        bool currentPlayerCalledOrFold = currentPlayerCalled || currentPlayerFold;
-        bool lastPlayerCalledOrFold    = _lastAction.getAction() == CALL || _lastAction.getAction() == FOLD;
+        bool currentPlayerCalled          = _currentAction.getAction() == CALL;
+        bool currentPlayerFold            = _currentAction.getAction() == FOLD;
+        bool currentPlayerCalledOrChecked = currentPlayerCalled || _currentAction.getAction() == CHECK;
+        bool currentPlayerDidNotRaise     = _lastAction.getAction() != RAISE && _lastAction.getAction() != BET;
+        bool lastPlayerCalledOrFold       = _lastAction.getAction() == CALL || _lastAction.getAction() == FOLD;
+        bool lastPlayerDidNotRaise        = _lastAction.getAction() != RAISE && _lastAction.getAction() != BET;
 
         // clang-format off
         return  roundPlayersCount == 1 
-            || (roundPlayersCount == 2 && allPlayersPlayed && currentPlayerCalled)
+            || (roundPlayersCount == 2 && allPlayersPlayed && currentPlayerCalledOrChecked)
             || (roundPlayersCount == 2 && allPlayersPlayed && currentPlayerFold && lastPlayerCalledOrFold)
-            || (roundPlayersCount == 3 && allPlayersPlayed && currentPlayerCalledOrFold && lastPlayerCalledOrFold)
+            || (roundPlayersCount == 3 && allPlayersPlayed && currentPlayerDidNotRaise && lastPlayerDidNotRaise)
             || allPlayersHasChecked;
         // clang-format on
     }
@@ -310,20 +311,20 @@ namespace GameHandler {
     auto Round::_processRanking() -> void {
         std::vector<PlayerStatus> players;
         players.reserve(_playersStatus->size());
-
+        // Add in round players to the players vector
         for (const auto& playerStatus : *_playersStatus) {
             if (playerStatus.inRound) { players.push_back(playerStatus); }
         }
         // Sort players by hand strength desc
         sort(players, [&](const PlayerStatus& p1, const PlayerStatus& p2) { return _board.compareHands(p2.hand, p1.hand) > 0; });
-
-        // Iterate through the players in round from last to first and add them to the _ranking stack
-        for (auto& player : players) {
-            if (!_ranking.empty() && players.size() > 1 && !_ranking.top().empty()
-                && _board.compareHands(player.hand, _getPlayerStatus(_ranking.top().front()).hand) == 0) {
-                _ranking.top().emplace_back(player.getNumber());
+        // Add the first player to the _ranking stack
+        _ranking.emplace(std::vector<int32_t> {players.front().getNumber()});
+        // Iterate through the rest of players in round from last to first and add them to the _ranking stack
+        for (int32_t i = 1; i < players.size(); ++i) {
+            if (_board.compareHands(players[i].hand, _getPlayerStatus(_ranking.top().front()).hand) == 0) {
+                _ranking.top().emplace_back(players[i].getNumber());
             } else {
-                _ranking.emplace(std::vector<int32_t> {player.getNumber()});
+                _ranking.emplace(std::vector<int32_t> {players[i].getNumber()});
             }
         }
     }
@@ -335,9 +336,9 @@ namespace GameHandler {
         SBPlayer.payBlind(_blinds.SB());
         BBPlayer.payBlind(_blinds.BB());
 
-        _lastBetOrRaise = _blinds.BB();  // @todo see complex scenario when BB Player cannot pay all the BB
+        _lastBetOrRaise  = _blinds.BB();  // @todo see complex scenario when BB Player cannot pay all the BB
         _streetPot      += SBPlayer.totalBet + BBPlayer.totalBet;
-        _pot            = _streetPot;
+        _pot             = _streetPot;
     }
 
     auto Round::_updateStacks() -> void {
