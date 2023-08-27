@@ -11,6 +11,7 @@ namespace OCR {
     using Utilities::Strings::toFloat;
     using Utilities::Strings::toInt;
     using Utilities::Strings::trim;
+    using Utilities::Image::writeLearningImage;
 
     using Logger = Logger::Quill;
 
@@ -33,8 +34,12 @@ namespace OCR {
         try {
             cv::Mat rankImage = cardImage(getRankCardArea());
             cv::Mat suitImage = cardImage(getSuitCardArea());
+            
+            Card card {readCardRank(rankImage), readCardSuit(suitImage)};
+            
+            writeLearningImage(cardImage, LEARNING_DATA_DIR, "card", fmt::format("{}", card));
 
-            return {readCardRank(rankImage), readCardSuit(suitImage)};
+            return card;
         } catch (const UnknownCardRankException& e) {
             throw CannotReadBoardCardRankImageException(e, cardImage);
         } catch (const UnknownCardSuitException& e) { throw CannotReadBoardCardSuitImageException(e, cardImage); }
@@ -54,8 +59,13 @@ namespace OCR {
     auto OcrInterface::readHand(const cv::Mat& handImage) const -> Hand {
         cv::Mat firstCardImage  = handImage({0, 0, _cardWidth, handImage.rows});
         cv::Mat secondCardImage = handImage({handImage.cols - _cardWidth, 0, _cardWidth, handImage.rows});
+        
+        Card firstCard = readPlayerCard(firstCardImage);
+        Card secondCard = readPlayerCard(secondCardImage);
+        
+        writeLearningImage(handImage, LEARNING_DATA_DIR, "hand", fmt::format("{}-{}", firstCard, secondCard));
 
-        return {readPlayerCard(firstCardImage), readPlayerCard(secondCardImage)};
+        return {firstCard, secondCard};
     }
 
     auto OcrInterface::readWord(const cv::Mat& wordImage) const -> std::string {
