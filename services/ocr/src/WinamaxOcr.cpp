@@ -136,6 +136,12 @@ namespace OCR {
             return readIntNumbers(_extractYellowText(*_resizedImage(playerBetImage)));
         } catch (const InvalidNumberException& e) { throw CannotReadPlayerBetImageException(playerBetImage); }
     }
+    
+    auto WinamaxOcr::readPlayerStack(const cv::Mat& playerStackImage) const -> int32_t {
+        try {
+            return readIntNumbers(_extractYellowText(*_resizedImage(playerStackImage)));
+        } catch (const InvalidNumberException& e) { throw CannotReadPlayerStackImageException(playerStackImage); }
+    }
 
     auto WinamaxOcr::readPlayerBetInBB(const cv::Mat& playerBetInBBImage) const -> double {
         try {

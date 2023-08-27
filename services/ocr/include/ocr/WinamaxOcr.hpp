@@ -43,6 +43,7 @@ namespace OCR {
             [[nodiscard]] auto readGameAction(const cv::Mat& actionImage) const -> ActionType override;
             [[nodiscard]] auto readPlayerBet(const cv::Mat& playerBetImage) const -> int32_t override;
             [[nodiscard]] auto readPlayerBetInBB(const cv::Mat& playerBetInBBImage) const -> double override;
+            [[nodiscard]] auto readPlayerStack(const cv::Mat& playerStackImage) const -> int32_t override;
             [[nodiscard]] auto readPlayerName(const cv::Mat& playerNameImage) const -> std::string override;
             [[nodiscard]] auto readPot(const cv::Mat& potImage) const -> int32_t override;
             [[nodiscard]] auto readPotInBB(const cv::Mat& potInBBImage) const -> double override;

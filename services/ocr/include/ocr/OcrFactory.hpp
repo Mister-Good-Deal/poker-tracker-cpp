@@ -3,10 +3,10 @@
 #include <ocr/OcrInterface.hpp>
 
 namespace OCR::Factory {
-    class invalid_ocr : public std::runtime_error {
+    class invalid_ocr : public std::invalid_argument {
         public:
             explicit invalid_ocr(const std::string& arg)
-              : runtime_error(arg) {};
+              : invalid_argument(arg) {};
     };
 
     class OcrFactory {

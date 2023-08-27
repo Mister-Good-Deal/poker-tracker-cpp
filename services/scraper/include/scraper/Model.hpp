@@ -178,11 +178,11 @@ namespace Scraper {
             auto getPlayerHandCoord(int32_t playerNum) const -> const cv::Rect&;
             auto getPlayerStackCoord(int32_t playerNum) const -> const cv::Rect&;
             // For the image extraction
-            auto getPlayerCardsImg(const cv::Mat& img, int32_t num) -> const cv::Mat { return img(getPlayerCardsCoord(num)); }
-            auto getPlayerHandImg(const cv::Mat& img, int32_t num) -> const cv::Mat { return img(getPlayerHandCoord(num)); }
             auto getPlayerActionImg(const cv::Mat& img, int32_t num) -> const cv::Mat { return img(getPlayerActionCoord(num)); }
             auto getPlayerBetImg(const cv::Mat& img, int32_t num) -> const cv::Mat { return img(getPlayerBetCoord(num)); }
             auto getPlayerButtonImg(const cv::Mat& img, int32_t num) -> const cv::Mat { return img(getPlayerButtonCoord(num)); }
+            auto getPlayerCardsImg(const cv::Mat& img, int32_t num) -> const cv::Mat { return img(getPlayerCardsCoord(num)); }
+            auto getPlayerHandImg(const cv::Mat& img, int32_t num) -> const cv::Mat { return img(getPlayerHandCoord(num)); }
             auto getPlayerStackImg(const cv::Mat& img, int32_t num) -> const cv::Mat { return img(getPlayerStackCoord(num)); }
 
             auto getActiveWindows() -> windows_t;

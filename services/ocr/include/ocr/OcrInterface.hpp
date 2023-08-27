@@ -184,6 +184,14 @@ namespace OCR {
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read player bet in BB"; }
     };
+    
+    class CannotReadPlayerStackImageException : public ExceptionWithImage {
+        public:
+            explicit CannotReadPlayerStackImageException(const cv::Mat& image)
+              : ExceptionWithImage(image, "playerStack") {}
+            
+            [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read player stack"; }
+    };
 
     class CannotReadPlayerNameImageException : public ExceptionWithImage {
         public:
@@ -253,6 +261,7 @@ namespace OCR {
             [[nodiscard]] virtual auto readGameAction(const cv::Mat& actionImage) const -> ActionType        = 0;
             [[nodiscard]] virtual auto readPlayerBet(const cv::Mat& playerBetImage) const -> int32_t         = 0;
             [[nodiscard]] virtual auto readPlayerBetInBB(const cv::Mat& playerBetInBBImage) const -> double  = 0;
+            [[nodiscard]] virtual auto readPlayerStack(const cv::Mat& playerStackImage) const -> int32_t     = 0;
             [[nodiscard]] virtual auto readPlayerName(const cv::Mat& playerNameImage) const -> std::string   = 0;
             [[nodiscard]] virtual auto readPot(const cv::Mat& potImage) const -> int32_t                     = 0;
             [[nodiscard]] virtual auto readPotInBB(const cv::Mat& potInBBImage) const -> double              = 0;
