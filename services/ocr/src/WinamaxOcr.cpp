@@ -8,6 +8,7 @@ namespace OCR {
     using std::min;
     using Utilities::Image::isSimilar;
     using Utilities::Image::writeLearningImage;
+    using Utilities::Strings::containsInCharacters;
     using Utilities::Strings::InvalidNumberException;
     using Utilities::Time::getMsTimestamp;
 
@@ -162,7 +163,10 @@ namespace OCR {
             throw CannotReadPlayerNameImageException(playerNameImage);
         }
 
-        writeLearningImage(playerNameImage, LEARNING_DATA_DIR, "player_name", playerName);
+        // Characters that are hard to read by OCR
+        if (containsInCharacters(playerName, "oO0Il_")) {
+            writeLearningImage(playerNameImage, LEARNING_DATA_DIR, "player_name", playerName);
+        }
 
         return playerName;
     }

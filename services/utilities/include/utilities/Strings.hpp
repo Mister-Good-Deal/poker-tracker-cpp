@@ -41,6 +41,14 @@ namespace Utilities::Strings {
         ltrim(s);
     }
 
+    static inline auto constexpr containsInCharacters(const std::string& str, const std::string& chars) -> bool {
+        for (const char& c : chars) {
+            if (str.find(c) != std::string::npos) { return true; }
+        }
+
+        return false;
+    }
+
     static inline auto constexpr toFloat(std::string_view s) -> double {
         double value = 0.0;
 
