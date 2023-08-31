@@ -9,7 +9,7 @@ namespace GameHandler {
 
     class RoundAction {
         public:
-            enum class ActionType : int32_t { CHECK = 0, CALL, BET, RAISE, FOLD, PAY_SMALL_BLIND, PAY_BIG_BLIND, NONE };
+            enum class ActionType : int32_t { CHECK = 0, CALL, BET, RAISE, FOLD, ALL_IN, PAY_SMALL_BLIND, PAY_BIG_BLIND, NONE };
 
             explicit RoundAction()                    = default;
             RoundAction(const RoundAction& other)     = default;
@@ -52,6 +52,7 @@ namespace fmt {
                     case RoundAction::ActionType::BET: name = "Bet"; break;
                     case RoundAction::ActionType::RAISE: name = "Raise"; break;
                     case RoundAction::ActionType::FOLD: name = "Fold"; break;
+                    case RoundAction::ActionType::ALL_IN: name = "All-in"; break;
                     case RoundAction::ActionType::PAY_SMALL_BLIND: name = "Pay small blind"; break;
                     case RoundAction::ActionType::PAY_BIG_BLIND: name = "Pay big blind"; break;
                     case RoundAction::ActionType::NONE: name = "None"; break;

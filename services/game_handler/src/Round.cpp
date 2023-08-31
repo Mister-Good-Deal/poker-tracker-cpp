@@ -131,6 +131,24 @@ namespace GameHandler {
         _determineStreetOver();
     }
 
+    auto Round::allIn(int32_t playerNum) -> void {
+        auto playerStack = _getPlayerStatus(playerNum).getStack();
+
+        if (_streetPot == 0) {
+            if (playerStack > _blinds.BB()) {
+                bet(playerNum, playerStack);
+            } else {
+                raise(playerNum, playerStack);
+            }
+        } else {
+            if (playerStack > _lastBetOrRaise) {
+                raise(playerNum, playerStack);
+            } else {
+                call(playerNum);
+            }
+        }
+    }
+
     auto Round::getInRoundPlayersNum() const -> std::vector<int32_t> {
         std::vector<int32_t> inRoundPlayersNum;
 

@@ -136,6 +136,7 @@ namespace GameHandler {
             auto raise(int32_t playerNum, int32_t amount) -> void;
             auto check(int32_t playerNum) -> void;
             auto fold(int32_t playerNum) -> void;
+            auto allIn(int32_t playerNum) -> void;
             auto showdown() -> void;
             auto setPlayerHand(const Hand& hand, int32_t playerNum) -> void { _getPlayerStatus(playerNum).hand = hand; }
 
