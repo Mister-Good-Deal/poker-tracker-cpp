@@ -16,7 +16,7 @@
     "player1Bet": {"height": 18, "topLeft": {"x": 308, "y": 353}, "width": 45},
     "player1Button": {"height": 22, "topLeft": {"x": 256, "y": 355}, "width": 22},
     "player1Name": {"height": 15, "topLeft": {"x": 288, "y": 412}, "width": 80},
-    "player1Stack": {"height": 19, "topLeft": {"x": 278, "y": 432}, "width": 100},
+    "player1Stack": {"height": 19, "topLeft": {"x": 278, "y": 428}, "width": 100},
     "player2Action": {"height": 14, "topLeft": {"x": 55, "y": 192}, "width": 100},
     "player2Bet": {"height": 18, "topLeft": {"x": 155, "y": 205}, "width": 45},
     "player2Button": {"height": 22, "topLeft": {"x": 172, "y": 157}, "width": 22},
