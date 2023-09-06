@@ -50,12 +50,12 @@ namespace GameSession {
     }
 
     auto Session::run() -> void {
-        _currentScreenshot = _getScreenshot();
-
         while (_gameStage != ENDED) {
-            DISPLAY_VIDEO("game", _scraper.getWindowElementsView(*_currentScreenshot));
+            _lastTick          = now();
+            _currentScreenshot = _getScreenshot();
+            auto& round        = _game.getCurrentRound();
 
-            auto& round = _game.getCurrentRound();
+            DISPLAY_VIDEO("game", _scraper.getWindowElementsView(*_currentScreenshot));
 
             switch (_gameStage) {
                 case STARTING: _waitGameStart(*_currentScreenshot); [[fallthrough]];
@@ -71,10 +71,8 @@ namespace GameSession {
                         _waitShowdown(*_currentScreenshot);
                     } else {
                         _getStreetCards(*_currentScreenshot, round);  // Always get sure to get the street cards
-                        // @todo verify the last street card(s) (could be misread on certain frames)
 
-                        if ((_actionTriggered && _currentAction != NONE) || _isNextActionTriggered(*_currentScreenshot)) {
-                            _actionTriggered = true;
+                        if (_currentAction != NONE || _isNextActionTriggered(*_currentScreenshot)) {
                             _trackCurrentRound(*_currentScreenshot);
                         }
                     }
@@ -83,9 +81,7 @@ namespace GameSession {
                 case ENDED: LOG_DEBUG(Logger::getLogger(), "Game ended\n{}", _game.toJson().dump(4)); break;
             }
 
-            std::this_thread::sleep_for(_tickRate);
-
-            _currentScreenshot = _getScreenshot();
+            std::this_thread::sleep_for(_tickRate - (now() - _lastTick));
         }
     }
 
@@ -107,33 +103,24 @@ namespace GameSession {
         auto& round = _game.getCurrentRound();
         // readPlayerBet may fail, so we keep the action until we can read the bet and reset the action to NONE in case of success
         if (_currentAction == NONE) {  // @todo check if this is needed
-            try {
+            if (_ocr->isAllIn(_scraper.getPlayerStackImg(screenshot, playerNum))) {
+                _currentAction = ALL_IN;
+            } else {
                 _currentAction = _ocr->readGameAction(actionImg);
-            } catch (const CannotReadGameActionImageException& e) {
-                auto playerStackImg = _scraper.getPlayerStackImg(screenshot, playerNum);
-                // Special case of all in, we can't read the action, so we check if the player is all in or if his stack changed
-                // @todo review this
-                if (_ocr->isAllIn(playerStackImg) || _ocr->readPlayerStack(playerStackImg) != round.getCurrentPlayerStack(playerNum)) {
-                    _currentAction = CALL;
-                } else {
-                    throw;
-                }
             }
         }
 
         if (_currentAction == BET || _currentAction == RAISE) {
             _playerBetImg.setCurrentImg(screenshot, playerNum);
 
-            if (!_playerBetImg.isChecked(playerNum)) {
-                LOG_DEBUG(Logger::getLogger(), "Player {} bet not checked", playerNum);
-                return;
-            }
+            if (!_playerBetImg.isChecked(playerNum)) { return; }
         }
 
         switch (_currentAction) {
             case FOLD: round.fold(playerNum); break;
             case CHECK: round.check(playerNum); break;
             case CALL: round.call(playerNum); break;
+            case ALL_IN: round.allIn(playerNum); break;
             case BET: round.bet(playerNum, _ocr->readPlayerBet(_playerBetImg.getImg(playerNum))); break;
             case RAISE: round.raise(playerNum, _ocr->readPlayerBet(_playerBetImg.getImg(playerNum))); break;
             default: throw std::runtime_error("Unknown action");  // Should never happen
@@ -144,7 +131,6 @@ namespace GameSession {
         _currentPlayerNum     = round.getCurrentPlayerNum();
         _lastWaitingActionImg = _scraper.getPlayerActionImg(screenshot, _currentPlayerNum);
         _currentAction        = NONE;
-        _actionTriggered      = false;
     }
 
     auto Session::_getButtonPosition(const cv::Mat& screenshot) -> int32_t {
@@ -162,15 +148,9 @@ namespace GameSession {
         _board2CardImg.setCurrentImg(screenshot);
         _board3CardImg.setCurrentImg(screenshot);
 
-        if (checkHasChanged && !_board3CardImg.hasChanged(screenshot)) {
-            LOG_DEBUG(Logger::getLogger(), "Flop cards have not changed");
-            return;
-        }
+        if (checkHasChanged && !_board3CardImg.hasChanged(screenshot)) { return; }
 
-        if (!_board1CardImg.isChecked() || !_board2CardImg.isChecked() || !_board3CardImg.isChecked()) {
-            LOG_DEBUG(Logger::getLogger(), "Flop cards are not checked");
-            return;
-        }
+        if (!_board1CardImg.isChecked() || !_board2CardImg.isChecked() || !_board3CardImg.isChecked()) { return; }
 
         auto card1 = _ocr->readBoardCard(_board1CardImg.getImg());
         auto card2 = _ocr->readBoardCard(_board2CardImg.getImg());
@@ -184,15 +164,9 @@ namespace GameSession {
     auto Session::_getTurn(const cv::Mat& screenshot, bool checkHasChanged) -> void {
         _board4CardImg.setCurrentImg(screenshot);
 
-        if (checkHasChanged && !_board4CardImg.hasChanged(screenshot)) {
-            LOG_DEBUG(Logger::getLogger(), "Turn card has not changed");
-            return;
-        }
+        if (checkHasChanged && !_board4CardImg.hasChanged(screenshot)) { return; }
 
-        if (!_board4CardImg.isChecked()) {
-            LOG_DEBUG(Logger::getLogger(), "Turn card is not checked");
-            return;
-        }
+        if (!_board4CardImg.isChecked()) { return; }
 
         auto card = _ocr->readBoardCard(_board4CardImg.getImg());
 
@@ -204,17 +178,10 @@ namespace GameSession {
     auto Session::_getRiver(const cv::Mat& screenshot, bool checkHasChanged) -> void {
         _board5CardImg.setCurrentImg(screenshot);
 
-        if (checkHasChanged && !_board4CardImg.hasChanged(screenshot)) {
-            LOG_DEBUG(Logger::getLogger(), "River card has not changed");
-            return;
-        }
+        if (checkHasChanged && !_board5CardImg.hasChanged(screenshot)) { return; }
 
-        if (!_board5CardImg.isChecked()) {
-            LOG_DEBUG(Logger::getLogger(), "River card is not checked");
-            return;
-        }
+        if (!_board5CardImg.isChecked()) { return; }
 
-        writeLogGameImage(_board5CardImg.getImg(), LOGS_DIR, "river_card");
         auto card = _ocr->readBoardCard(_board5CardImg.getImg());
 
         _game.getCurrentRound().getBoard().setRiver(card);
@@ -224,7 +191,6 @@ namespace GameSession {
 
     auto Session::_getStreetCards(const cv::Mat& screenshot, const Round& round) -> void {
         try {
-            // @todo add a _flopVerified bool flag to check cards twice
             if (round.getCurrentStreet() >= FLOP && round.getBoard().isFlopEmpty()) { _getFlop(screenshot); }
             if (round.getCurrentStreet() >= TURN && round.getBoard().getTurn().isUnknown()) { _getTurn(screenshot); }
             if (round.getCurrentStreet() >= RIVER && round.getBoard().getRiver().isUnknown()) { _getRiver(screenshot); }
@@ -274,20 +240,22 @@ namespace GameSession {
 
         _lastWaitingActionImg = currentActionImg;
 
+        if (isNextActionTriggered) { LOG_DEBUG(Logger::getLogger(), "Next action triggered"); }
+
         return isNextActionTriggered;
     }
 
     auto Session::_trackCurrentRound(const cv::Mat& screenshot) -> void {
         try {
             auto& round = _game.getCurrentRound();
-            // During the showdown process we must check if the round is over, @todo refactor this
-            if (round.isInProgress()) {
-                _playerActionImg.setCurrentImg(screenshot, _currentPlayerNum);
 
-                if (_playerActionImg.isChecked(_currentPlayerNum)) {
-                    _determinePlayerAction(screenshot, _playerActionImg.getImg(_currentPlayerNum), _currentPlayerNum);
-                }
-            }
+            _playerActionImg.setCurrentImg(screenshot, _currentPlayerNum);
+
+            if (!_playerActionImg.isChecked(_currentPlayerNum)) { LOG_DEBUG(Logger::getLogger(), "Action not checked"); }
+            
+            DISPLAY_IMAGE("player_action", _playerActionImg.getImg(_currentPlayerNum));
+            _determinePlayerAction(screenshot, _playerActionImg.getImg(_currentPlayerNum), _currentPlayerNum);
+
             // If the round is over, determine if the game is over or wait for a new round
             if (!round.isInProgress()) {
                 LOG_DEBUG(Logger::getLogger(), "Round recap:\n{}", round.toJson().dump(4));
@@ -296,8 +264,8 @@ namespace GameSession {
 
                 if (!_game.isOver()) { _gameStage = WAITING_NEW_ROUND; }
             }
-        } catch (const CannotReadGameActionImageException& e) {
-            // Should be CannotReadGameActionImageException or CannotReadPlayerBetImageException
+        } catch (const ExceptionWithImage& e) {
+            // Should be CannotReadGameActionImageException or CannotReadPlayerBetImageException or CannotReadPlayerStackImageException
             LOG_ERROR(Logger::getLogger(), "{}", e.what());
 
             writeLogPlayerImage(e.getImage(), LOGS_DIR, e.getCategory(), _currentPlayerNum);
@@ -351,6 +319,7 @@ namespace GameSession {
         } catch (const CannotFindButtonException& e) {
             LOG_DEBUG(Logger::getLogger(), "Waiting new round, cannot find the button");
         } catch (const CannotReadPlayerCardImageException& e) {
+            // @todo use double checked cards image ?
             LOG_DEBUG(Logger::getLogger(), "Waiting new round, hand not distributed");
         }
     }
@@ -387,7 +356,6 @@ namespace GameSession {
                         }
 
                         round.setPlayerHand(hand, playerNum);
-                        // @todo verify all board cards (could be misread on certain frames)
 
                         LOG_INFO(Logger::getLogger(), "player {} hand: {}-{}", playerNum, hand.getCards()[0], hand.getCards()[1]);
                     } catch (const CannotReadPlayerCardImageException& e) {

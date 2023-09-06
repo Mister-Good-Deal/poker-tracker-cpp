@@ -24,7 +24,7 @@ class SessionMock : public Session {
         MOCK_METHOD(sharedConstMat_t, _getScreenshot, (), (override));
 
         auto getNextFrame() -> sharedConstMat_t {
-            const int FAST_FORWARD = 40;
+            const int FAST_FORWARD = 35;
 
             if (!_video.isOpened()) {
                 if (!_video.open(std::string(WINAMAX_RESOURCES_DIR) + "/game_sample_3840x1080x8_25cts_2nd.mkv")) {

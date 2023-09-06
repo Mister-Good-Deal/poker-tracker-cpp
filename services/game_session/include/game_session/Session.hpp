@@ -17,6 +17,8 @@ namespace GameSession {
     using std::chrono::seconds;
     using Utilities::Image::isSimilar;
     using Utilities::Image::SIMILARITY_THRESHOLD;
+    using Utilities::Time::now;
+    using Utilities::Time::time_point;
 
     using sharedConstMat_t = Scraper::Model::sharedConstMat_t;
     using ActionType       = GameHandler::RoundAction::ActionType;
@@ -171,6 +173,7 @@ namespace GameSession {
 
         private:
             milliseconds                  _tickRate = TICK_RATE;
+            time_point                    _lastTick;
             std::string                   _roomName;
             uint64_t                      _windowId   = 0;
             windowSize_t                  _windowSize = {0, 0};
@@ -182,7 +185,6 @@ namespace GameSession {
             int32_t                       _currentButtonNum  = 0;
             int32_t                       _currentPlayerNum  = 0;
             ActionType                    _currentAction     = ActionType::NONE;
-            bool                          _actionTriggered   = false;
             bool                          _showdownTriggered = false;
             cv::Mat                       _lastWaitingActionImg;
             // All read images that we need to check if they are the same as the last frame
