@@ -53,7 +53,7 @@ namespace GameHandler {
 
                 totalBet       += payAmount;
                 totalStreetBet += payAmount;
-                isAllIn        = totalBet == initialStack;
+                isAllIn         = totalBet == initialStack;
 
                 setStack(initialStack - totalBet);
             }
@@ -61,17 +61,17 @@ namespace GameHandler {
             auto hasBet(int32_t amount) -> void {
                 totalBet       += amount;
                 totalStreetBet += amount;
-                isAllIn        = totalBet == initialStack;
-                lastAction     = ActionType::BET;
+                isAllIn         = totalBet == initialStack;
+                lastAction      = ActionType::BET;
 
                 setStack(initialStack - totalBet);
             }
 
             auto hasRaised(int32_t amount) -> void {
                 totalBet       += amount - totalStreetBet;
-                totalStreetBet = amount;
-                isAllIn        = totalBet == initialStack;
-                lastAction     = ActionType::RAISE;
+                totalStreetBet  = amount;
+                isAllIn         = totalBet == initialStack;
+                lastAction      = ActionType::RAISE;
 
                 setStack(initialStack - totalBet);
             }
@@ -79,8 +79,8 @@ namespace GameHandler {
             auto hasCalled(int32_t amount) -> void {
                 totalBet       += amount;
                 totalStreetBet += amount;
-                isAllIn        = totalBet == initialStack;
-                lastAction     = ActionType::CALL;
+                isAllIn         = totalBet == initialStack;
+                lastAction      = ActionType::CALL;
 
                 setStack(initialStack - totalBet);
             }

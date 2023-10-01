@@ -91,10 +91,10 @@ namespace GameHandler {
         _lastAction    = _currentAction;
         _currentAction = _actions.at(_currentStreet).emplace_back(BET, player, _getAndResetLastActionTime(), amount);
         player.hasBet(amount);
-        _lastBetOrRaise   = amount;
+        _lastBetOrRaise    = amount;
         _pot              += amount;
         _streetPot        += amount;
-        _currentPlayerNum = _getNextPlayerNum(_currentPlayerNum);
+        _currentPlayerNum  = _getNextPlayerNum(_currentPlayerNum);
     }
 
     auto Round::raise(int32_t playerNum, int32_t amount) -> void {
@@ -104,10 +104,10 @@ namespace GameHandler {
         _lastAction    = _currentAction;
         _currentAction = _actions.at(_currentStreet).emplace_back(RAISE, player, _getAndResetLastActionTime(), amount);
         player.hasRaised(amount);
-        _lastBetOrRaise   = amount;
+        _lastBetOrRaise    = amount;
         _pot              += computedAmount;
         _streetPot        += computedAmount;
-        _currentPlayerNum = _getNextPlayerNum(_currentPlayerNum);
+        _currentPlayerNum  = _getNextPlayerNum(_currentPlayerNum);
     }
 
     auto Round::check(int32_t playerNum) -> void {
@@ -354,9 +354,9 @@ namespace GameHandler {
         SBPlayer.payBlind(_blinds.SB());
         BBPlayer.payBlind(_blinds.BB());
 
-        _lastBetOrRaise = _blinds.BB();  // @todo see complex scenario when BB Player cannot pay all the BB
+        _lastBetOrRaise  = _blinds.BB();  // @todo see complex scenario when BB Player cannot pay all the BB
         _streetPot      += SBPlayer.totalBet + BBPlayer.totalBet;
-        _pot            = _streetPot;
+        _pot             = _streetPot;
     }
 
     auto Round::_updateStacks() -> void {
