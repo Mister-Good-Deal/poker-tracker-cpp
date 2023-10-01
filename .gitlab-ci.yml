@@ -161,17 +161,17 @@ test_ocr:
   needs:
     - build_linux
       
-test_scrapper:
+test_scraper:
   stage: test
   tags:
     - tests
   script:
     # @fixme Need to required tests for all subproject with --test-dir
-    - ctest --test-dir $BUILD_PATH_LINUX-release/services/scrapper --output-on-failure --extra-verbose -j ${MAX_MULTI_THREADS_CORE}
-      --output-junit scrapper_ctest.xml --no-compress-output
+    - ctest --test-dir $BUILD_PATH_LINUX-release/services/scraper --output-on-failure --extra-verbose -j ${MAX_MULTI_THREADS_CORE}
+      --output-junit scraper_ctest.xml --no-compress-output
   artifacts:
     reports:
-      junit: $BUILD_PATH_LINUX-release/services/scrapper/scrapper_ctest.xml
+      junit: $BUILD_PATH_LINUX-release/services/scraper/scraper_ctest.xml
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /\/(build|packaging)\-only/m
       when: never
