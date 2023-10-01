@@ -73,7 +73,7 @@ namespace OCR {
     }
 
     auto WinamaxOcr::readCardRank(const cv::Mat& rankImage) const -> Card::Rank {
-        auto rank = _cardOcr()->run(rankImage, OCR_MIN_CONFIDENCE);
+        auto rank = _cardOcr()->run(rankImage, OCR_RANK_CONFIDENCE);
 
         return Card::charToRank(rank[0]);
     }
@@ -82,12 +82,12 @@ namespace OCR {
         // OpenCV uses HSV values in the range: H: 0-180, S: 0-255, V: 0-255
         const cv::Vec3b HEART_COLOR   = {0, 255, 255};    // Red
         const cv::Vec3b DIAMOND_COLOR = {120, 255, 255};  // Blue
-        const cv::Vec3b CLUB_COLOR    = {55, 255, 255};   // Green
+        const cv::Vec3b CLUB_COLOR    = {65, 255, 255};   // Green
         const cv::Vec3b SPADE_COLOR   = {0, 0, 0};        // Black
 
         const int32_t MAX_HUE_VALUE   = 180;                          // The maximum Hue value in openCV color space
-        const int32_t COLOR_THRESHOLD = 17;                           // This represents the hue 'cone'
-        const auto    BLACK_THRESHOLD = std::make_tuple(20, 20, 20);  // Each max component value of the HSV color space
+        const int32_t COLOR_THRESHOLD = 15;                           // This represents the hue 'cone'
+        const auto    BLACK_THRESHOLD = std::make_tuple(15, 15, 15);  // Each max component value of the HSV color space
 
         cv::Mat hsvImage;
 

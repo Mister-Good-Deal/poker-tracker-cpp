@@ -30,6 +30,7 @@ class Env : public ::testing::Environment {
 class WinamaxOcrTest : public ::testing::Test {};
 
 TEST(WinamaxOcrTest, readCardRankShouldWork) {
+    // @todo add ten test to check ocr confidence between 10 (1) and 7
     auto two   = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/ranks/2.png");
     auto four  = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/ranks/4.png");
     auto five  = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/ranks/5.png");
@@ -78,12 +79,15 @@ TEST(WinamaxOcrTest, readCardShouldWork) {
     auto aceOfSpade      = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards/AS.png");
     auto twoOfHeart      = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards/2H.png");
     auto kingOfClub      = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards/KC.png");
+    auto unknown         = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards/unknown.png");
 
     EXPECT_EQ(Env::winamaxOcr().readPlayerCard(heightOfDiamond), card("8D"));
     EXPECT_EQ(Env::winamaxOcr().readPlayerCard(nineOfSpade), card("9S"));
     EXPECT_EQ(Env::winamaxOcr().readPlayerCard(aceOfSpade), card("AS"));
     EXPECT_EQ(Env::winamaxOcr().readPlayerCard(twoOfHeart), card("2H"));
     EXPECT_EQ(Env::winamaxOcr().readPlayerCard(kingOfClub), card("KC"));
+
+    EXPECT_ANY_THROW(auto readCard = Env::winamaxOcr().readPlayerCard(unknown));
 }
 
 TEST(WinamaxOcrTest, readActionShouldWork) {
