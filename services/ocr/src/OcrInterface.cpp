@@ -5,13 +5,13 @@
 #include <utilities/Strings.hpp>
 
 namespace OCR {
+    using Utilities::Image::writeLearningImage;
     using Utilities::Strings::fullTrim;
     using Utilities::Strings::removeChar;
     using Utilities::Strings::replaceChar;
     using Utilities::Strings::toFloat;
     using Utilities::Strings::toInt;
     using Utilities::Strings::trim;
-    using Utilities::Image::writeLearningImage;
 
     using Logger = Logger::Quill;
 
@@ -34,9 +34,9 @@ namespace OCR {
         try {
             cv::Mat rankImage = cardImage(getRankCardArea());
             cv::Mat suitImage = cardImage(getSuitCardArea());
-            
+
             Card card {readCardRank(rankImage), readCardSuit(suitImage)};
-            
+
             writeLearningImage(cardImage, LEARNING_DATA_DIR, "card", fmt::format("{}", card));
 
             return card;
@@ -59,10 +59,10 @@ namespace OCR {
     auto OcrInterface::readHand(const cv::Mat& handImage) const -> Hand {
         cv::Mat firstCardImage  = handImage({0, 0, _cardWidth, handImage.rows});
         cv::Mat secondCardImage = handImage({handImage.cols - _cardWidth, 0, _cardWidth, handImage.rows});
-        
-        Card firstCard = readPlayerCard(firstCardImage);
+
+        Card firstCard  = readPlayerCard(firstCardImage);
         Card secondCard = readPlayerCard(secondCardImage);
-        
+
         writeLearningImage(handImage, LEARNING_DATA_DIR, "hand", fmt::format("{}-{}", firstCard, secondCard));
 
         return {firstCard, secondCard};

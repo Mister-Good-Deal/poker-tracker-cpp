@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <scraper/Model.hpp>
+#include <utilities/Image.hpp>
 
 using nlohmann::json;
 using Scraper::Model;
@@ -14,10 +15,8 @@ TEST(ModelTest, DISABLED_displayScreenshot) {
 
     for (const auto& [id, window] : scraper.getActiveWindows()) {
         fmt::print("({}) - {}\n", id, window.title);
-        //        cv::imshow(window.title, scraper.getScreenshot(id));
+        if (window.title != "undefined") { DISPLAY_IMAGE(window.title, *scraper.getScreenshot(id)); }
     }
-
-    //    cv::waitKey(-1);
 }
 
 TEST(ModelTest, DISABLED_displayAllElements) {

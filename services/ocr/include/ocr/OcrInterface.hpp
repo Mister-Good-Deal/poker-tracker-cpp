@@ -184,12 +184,12 @@ namespace OCR {
 
             [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read player bet in BB"; }
     };
-    
+
     class CannotReadPlayerStackImageException : public ExceptionWithImage {
         public:
             explicit CannotReadPlayerStackImageException(const cv::Mat& image)
               : ExceptionWithImage(image, "playerStack") {}
-            
+
             [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot read player stack"; }
     };
 
@@ -235,8 +235,9 @@ namespace OCR {
 
     class OcrInterface {
         public:
-            static constexpr int32_t     OCR_MIN_CONFIDENCE = 30;  // @todo confidence between numbers 1 and 7 is really low
-            static constexpr const char* ALL_CHARACTERS     = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_ ";
+            static constexpr int32_t     OCR_MIN_CONFIDENCE  = 30;  // @todo confidence between numbers 1 and 7 is really low
+            static constexpr int32_t     OCR_RANK_CONFIDENCE = 50;
+            static constexpr const char* ALL_CHARACTERS      = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_ ";
 
             explicit OcrInterface(int32_t cardWidth);
             OcrInterface(const OcrInterface&) = default;

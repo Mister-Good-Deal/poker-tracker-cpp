@@ -252,7 +252,7 @@ namespace GameSession {
             _playerActionImg.setCurrentImg(screenshot, _currentPlayerNum);
 
             if (!_playerActionImg.isChecked(_currentPlayerNum)) { LOG_DEBUG(Logger::getLogger(), "Action not checked"); }
-            
+
             DISPLAY_IMAGE("player_action", _playerActionImg.getImg(_currentPlayerNum));
             _determinePlayerAction(screenshot, _playerActionImg.getImg(_currentPlayerNum), _currentPlayerNum);
 

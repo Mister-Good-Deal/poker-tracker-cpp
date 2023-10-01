@@ -31,6 +31,7 @@ namespace GameHandler {
     }
 
     auto RoundAction::_requiresAmount(ActionType action) const -> bool {
-        return action == CALL || action == BET || action == RAISE || action == ALL_IN || action == PAY_BIG_BLIND || action == PAY_SMALL_BLIND;
+        return action == CALL || action == BET || action == RAISE || action == ALL_IN || action == PAY_BIG_BLIND
+            || action == PAY_SMALL_BLIND;
     }
 }  // namespace GameHandler

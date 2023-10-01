@@ -712,7 +712,7 @@ TEST(RoundTest, case8JsonRepresentationShouldBeCorrect) {
     Player player1("player 1", 1);
     Player player2("player 2", 2);
     Player player3("player 3", 3);
-    
+
     player1.setStack(220);
     player2.setStack(200);
     player3.setStack(480);
