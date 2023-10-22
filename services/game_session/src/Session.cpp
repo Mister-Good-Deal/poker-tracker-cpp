@@ -106,7 +106,17 @@ namespace GameSession {
             if (_ocr->isAllIn(_scraper.getPlayerStackImg(screenshot, playerNum))) {
                 _currentAction = ALL_IN;
             } else {
-                _currentAction = _ocr->readGameAction(actionImg);
+                try {
+                    _currentAction = _ocr->readGameAction(actionImg);
+                } catch (const CannotReadGameActionImageException& e) {
+                    auto action = _determinePlayerActionFallback(screenshot, playerNum);
+
+                    if (action != NONE) {
+                        _currentAction = action;
+                    } else {
+                        throw;
+                    }
+                }
             }
         }
 
@@ -122,7 +132,8 @@ namespace GameSession {
             case CALL: round.call(playerNum); break;
             case ALL_IN: round.allIn(playerNum); break;
             case BET: round.bet(playerNum, _ocr->readPlayerBet(_playerBetImg.getImg(playerNum))); break;
-            case RAISE: round.raise(playerNum, _ocr->readPlayerBet(_playerBetImg.getImg(playerNum))); break;
+            case RAISE: round.raiseTo(playerNum, _ocr->readPlayerBet(_playerBetImg.getImg(playerNum))); break;
+            // @todo handle BIG_BLIND and SMALL_BLIND
             default: throw std::runtime_error("Unknown action");  // Should never happen
         }
 
@@ -131,6 +142,32 @@ namespace GameSession {
         _currentPlayerNum     = round.getCurrentPlayerNum();
         _lastWaitingActionImg = _scraper.getPlayerActionImg(screenshot, _currentPlayerNum);
         _currentAction        = NONE;
+
+        if (!round.isInProgress()) { _endRound(); }
+    }
+
+    auto Session::_determinePlayerActionFallback(const cv::Mat& screenshot, int32_t playerNum) -> ActionType {
+        ActionType action = NONE;
+        auto&      round  = _game.getCurrentRound();
+
+        // Fallback only when the current player is the last player to act and other players are all-in
+        if (round.isNextActionTheLastStreetOne(playerNum)) {
+            LOG_DEBUG(Logger::getLogger(), "Try fallback methods to read action");
+
+            auto playerStack = _ocr->readPlayerStack(_scraper.getPlayerStackImg(screenshot, playerNum));
+
+            if (playerStack != round.getCurrentPlayerStack(playerNum)) {
+                LOG_DEBUG(Logger::getLogger(), "Player {} stack has changed, action is CALL", playerNum);
+
+                action = CALL;
+            } else {
+                LOG_DEBUG(Logger::getLogger(), "Player {} stack has not changed, action is FOLD", playerNum);
+
+                action = FOLD;
+            }
+        }
+
+        return action;
     }
 
     auto Session::_getButtonPosition(const cv::Mat& screenshot) -> int32_t {
@@ -247,23 +284,9 @@ namespace GameSession {
 
     auto Session::_trackCurrentRound(const cv::Mat& screenshot) -> void {
         try {
-            auto& round = _game.getCurrentRound();
-
             _playerActionImg.setCurrentImg(screenshot, _currentPlayerNum);
 
-            if (!_playerActionImg.isChecked(_currentPlayerNum)) { LOG_DEBUG(Logger::getLogger(), "Action not checked"); }
-
-            DISPLAY_IMAGE("player_action", _playerActionImg.getImg(_currentPlayerNum));
             _determinePlayerAction(screenshot, _playerActionImg.getImg(_currentPlayerNum), _currentPlayerNum);
-
-            // If the round is over, determine if the game is over or wait for a new round
-            if (!round.isInProgress()) {
-                LOG_DEBUG(Logger::getLogger(), "Round recap:\n{}", round.toJson().dump(4));
-
-                _determineGameOver();
-
-                if (!_game.isOver()) { _gameStage = WAITING_NEW_ROUND; }
-            }
         } catch (const ExceptionWithImage& e) {
             // Should be CannotReadGameActionImageException or CannotReadPlayerBetImageException or CannotReadPlayerStackImageException
             LOG_ERROR(Logger::getLogger(), "{}", e.what());
@@ -367,8 +390,17 @@ namespace GameSession {
                     }
                 }
             }
-
+            // End the round
             round.showdown();
+            _endRound();
         } catch (const CannotReadPlayerCardImageException& e) { LOG_DEBUG(Logger::getLogger(), "Waiting showdown"); }
+    }
+
+    auto Session::_endRound() -> void {
+        LOG_DEBUG(Logger::getLogger(), "Round recap:\n{}", _game.getCurrentRound().toJson().dump(4));
+
+        _determineGameOver();
+
+        if (!_game.isOver()) { _gameStage = WAITING_NEW_ROUND; }
     }
 }  // namespace GameSession

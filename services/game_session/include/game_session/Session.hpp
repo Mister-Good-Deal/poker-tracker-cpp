@@ -198,6 +198,7 @@ namespace GameSession {
 
             auto _determineGameOver() -> void;
             auto _determinePlayerAction(const cv::Mat& screenshot, const cv::Mat& actionImg, int32_t playerNum) -> void;
+            auto _determinePlayerActionFallback(const cv::Mat& screenshot, int32_t playerNum) -> ActionType;
             auto _getButtonPosition(const cv::Mat& screenshot) -> int32_t;
             auto _getFlop(const cv::Mat& screenshot, bool checkHasChanged = false) -> void;
             auto _getTurn(const cv::Mat& screenshot, bool checkHasChanged = false) -> void;
@@ -210,5 +211,6 @@ namespace GameSession {
             auto _waitNewRound(const cv::Mat& screenshot) -> void;
             auto _waitShowdown(const cv::Mat& screenshot) -> void;
             auto _setShowdownComparisonCards(const cv::Mat& screenshot) -> void;
+            auto _endRound() -> void;
     };
 }  // namespace GameSession
