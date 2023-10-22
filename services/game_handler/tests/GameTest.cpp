@@ -31,14 +31,14 @@ TEST(GameTest, jsonRepresentationShouldBeCorrect) {
 
         // Pre-flop
         round1.check(1);
-        round1.raise(2, 300);
+        round1.raiseTo(2, 300);
         round1.fold(3);
         round1.call(1);
         // Flop
         round1.getBoard().setFlop({card("AS"), card("AC"), card("3C")});
         round1.check(1);
-        round1.raise(2, 200);
-        round1.raise(1, 700);
+        round1.raiseTo(2, 200);
+        round1.raiseTo(1, 700);
         round1.fold(2);
         // Stacks
         // Player 1: 1000 + 1600 - 1000 = 1600
@@ -52,9 +52,9 @@ TEST(GameTest, jsonRepresentationShouldBeCorrect) {
         auto& round2 = game.newRound({100, 200}, {card("AH"), card("AS")}, 2);
 
         // Pre-flop
-        round2.raise(2, 500);
+        round2.raiseTo(2, 500);
         round2.call(3);
-        round2.raise(1, 1600);
+        round2.raiseTo(1, 1600);
         round2.call(3);
         // Flop
         round2.getBoard().setFlop({card("AS"), card("KS"), card("KH")});

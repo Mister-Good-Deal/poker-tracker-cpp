@@ -122,14 +122,14 @@ TEST(RoundTest, case1JsonRepresentationShouldBeCorrect) {
 
     // Pre-flop
     round.check(1);
-    round.raise(2, 200);
+    round.raiseTo(2, 200);
     round.fold(3);
     round.call(1);
     // Flop
     round.getBoard().setFlop({card("AS"), card("AC"), card("3C")});
     round.check(1);
-    round.raise(2, 200);
-    round.raise(1, 600);
+    round.raiseTo(2, 200);
+    round.raiseTo(1, 600);
     round.fold(2);
 
     // language=json
@@ -201,14 +201,14 @@ TEST(RoundTest, case2JsonRepresentationShouldBeCorrect) {
 
     // Pre-flop
     round.check(1);
-    round.raise(2, 200);
+    round.raiseTo(2, 200);
     round.fold(3);
     round.call(1);
     // Flop
     round.getBoard().setFlop({card("AS"), card("AC"), card("3C")});
     round.check(1);
-    round.raise(2, 200);
-    round.raise(1, 600);
+    round.raiseTo(2, 200);
+    round.raiseTo(1, 600);
     round.call(2);
     // Turn
     round.getBoard().setTurn(card("4C"));
@@ -304,19 +304,19 @@ TEST(RoundTest, case3JsonRepresentationShouldBeCorrect) {
 
     // Pre-flop
     round.check(2);
-    round.raise(3, 200);
+    round.raiseTo(3, 200);
     round.call(1);
     round.call(2);
     // Flop
     round.getBoard().setFlop({card("AS"), card("KC"), card("JC")});
     round.check(2);
-    round.raise(3, 500);
+    round.raiseTo(3, 500);
     round.call(1);
     round.call(2);
     // Turn
     round.getBoard().setTurn(card("9C"));
     round.check(2);
-    round.raise(3, 800);
+    round.raiseTo(3, 800);
     round.fold(2);
     // River
     round.getBoard().setRiver(card("8D"));
@@ -404,7 +404,7 @@ TEST(RoundTest, case4JsonRepresentationShouldBeCorrect) {
 
     // Pre-flop
     round.fold(2);
-    round.raise(3, 300);
+    round.raiseTo(3, 300);
     round.fold(1);
 
     // language=json
@@ -467,7 +467,7 @@ TEST(RoundTest, case5JsonRepresentationShouldBeCorrect) {
     // Pre-flop
     round.call(3);
     round.call(1);
-    round.raise(2, 300);
+    round.raiseTo(2, 300);
     round.fold(3);
     round.fold(1);
 
@@ -531,7 +531,7 @@ TEST(RoundTest, case6JsonRepresentationShouldBeCorrect) {
     // Run a scenario
 
     // Pre-flop
-    round.raise(1, 40);
+    round.raiseTo(1, 40);
     round.fold(2);
     round.call(3);
 
@@ -634,7 +634,7 @@ TEST(RoundTest, case7JsonRepresentationShouldBeCorrect) {
     // Run a scenario
 
     // Pre-flop
-    round.raise(2, 330);
+    round.raiseTo(2, 330);
     round.call(3);
     round.fold(1);
 
@@ -725,7 +725,7 @@ TEST(RoundTest, case8JsonRepresentationShouldBeCorrect) {
 
     // Pre-flop
     round.fold(1);
-    round.raise(2, 200);
+    round.raiseTo(2, 200);
     round.call(3);
 
     // Flop
@@ -798,6 +798,96 @@ TEST(RoundTest, case8JsonRepresentationShouldBeCorrect) {
     EXPECT_JSON_EQ(expectedJson, round.toJson());
 }
 
+TEST(RoundTest, case9JsonRepresentationShouldBeCorrect) {
+    Player player1("player 1", 1);
+    Player player2("player 2", 2);
+    Player player3("player 3", 3);
+    
+    player1.setStack(340);
+    player2.setStack(330);
+    player3.setStack(230);
+
+    std::array<Player, 3> players = {player1, player2, player3};
+
+    Round round(Blinds {10, 20}, players, {card("5C"), card("KH")}, 2);
+
+    // Run a scenario
+
+    // Pre-flop
+    round.raiseTo(2, 330);
+    round.call(3);
+    round.fold(1);
+
+    // Flop
+    round.getBoard().setFlop({card("6C"), card("9S"), card("6H")});
+
+    // Turn
+    round.getBoard().setTurn(card("2S"));
+
+    // River
+    round.getBoard().setRiver(card("3C"));
+
+    // Showdown
+    EXPECT_TRUE(round.waitingShowdown());
+
+    round.setPlayerHand({card("KS"), card("7S")}, 2);
+    round.setPlayerHand({card("8D"), card("8C")}, 3);
+    round.showdown();
+
+    // language=json
+    auto expectedJson = R"(
+        {
+            "actions": {
+                "pre_flop": [
+                    { "action": "Raise", "player": "player_2", "elapsed_time": 0, "amount": 330 },
+                    { "action": "Call", "player": "player_3", "elapsed_time": 0, "amount": 220 },
+                    { "action": "Fold", "player": "player_1", "elapsed_time": 0 }
+                ],
+                "flop": [],
+                "turn": [],
+                "river": []
+            },
+            "board": [
+                { "shortName": "6C", "rank": "Six", "suit": "Club" },
+                { "shortName": "9S", "rank": "Nine", "suit": "Spade" },
+                { "shortName": "6H", "rank": "Six", "suit": "Heart" },
+                { "shortName": "2S", "rank": "Two", "suit": "Spade" },
+                { "shortName": "3C", "rank": "Three", "suit": "Club" }
+            ],
+            "hands": {
+                "player_1": [
+                    { "shortName": "5C", "rank": "Five", "suit": "Club" },
+                    { "shortName": "KH", "rank": "King", "suit": "Heart" }
+                ],
+                "player_2": [
+                    { "shortName": "KS", "rank": "King", "suit": "Spade" },
+                    { "shortName": "7S", "rank": "Seven", "suit": "Spade" }
+                ],
+                "player_3": [
+                    { "shortName": "8D", "rank": "Eight", "suit": "Diamond" },
+                    { "shortName": "8C", "rank": "Eight", "suit": "Club" }
+                ]
+            },
+            "pot": 580,
+            "blinds": { "small": 10, "big": 20 },
+            "won": false,
+            "positions": {
+                "dealer": "player_2",
+                "small_blind": "player_3",
+                "big_blind": "player_1"
+            },
+            "ranking": [["player_3"], ["player_2"], ["player_1"]],
+            "stacks": [
+                { "player": "player_1", "stack": 320, "balance": -20 },
+                { "player": "player_2", "stack": 100, "balance": -230 },
+                { "player": "player_3", "stack": 480, "balance": 250 }
+            ]
+        }
+    )"_json;
+
+    EXPECT_JSON_EQ(expectedJson, round.toJson());
+}
+
 TEST(RoundTest, GeneratedByAI_case1JsonRepresentationShouldBeCorrect) {
     Player player1("player 1", 1);
     Player player2("player 2", 2);
@@ -814,7 +904,7 @@ TEST(RoundTest, GeneratedByAI_case1JsonRepresentationShouldBeCorrect) {
     // Run a scenario
 
     // Pre-flop
-    round.raise(1, 300);
+    round.raiseTo(1, 300);
     round.fold(2);
     round.call(3);
     // End of pre-flop: Pot: 650,  Street pot: 650
@@ -832,7 +922,7 @@ TEST(RoundTest, GeneratedByAI_case1JsonRepresentationShouldBeCorrect) {
     // Turn
     round.getBoard().setTurn(card("6H"));
     round.check(1);
-    round.raise(3, 400);
+    round.raiseTo(3, 400);
     round.call(1);
     // End of turn: Pot: 1450,  Street pot: 800
     // Stacks:      player_1=300, player_2=950, player_3=300
@@ -931,7 +1021,7 @@ TEST(RoundTest, GeneratedByAI_case6JsonRepresentationShouldBeCorrect) {
     // Run a scenario
 
     // Pre-flop
-    round.raise(2, 300);
+    round.raiseTo(2, 300);
     round.fold(3);
     round.call(1);
     // End of Pre-flop, Street pot: 650
@@ -1019,7 +1109,7 @@ TEST(RoundTest, GeneratedByAI_case11JsonRepresentationShouldBeCorrect) {
     // Run a scenario
 
     // Pre-flop
-    round.raise(2, 300);  // The button always playing 1st
+    round.raiseTo(2, 300);  // The button always playing 1st
     round.fold(3);
     round.call(1);
     // End of Pre-flop: Pot: 650,  Street pot: 650
