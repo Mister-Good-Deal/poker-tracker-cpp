@@ -97,14 +97,14 @@ namespace GameHandler {
         _currentPlayerNum  = _getNextPlayerNum(_currentPlayerNum);
     }
 
-    auto Round::raise(int32_t playerNum, int32_t amount) -> void {
+    auto Round::raiseTo(int32_t playerNum, int32_t amount) -> void {
         auto& player         = _getPlayerStatus(playerNum);
         auto  computedAmount = amount - player.totalStreetBet;
 
         _lastAction    = _currentAction;
         _currentAction = _actions.at(_currentStreet).emplace_back(RAISE, player, _getAndResetLastActionTime(), amount);
-        player.hasRaised(amount);
-        _lastBetOrRaise    = amount;
+        player.hasRaised(computedAmount);
+        _lastBetOrRaise    = player.totalStreetBet;
         _pot              += computedAmount;
         _streetPot        += computedAmount;
         _currentPlayerNum  = _getNextPlayerNum(_currentPlayerNum);
@@ -132,20 +132,14 @@ namespace GameHandler {
     }
 
     auto Round::allIn(int32_t playerNum) -> void {
-        auto playerStack = _getPlayerStatus(playerNum).getStack();
+        const auto& player = _getPlayerStatus(playerNum);
 
         if (_streetPot == 0) {
-            if (playerStack > _blinds.BB()) {
-                bet(playerNum, playerStack);
-            } else {
-                raise(playerNum, playerStack);
-            }
+            bet(playerNum, player.initialStack - player.totalBet);
+        } else if (player.getStack() > _lastBetOrRaise) {
+            raiseTo(playerNum, player.initialStack);
         } else {
-            if (playerStack > _lastBetOrRaise) {
-                raise(playerNum, playerStack);
-            } else {
-                call(playerNum);
-            }
+            call(playerNum);
         }
     }
 
@@ -157,6 +151,13 @@ namespace GameHandler {
         }
 
         return inRoundPlayersNum;
+    }
+
+    auto Round::isNextActionTheLastStreetOne(int32_t playerNum) const -> bool {
+        // All other players in the round are all in
+        return !any_of(*_playersStatus, [playerNum](const auto& player) {
+            return player.inRound && player.getNumber() != playerNum && !player.isAllIn;
+        });
     }
 
     auto Round::getCurrentPlayerStack(int32_t playerNum) const -> int32_t { return _getPlayerStatus(playerNum).getStack(); }

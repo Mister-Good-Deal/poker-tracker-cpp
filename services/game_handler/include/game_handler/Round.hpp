@@ -68,8 +68,8 @@ namespace GameHandler {
             }
 
             auto hasRaised(int32_t amount) -> void {
-                totalBet       += amount - totalStreetBet;
-                totalStreetBet  = amount;
+                totalBet       += amount;
+                totalStreetBet += amount;
                 isAllIn         = totalBet == initialStack;
                 lastAction      = ActionType::RAISE;
 
@@ -124,6 +124,7 @@ namespace GameHandler {
             [[nodiscard]] auto getLastAction() const -> RoundAction { return _currentAction; };
             [[nodiscard]] auto getCurrentPlayerStack(int32_t playerNum) const -> int32_t;
             [[nodiscard]] auto isInProgress() const -> bool { return !_ended; }
+            [[nodiscard]] auto isNextActionTheLastStreetOne(int32_t playerNum) const -> bool;
             [[nodiscard]] auto waitingShowdown() const -> bool;
             [[nodiscard]] auto getInRoundPlayersNum() const -> std::vector<int32_t>;
             [[nodiscard]] auto getPlayerHand(int32_t playerNum) const -> Hand { return _getPlayerStatus(playerNum).hand; }
@@ -133,7 +134,7 @@ namespace GameHandler {
 
             auto call(int32_t playerNum) -> void;
             auto bet(int32_t playerNum, int32_t amount) -> void;
-            auto raise(int32_t playerNum, int32_t amount) -> void;
+            auto raiseTo(int32_t playerNum, int32_t amount) -> void;
             auto check(int32_t playerNum) -> void;
             auto fold(int32_t playerNum) -> void;
             auto allIn(int32_t playerNum) -> void;
