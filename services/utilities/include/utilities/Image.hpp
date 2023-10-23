@@ -30,7 +30,7 @@ namespace Utilities::Image {
 
     static constexpr double SIMILARITY_THRESHOLD = 0.15;
 
-    static inline constexpr auto cvColorToString(const cv::Vec3b& color, std::string_view colorSpace = "BGR") -> std::string {
+    static inline auto cvColorToString(const cv::Vec3b& color, std::string_view colorSpace = "BGR") -> std::string {
         return fmt::format("{}({}, {}, {})", colorSpace, color[0], color[1], color[2]);
     }
 

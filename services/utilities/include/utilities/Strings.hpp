@@ -6,6 +6,7 @@
 #include <charconv>
 #include <stdexcept>
 #include <string>
+#include <unordered_set>
 
 #include <string_view>
 
@@ -41,15 +42,13 @@ namespace Utilities::Strings {
         ltrim(s);
     }
 
-    static inline auto constexpr containsInCharacters(const std::string& str, const std::string& chars) -> bool {
-        for (const char& c : chars) {
-            if (str.find(c) != std::string::npos) { return true; }
-        }
+    static inline auto containsInCharacters(const std::string& str, const std::string& chars) -> bool {
+        std::unordered_set<char> charsSet(chars.begin(), chars.end());
 
-        return false;
+        return std::any_of(str.begin(), str.end(), [&](char c) { return charsSet.count(c); });
     }
 
-    static inline auto constexpr toFloat(std::string_view s) -> double {
+    static inline auto toFloat(std::string_view s) -> double {
         double value = 0.0;
 
         auto error = std::from_chars(s.begin(), s.end(), value);
@@ -59,7 +58,7 @@ namespace Utilities::Strings {
         return value;
     }
 
-    static inline auto constexpr toInt(std::string_view s) -> int32_t {
+    static inline auto toInt(std::string_view s) -> int32_t {
         int32_t value = 0;
 
         auto error = std::from_chars(s.begin(), s.end(), value);
