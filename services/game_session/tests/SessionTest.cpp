@@ -30,7 +30,9 @@ class SessionMock : public Session {
 
             if (!_video.isOpened()) {
                 if (!_video.open(std::string(WINAMAX_RESOURCES_DIR) + "/game_1_3840x1080x8_25cts.mkv")) {
-                    LOG_ERROR(Logger::Quill::getLogger(), "Failed to open video");
+                    LOG_ERROR(Logger::Quill::getLogger(),
+                              "Failed to open video in `{}`",
+                              std::string(WINAMAX_RESOURCES_DIR) + "/game_1_3840x1080x8_25cts.mkv");
                 }
             }
 
