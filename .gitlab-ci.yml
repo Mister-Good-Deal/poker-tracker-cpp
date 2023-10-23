@@ -3,6 +3,7 @@ stages:
   - build
   - lint
   - test
+  - test-long-running
   - documentation
   - packaging
   - deploy
@@ -130,7 +131,6 @@ test_game_handler:
   tags:
     - tests
   script:
-    # @fixme Need to required tests for all subproject with --test-dir
     - ctest --test-dir $BUILD_PATH_LINUX-release/services/game_handler --output-on-failure --extra-verbose -j ${MAX_MULTI_THREADS_CORE}
       --output-junit game_handler_ctest.xml --no-compress-output
   artifacts:
@@ -148,7 +148,6 @@ test_ocr:
   tags:
     - tests
   script:
-    # @fixme Need to required tests for all subproject with --test-dir
     - ctest --test-dir $BUILD_PATH_LINUX-release/services/ocr --output-on-failure --extra-verbose -j ${MAX_MULTI_THREADS_CORE}
       --output-junit ocr_ctest.xml --no-compress-output
   artifacts:
@@ -166,12 +165,28 @@ test_scraper:
   tags:
     - tests
   script:
-    # @fixme Need to required tests for all subproject with --test-dir
     - ctest --test-dir $BUILD_PATH_LINUX-release/services/scraper --output-on-failure --extra-verbose -j ${MAX_MULTI_THREADS_CORE}
       --output-junit scraper_ctest.xml --no-compress-output
   artifacts:
     reports:
       junit: $BUILD_PATH_LINUX-release/services/scraper/scraper_ctest.xml
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /\/(build|packaging)\-only/m
+      when: never
+    - if: $CI_COMMIT_MESSAGE !~ /\/no\-test/m
+  needs:
+    - build_linux
+  
+test_game_session:
+  stage: test-long-running
+  tags:
+    - tests
+  script:
+    - ctest --test-dir $BUILD_PATH_LINUX-release/services/game_session --output-on-failure --extra-verbose -j ${MAX_MULTI_THREADS_CORE}
+      --output-junit game_session_ctest.xml --no-compress-output
+  artifacts:
+    reports:
+      junit: $BUILD_PATH_LINUX-release/services/game_session/game_session_ctest.xml
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /\/(build|packaging)\-only/m
       when: never

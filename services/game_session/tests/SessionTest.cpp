@@ -5,9 +5,11 @@
 
 #include <game_session/Session.hpp>
 #include <logger/Logger.hpp>
+#include <utilities/GtestMacros.hpp>
 
 using GameHandler::Game;
 using GameSession::Session;
+using nlohmann::json;
 using Scraper::windowSize_t;
 using std::chrono::milliseconds;
 using ::testing::AtLeast;
@@ -27,7 +29,7 @@ class SessionMock : public Session {
             const int FAST_FORWARD = 35;
 
             if (!_video.isOpened()) {
-                if (!_video.open(std::string(WINAMAX_RESOURCES_DIR) + "/game_sample_3840x1080x8_25cts_2nd.mkv")) {
+                if (!_video.open(std::string(WINAMAX_RESOURCES_DIR) + "/game_1_3840x1080x8_25cts.mkv")) {
                     LOG_ERROR(Logger::Quill::getLogger(), "Failed to open video");
                 }
             }
@@ -36,15 +38,12 @@ class SessionMock : public Session {
                 LOG_ERROR(Logger::Quill::getLogger(), "Failed to set video position");
             }
 
-            // LOG_DEBUG(Logger::Quill::getLogger(), "Frame number {}, at {}ms", _tickCount, _tickCount *
-            // GameSession::TICK_RATE.count());
-
             cv::Mat frame;
 
             if (!_video.read(frame)) { LOG_ERROR(Logger::Quill::getLogger(), "Cannot read video frame"); }
             if (frame.empty()) { LOG_ERROR(Logger::Quill::getLogger(), "Empty frame"); }
 
-            return std::make_shared<cv::Mat>(frame);
+            return std::make_shared<const cv::Mat>(frame);
         }
 
     private:
@@ -54,13 +53,18 @@ class SessionMock : public Session {
 
 class SessionTest : public ::testing::Test {};
 
-TEST(SessionTest, readVideo) {
+TEST(SessionTest, shouldReadTheWholeGameCorrectlyFromVideo_game1) {
     SessionMock session("Winamax", 0, {3840, 1080});
 
     session.getGame().setBuyIn(10);
 
-    // tell Google Mock to return consecutive frames
+    // Tell Google Mock to return consecutive frames
     EXPECT_CALL(session, _getScreenshot()).Times(AtLeast(1)).WillRepeatedly(Invoke(&session, &SessionMock::getNextFrame));
-
+    // Run the session
     session.run();
+    // Read expected json result from file
+    std::ifstream fileReader(std::filesystem::path(WINAMAX_RESOURCES_DIR) /= "game_1_3840x1080x8_25cts.json");
+    json          expectedJson = json::parse(fileReader);
+
+    EXPECT_JSON_EQ(session.getGame().toJson(), expectedJson);
 }

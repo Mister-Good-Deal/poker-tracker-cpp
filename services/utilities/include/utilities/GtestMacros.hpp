@@ -7,7 +7,7 @@
 #include <fmt/format.h>
 
 namespace Utilities::Gtest {
-    using json = nlohmann::json;
+    using nlohmann::json;
 
     void compareJson(const json& actualJson, const json& expectedJson, const std::string& path, std::string& differences) {
         if (actualJson.is_object() && expectedJson.is_object()) {
@@ -56,11 +56,11 @@ namespace Utilities::Gtest {
             exception_type);                                              \
     } while (0)
 
-#define EXPECT_JSON_EQ(json1, json2)                                                               \
+#define EXPECT_JSON_EQ(actualJson, expectedJson)                                                   \
     do {                                                                                           \
         std::string differences;                                                                   \
                                                                                                    \
-        Utilities::Gtest::compareJson(json1, json2, "Object", differences);                        \
+        Utilities::Gtest::compareJson(actualJson, expectedJson, "Object", differences);            \
                                                                                                    \
         if (!differences.empty()) { ADD_FAILURE() << "JSON differences found:\n" << differences; } \
     } while (0)
