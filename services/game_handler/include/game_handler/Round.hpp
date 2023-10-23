@@ -12,6 +12,8 @@ namespace GameHandler {
 
     using ActionType = RoundAction::ActionType;
 
+    using enum ActionType;
+
     static const int32_t STREET_NUMBER = 5;
 
     enum Position : int32_t { DEALER = 0, SMALL_BLIND, BIG_BLIND };
@@ -30,9 +32,22 @@ namespace GameHandler {
             [[nodiscard]] auto BB() const -> int32_t { return bigBlind; }
     };
 
+    // Used to store the players stats statically in the json after the round is over
+    struct PlayerRoundRecap {
+            PlayerRoundRecap() = default;
+            PlayerRoundRecap(int32_t playerNumber, int32_t startStack, int32_t endStack)
+              : playerNumber(playerNumber)
+              , startStack(startStack)
+              , endStack(endStack) {}
+
+            int32_t playerNumber;
+            int32_t startStack;
+            int32_t endStack;
+    };
+
     struct PlayerStatus : public Player {
         public:
-            ActionType lastAction     = ActionType::NONE;
+            ActionType lastAction     = NONE;
             int32_t    totalBet       = 0;
             int32_t    totalStreetBet = 0;
             int32_t    maxWinnable    = 0;
@@ -41,71 +56,61 @@ namespace GameHandler {
             bool       isAllIn        = false;
             Hand       hand           = Hand();
             Position   position;
+            Player*    player;
 
-            explicit PlayerStatus(const Player& player, int32_t dealerNumber)
-              : position(static_cast<Position>((player.getNumber() - dealerNumber + 3) % 3))
-              , inRound(!player.isEliminated())
-              , initialStack(player.getStack())
-              , Player(player) {};  // @todo extends Player with a way the actual player can be modified
+            explicit PlayerStatus(Player* player, int32_t dealerNumber)
+              : position(static_cast<Position>((player->getNumber() - dealerNumber + 3) % 3))
+              , inRound(!player->isEliminated())
+              , initialStack(player->getStack())
+              , player(player)
+              , Player(*player) {};
 
-            auto payBlind(int32_t amount) -> void {
-                auto payAmount = std::min(amount, getStack());
-
-                totalBet       += payAmount;
-                totalStreetBet += payAmount;
-                isAllIn         = totalBet == initialStack;
-
-                setStack(initialStack - totalBet);
-            }
-
-            auto hasBet(int32_t amount) -> void {
-                totalBet       += amount;
-                totalStreetBet += amount;
-                isAllIn         = totalBet == initialStack;
-                lastAction      = ActionType::BET;
-
-                setStack(initialStack - totalBet);
-            }
-
-            auto hasRaised(int32_t amount) -> void {
-                totalBet       += amount;
-                totalStreetBet += amount;
-                isAllIn         = totalBet == initialStack;
-                lastAction      = ActionType::RAISE;
-
-                setStack(initialStack - totalBet);
-            }
-
-            auto hasCalled(int32_t amount) -> void {
-                totalBet       += amount;
-                totalStreetBet += amount;
-                isAllIn         = totalBet == initialStack;
-                lastAction      = ActionType::CALL;
-
-                setStack(initialStack - totalBet);
-            }
-
-            auto hasChecked() -> void { lastAction = ActionType::CHECK; }
+            auto winChips(int32_t chips) -> void { setStack(getStack() + chips); }
+            auto payBigBlind(int32_t amount) -> void { _updateStatus(std::min(amount, getStack()), PAY_BIG_BLIND); }
+            auto paySmallBlind(int32_t amount) -> void { _updateStatus(std::min(amount, getStack()), PAY_SMALL_BLIND); }
+            auto hasBet(int32_t amount) -> void { _updateStatus(amount, BET); }
+            auto hasRaised(int32_t amount) -> void { _updateStatus(amount, RAISE); }
+            auto hasCalled(int32_t amount) -> void { _updateStatus(amount, CALL); }
+            auto hasChecked() -> void { lastAction = CHECK; }
 
             auto hasFolded() -> void {
                 inRound    = false;
-                lastAction = ActionType::FOLD;
+                lastAction = FOLD;
             }
 
             auto streetReset() -> void {
                 totalStreetBet = 0;
-                lastAction     = ActionType::NONE;
+                lastAction     = NONE;
             }
+            // Adapter pattern to Player
+            [[nodiscard]] auto getName() const -> std::string override { return player->getName(); }
+            [[nodiscard]] auto getNumber() const -> int32_t override { return player->getNumber(); }
+            [[nodiscard]] auto getStack() const -> int32_t override { return player->getStack(); }
+            [[nodiscard]] auto isEliminated() const -> bool override { return player->isEliminated(); }
+            [[nodiscard]] auto isHero() const -> bool override { return player->isHero(); }
 
-            auto winChips(int32_t chips) -> void { setStack(getStack() + chips); }
+            auto setStack(int32_t stack) -> void override { player->setStack(stack); }
+            auto bust() -> void override { player->bust(); }
+
+        private:
+            auto _updateStatus(int32_t amount, ActionType action) -> void {
+                totalBet       += amount;
+                totalStreetBet += amount;
+                isAllIn         = totalBet == initialStack;
+
+                if (action != PAY_BIG_BLIND && action != PAY_SMALL_BLIND) { lastAction = action; }
+
+                setStack(initialStack - totalBet);
+            }
     };
 
     class Round {
         public:
-            using round_actions_t    = std::array<std::vector<RoundAction>, STREET_NUMBER>;
-            using ranking_t          = std::stack<std::vector<int32_t>>;
-            using players_status_t   = std::array<PlayerStatus, 3>;
-            using players_status_ptr = std::unique_ptr<players_status_t>;
+            using round_actions_t       = std::array<std::vector<RoundAction>, STREET_NUMBER>;
+            using players_round_recap_t = std::array<PlayerRoundRecap, 3>;
+            using ranking_t             = std::stack<std::vector<int32_t>>;
+            using players_status_t      = std::array<PlayerStatus, 3>;
+            using players_status_ptr    = std::unique_ptr<players_status_t>;
 
             enum Street : int32_t { PREFLOP = 0, FLOP, TURN, RIVER, SHOWDOWN };
 
@@ -128,7 +133,6 @@ namespace GameHandler {
             [[nodiscard]] auto waitingShowdown() const -> bool;
             [[nodiscard]] auto getInRoundPlayersNum() const -> std::vector<int32_t>;
             [[nodiscard]] auto getPlayerHand(int32_t playerNum) const -> Hand { return _getPlayerStatus(playerNum).hand; }
-            [[nodiscard]] auto getPlayerStreetBet(int32_t playerNum) const -> int32_t;
             [[nodiscard]] auto getCurrentStreet() const -> Street { return _currentStreet; }
             [[nodiscard]] auto getCurrentPlayerNum() const -> int32_t { return _currentPlayerNum; }
 
@@ -143,37 +147,38 @@ namespace GameHandler {
 
             [[nodiscard]] auto toJson() const -> json;
 
+            [[nodiscard]] static auto toJson(const ranking_t& ranking) -> json;
+            [[nodiscard]] static auto getStacksVariation(const players_round_recap_t& playersRoundRecap) -> json;
+
         private:
             round_actions_t          _actions;
             Board                    _board;
             ranking_t                _ranking;
-            Blinds                   _blinds           = Blinds(0, 0);
-            int32_t                  _pot              = 0;
-            int32_t                  _streetPot        = 0;
-            int32_t                  _frozenPot        = 0;
-            int32_t                  _dealerNumber     = 0;
-            int32_t                  _lastBetOrRaise   = 0;
-            int32_t                  _currentPlayerNum = 0;
-            Hand                     _hand             = Hand();
-            Street                   _currentStreet    = Street::PREFLOP;
-            time_point<system_clock> _lastActionTime   = system_clock::now();
-            std::array<Player, 3>*   _players          = nullptr;  // The Game class owns the players, so we use a pointer here
-            players_status_ptr       _playersStatus    = nullptr;
-            RoundAction              _currentAction    = RoundAction();
-            RoundAction              _lastAction       = RoundAction();
-            bool                     _ended            = false;
+            players_round_recap_t    _playersRoundRecap = {};  // Used to store the players status statically in the json
+            Blinds                   _blinds            = Blinds(0, 0);
+            int32_t                  _pot               = 0;
+            int32_t                  _streetPot         = 0;
+            int32_t                  _frozenPot         = 0;
+            int32_t                  _dealerNumber      = 0;
+            int32_t                  _lastBetOrRaise    = 0;
+            int32_t                  _currentPlayerNum  = 0;
+            Hand                     _hand              = Hand();
+            Street                   _currentStreet     = Street::PREFLOP;
+            time_point<system_clock> _lastActionTime    = system_clock::now();
+            std::array<Player, 3>*   _players           = nullptr;  // The Game class owns the players, so we use a pointer here
+            players_status_ptr       _playersStatus     = nullptr;
+            RoundAction              _currentAction     = RoundAction();
+            RoundAction              _lastAction        = RoundAction();
+            bool                     _ended             = false;
 
             [[nodiscard]] auto _hasWon() const -> bool;
-            [[nodiscard]] auto _toJson(const ranking_t& ranking) const -> json;
-            [[nodiscard]] auto _getStacksVariation() const -> json;
             [[nodiscard]] auto _getPlayerStatus(int32_t playerNum) const -> PlayerStatus;
             [[nodiscard]] auto _getNextPlayerNum(int32_t playerNum) const -> int32_t;
             [[nodiscard]] auto _isStreetOver() const -> bool;
 
-            auto _getPlayer(int32_t playerNum) -> Player&;
             auto _getPlayerStatus(int32_t playerNum) -> PlayerStatus&;
             auto _getAndResetLastActionTime() -> seconds;
-            auto _determineStreetOver() -> void;
+            auto _setAction(int32_t playerNum, ActionType actionType, int32_t amount = 0) -> void;
             auto _determineRoundOver() -> void;
             auto _processRanking() -> void;
             auto _updateStacks() -> void;

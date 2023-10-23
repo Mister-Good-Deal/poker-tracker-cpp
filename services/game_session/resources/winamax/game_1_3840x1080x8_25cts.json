@@ -21,7 +21,7 @@
           },
           {
             "action": "Raise",
-            "amount": 300,
+            "amount": 290,
             "elapsed_time": 2,
             "player": "player_3"
           },
@@ -109,7 +109,7 @@
           },
           {
             "action": "Raise",
-            "amount": 300,
+            "amount": 280,
             "elapsed_time": 1,
             "player": "player_2"
           },
@@ -484,7 +484,7 @@
           },
           {
             "action": "Raise",
-            "amount": 320,
+            "amount": 305,
             "elapsed_time": 2,
             "player": "player_1"
           },
@@ -603,7 +603,7 @@
           },
           {
             "action": "Raise",
-            "amount": 200,
+            "amount": 185,
             "elapsed_time": 1,
             "player": "player_2"
           },
@@ -1095,7 +1095,7 @@
           },
           {
             "action": "Raise",
-            "amount": 230,
+            "amount": 210,
             "elapsed_time": 1,
             "player": "player_3"
           },
@@ -1177,7 +1177,7 @@
           },
           {
             "action": "Raise",
-            "amount": 480,
+            "amount": 460,
             "elapsed_time": 1,
             "player": "player_1"
           },
@@ -1308,7 +1308,7 @@
         "pre_flop": [
           {
             "action": "Raise",
-            "amount": 450,
+            "amount": 390,
             "elapsed_time": 1,
             "player": "player_2"
           },

@@ -138,7 +138,7 @@ TEST(RoundTest, case1JsonRepresentationShouldBeCorrect) {
             "actions": {
                 "pre_flop": [
                     { "action": "Check", "player": "player_1", "elapsed_time": 0 },
-                    { "action": "Raise", "player": "player_2", "elapsed_time": 0, "amount": 200 },
+                    { "action": "Raise", "player": "player_2", "elapsed_time": 0, "amount": 150 },
                     { "action": "Fold", "player": "player_3", "elapsed_time": 0 },
                     { "action": "Call", "player": "player_1", "elapsed_time": 0, "amount": 200 }
                 ],
@@ -230,7 +230,7 @@ TEST(RoundTest, case2JsonRepresentationShouldBeCorrect) {
             "actions": {
                 "pre_flop": [
                     { "action": "Check", "player": "player_1", "elapsed_time": 0 },
-                    { "action": "Raise", "player": "player_2", "elapsed_time": 0, "amount": 200 },
+                    { "action": "Raise", "player": "player_2", "elapsed_time": 0, "amount": 150 },
                     { "action": "Fold", "player": "player_3", "elapsed_time": 0 },
                     { "action": "Call", "player": "player_1", "elapsed_time": 0, "amount": 200 }
                 ],
@@ -332,7 +332,7 @@ TEST(RoundTest, case3JsonRepresentationShouldBeCorrect) {
             "actions": {
                 "pre_flop": [
                     { "action": "Check", "player": "player_2", "elapsed_time": 0 },
-                    { "action": "Raise", "player": "player_3", "elapsed_time": 0, "amount": 200 },
+                    { "action": "Raise", "player": "player_3", "elapsed_time": 0, "amount": 150 },
                     { "action": "Call", "player": "player_1", "elapsed_time": 0, "amount": 100 },
                     { "action": "Call", "player": "player_2", "elapsed_time": 0, "amount": 200 }
                 ],
@@ -413,7 +413,7 @@ TEST(RoundTest, case4JsonRepresentationShouldBeCorrect) {
             "actions": {
                 "pre_flop": [
                     { "action": "Fold", "player": "player_2", "elapsed_time": 0 },
-                    { "action": "Raise", "player": "player_3", "elapsed_time": 0, "amount": 300 },
+                    { "action": "Raise", "player": "player_3", "elapsed_time": 0, "amount": 290 },
                     { "action": "Fold", "player": "player_1", "elapsed_time": 0 }
                 ],
                 "flop": [],
@@ -478,7 +478,7 @@ TEST(RoundTest, case5JsonRepresentationShouldBeCorrect) {
                 "pre_flop": [
                     { "action": "Call", "player": "player_3", "elapsed_time": 0, "amount": 20 },
                     { "action": "Call", "player": "player_1", "elapsed_time": 0, "amount": 10 },
-                    { "action": "Raise", "player": "player_2", "elapsed_time": 0, "amount": 300 },
+                    { "action": "Raise", "player": "player_2", "elapsed_time": 0, "amount": 280 },
                     { "action": "Fold", "player": "player_3", "elapsed_time": 0 },
                     { "action": "Fold", "player": "player_1", "elapsed_time": 0 }
                 ],
@@ -750,7 +750,7 @@ TEST(RoundTest, case8JsonRepresentationShouldBeCorrect) {
             "actions": {
                 "pre_flop": [
                     { "action": "Fold", "player": "player_1", "elapsed_time": 0 },
-                    { "action": "Raise", "player": "player_2", "elapsed_time": 0, "amount": 200 },
+                    { "action": "Raise", "player": "player_2", "elapsed_time": 0, "amount": 185 },
                     { "action": "Call", "player": "player_3", "elapsed_time": 0, "amount": 170 }
                 ],
                 "flop": [],

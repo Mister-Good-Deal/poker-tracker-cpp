@@ -16,7 +16,6 @@ namespace GameHandler {
     using std::ranges::sort;
 
     using enum Round::Street;
-    using enum RoundAction::ActionType;
 
     Round::Round(const Blinds& blinds, std::array<Player, 3>& players, Hand hand, int32_t dealerNumber)
       : _blinds(blinds)
@@ -25,28 +24,29 @@ namespace GameHandler {
       , _hand(hand)
       , _dealerNumber(dealerNumber)
       , _currentPlayerNum(dealerNumber)
-      , _playersStatus(std::make_unique<players_status_t>(players_status_t {{PlayerStatus {players[0], dealerNumber},
-                                                                             PlayerStatus {players[1], dealerNumber},
-                                                                             PlayerStatus {players[2], dealerNumber}}})) {
+      , _playersStatus(std::make_unique<players_status_t>(players_status_t {{PlayerStatus {&players[0], dealerNumber},
+                                                                             PlayerStatus {&players[1], dealerNumber},
+                                                                             PlayerStatus {&players[2], dealerNumber}}})) {
         _getPlayerStatus(1).hand = std::move(hand);
         _payBlinds();
     }
 
     auto Round::operator=(const Round& other) -> Round& {
         if (this != &other) {
-            _actions          = other._actions;
-            _board            = other._board;
-            _ranking          = other._ranking;
-            _blinds           = other._blinds;
-            _pot              = other._pot;
-            _currentStreet    = other._currentStreet;
-            _lastActionTime   = other._lastActionTime;
-            _players          = other._players;
-            _ended            = other._ended;
-            _hand             = other._hand;
-            _dealerNumber     = other._dealerNumber;
-            _currentPlayerNum = other._currentPlayerNum;
-            _playersStatus    = std::make_unique<players_status_t>(*_playersStatus);
+            _actions           = other._actions;
+            _board             = other._board;
+            _ranking           = other._ranking;
+            _playersRoundRecap = other._playersRoundRecap;
+            _blinds            = other._blinds;
+            _pot               = other._pot;
+            _currentStreet     = other._currentStreet;
+            _lastActionTime    = other._lastActionTime;
+            _players           = other._players;
+            _ended             = other._ended;
+            _hand              = other._hand;
+            _dealerNumber      = other._dealerNumber;
+            _currentPlayerNum  = other._currentPlayerNum;
+            _playersStatus     = std::make_unique<players_status_t>(*_playersStatus);
         }
 
         return *this;
@@ -54,19 +54,20 @@ namespace GameHandler {
 
     auto Round::operator=(Round&& other) noexcept -> Round& {
         if (this != &other) {
-            _actions          = std::move(other._actions);
-            _board            = std::move(other._board);
-            _ranking          = std::move(other._ranking);
-            _playersStatus    = std::move(other._playersStatus);
-            _hand             = std::move(other._hand);
-            _dealerNumber     = other._dealerNumber;
-            _currentPlayerNum = other._currentPlayerNum;
-            _blinds           = other._blinds;
-            _pot              = other._pot;
-            _currentStreet    = other._currentStreet;
-            _lastActionTime   = other._lastActionTime;
-            _players          = other._players;
-            _ended            = other._ended;
+            _actions           = std::move(other._actions);
+            _board             = std::move(other._board);
+            _ranking           = std::move(other._ranking);
+            _playersStatus     = std::move(other._playersStatus);
+            _hand              = std::move(other._hand);
+            _playersRoundRecap = other._playersRoundRecap;
+            _dealerNumber      = other._dealerNumber;
+            _currentPlayerNum  = other._currentPlayerNum;
+            _blinds            = other._blinds;
+            _pot               = other._pot;
+            _currentStreet     = other._currentStreet;
+            _lastActionTime    = other._lastActionTime;
+            _players           = other._players;
+            _ended             = other._ended;
         }
 
         return *this;
@@ -76,60 +77,20 @@ namespace GameHandler {
         auto& player         = _getPlayerStatus(playerNum);
         auto  computedAmount = std::min(_lastBetOrRaise - player.totalStreetBet, player.getStack());
 
-        _lastAction    = _currentAction;
-        _currentAction = _actions.at(_currentStreet).emplace_back(CALL, player, _getAndResetLastActionTime(), computedAmount);
-        player.hasCalled(computedAmount);
-        _pot       += computedAmount;
-        _streetPot += computedAmount;
-
-        _determineStreetOver();
+        _setAction(playerNum, CALL, computedAmount);
     }
 
-    auto Round::bet(int32_t playerNum, int32_t amount) -> void {
-        auto& player = _getPlayerStatus(playerNum);
-
-        _lastAction    = _currentAction;
-        _currentAction = _actions.at(_currentStreet).emplace_back(BET, player, _getAndResetLastActionTime(), amount);
-        player.hasBet(amount);
-        _lastBetOrRaise    = amount;
-        _pot              += amount;
-        _streetPot        += amount;
-        _currentPlayerNum  = _getNextPlayerNum(_currentPlayerNum);
-    }
+    auto Round::bet(int32_t playerNum, int32_t amount) -> void { _setAction(playerNum, BET, amount); }
 
     auto Round::raiseTo(int32_t playerNum, int32_t amount) -> void {
         auto& player         = _getPlayerStatus(playerNum);
         auto  computedAmount = amount - player.totalStreetBet;
 
-        _lastAction    = _currentAction;
-        _currentAction = _actions.at(_currentStreet).emplace_back(RAISE, player, _getAndResetLastActionTime(), amount);
-        player.hasRaised(computedAmount);
-        _lastBetOrRaise    = player.totalStreetBet;
-        _pot              += computedAmount;
-        _streetPot        += computedAmount;
-        _currentPlayerNum  = _getNextPlayerNum(_currentPlayerNum);
+        _setAction(playerNum, RAISE, computedAmount);
     }
 
-    auto Round::check(int32_t playerNum) -> void {
-        auto& player = _getPlayerStatus(playerNum);
-
-        _lastAction    = _currentAction;
-        _currentAction = _actions.at(_currentStreet).emplace_back(CHECK, player, _getAndResetLastActionTime());
-        player.hasChecked();
-
-        _determineStreetOver();
-    }
-
-    auto Round::fold(int32_t playerNum) -> void {
-        auto& player = _getPlayerStatus(playerNum);
-
-        _lastAction    = _currentAction;
-        _currentAction = _actions.at(_currentStreet).emplace_back(FOLD, player, _getAndResetLastActionTime());
-        player.hasFolded();
-        _ranking.emplace(std::vector<int32_t> {player.getNumber()});
-
-        _determineStreetOver();
-    }
+    auto Round::check(int32_t playerNum) -> void { _setAction(playerNum, CHECK); }
+    auto Round::fold(int32_t playerNum) -> void { _setAction(playerNum, FOLD); }
 
     auto Round::allIn(int32_t playerNum) -> void {
         const auto& player = _getPlayerStatus(playerNum);
@@ -192,14 +153,37 @@ namespace GameHandler {
                 {"pot", _pot},
                 {"won", _hasWon()},
                 {"positions", positions},
-                {"stacks", _getStacksVariation()},
-                {"ranking", _toJson(_ranking)}};
+                {"stacks", getStacksVariation(_playersRoundRecap)},
+                {"ranking", toJson(_ranking)}};
     }
 
-    auto Round::_getPlayer(int32_t playerNum) -> Player& {
-        if (playerNum <= 0 || playerNum > 3) { throw std::invalid_argument("The given player number is invalid"); }
+    auto Round::toJson(const ranking_t& ranking) -> json {
+        auto rankingJson = json::array();
+        auto rankingCopy = ranking;
 
-        return _players->at(playerNum - 1);
+        while (!rankingCopy.empty()) {
+            auto rankStepJson = json::array();
+            auto rankStep     = rankingCopy.top();
+
+            for (const auto& playerNum : rankStep) { rankStepJson.emplace_back(fmt::format("player_{}", playerNum)); }
+
+            rankingJson.emplace_back(rankStepJson);
+            rankingCopy.pop();
+        }
+
+        return rankingJson;
+    }
+
+    auto Round::getStacksVariation(const players_round_recap_t& playersRoundRecap) -> json {
+        auto playersStack = json::array();
+
+        for (const auto& recap : playersRoundRecap) {
+            playersStack.emplace_back(json::object({{"player", fmt::format("player_{}", recap.playerNumber)},
+                                                    {"stack", recap.endStack},
+                                                    {"balance", recap.endStack - recap.startStack}}));
+        }
+
+        return playersStack;
     }
 
     auto Round::_getPlayerStatus(int32_t playerNum) -> PlayerStatus& {
@@ -262,22 +246,41 @@ namespace GameHandler {
         // clang-format on
     }
 
-    /**
-     * @brief Processes the current street in the round based on the current player action.
-     *
-     * The function determines if the current street has ended based on the current player's action and the current state of the
-     * players in the round. If the street has ended, it calls the endStreet() function. Otherwise, it updates the last action of the
-     * current player.
-     *
-     * @param currentPlayerAction The action taken by the current player.
-     * @return void
-     */
-    auto Round::_determineStreetOver() -> void {
-        if (_isStreetOver()) {
-            _endStreet();
-        } else {
-            _currentPlayerNum = _getNextPlayerNum(_currentPlayerNum);
+    auto Round::_setAction(int32_t playerNum, ActionType actionType, int32_t amount) -> void {
+        auto& player = _getPlayerStatus(playerNum);
+
+        _lastAction    = _currentAction;
+        _currentAction = _actions.at(_currentStreet).emplace_back(actionType, player, _getAndResetLastActionTime(), amount);
+
+        if (amount != 0) {
+            _pot       += amount;
+            _streetPot += amount;
         }
+
+        switch (actionType) {
+            case CALL: player.hasCalled(amount); break;
+            case BET:
+                player.hasBet(amount);
+                _lastBetOrRaise = amount;
+                break;
+            case RAISE:
+                player.hasRaised(amount);
+                _lastBetOrRaise = player.totalStreetBet;
+                break;
+            case CHECK: player.hasChecked(); break;
+            case FOLD:
+                player.hasFolded();
+                _ranking.emplace(std::vector<int32_t> {player.getNumber()});
+                break;
+            default: break;
+        }
+
+        if ((actionType == FOLD || actionType == CHECK || actionType == CALL) && _isStreetOver()) {
+            _endStreet();
+            return;
+        }
+
+        _currentPlayerNum = _getNextPlayerNum(_currentPlayerNum);
     }
 
     auto Round::_determineRoundOver() -> void {
@@ -319,9 +322,10 @@ namespace GameHandler {
         _updateStacks();
 
         for (auto& player : *_playersStatus) {
-            if (player.getStack() == 0) {
-                _getPlayer(player.getNumber()).bust();  // @todo call bust() in the playerStatus
-            }
+            // Bust players with no stack left
+            if (player.getStack() == 0) { player.bust(); }
+            // Store the stacks variation for each player
+            _playersRoundRecap[player.getNumber() - 1] = {player.getNumber(), player.initialStack, player.getStack()};
         }
 
         _ended = true;
@@ -358,10 +362,10 @@ namespace GameHandler {
         auto& SBPlayer = _getPlayerStatus(_getNextPlayerNum(_dealerNumber));
         auto& BBPlayer = _getPlayerStatus(_getNextPlayerNum(SBPlayer.getNumber()));  // Can be the dealer if there are only 2 players
 
-        SBPlayer.payBlind(_blinds.SB());
-        BBPlayer.payBlind(_blinds.BB());
+        SBPlayer.paySmallBlind(_blinds.SB());
+        BBPlayer.payBigBlind(_blinds.BB());
 
-        _lastBetOrRaise  = _blinds.BB();  // @todo see complex scenario when BB Player cannot pay all the BB
+        _lastBetOrRaise  = std::max(SBPlayer.totalBet, BBPlayer.totalBet);
         _streetPot      += SBPlayer.totalBet + BBPlayer.totalBet;
         _pot             = _streetPot;
     }
@@ -374,8 +378,9 @@ namespace GameHandler {
         while (!ranking.empty()) {
             auto playersNum = ranking.top();
             // Sort players by original stacks asc and pay players by this order
-            sort(playersNum,
-                 [&](int32_t p1Num, int32_t p2Num) { return _getPlayer(p1Num).getStack() < _getPlayer(p2Num).getStack(); });
+            sort(playersNum, [&](int32_t p1Num, int32_t p2Num) {
+                return _getPlayerStatus(p1Num).getStack() < _getPlayerStatus(p2Num).getStack();
+            });
             // Number of remaining players to share the pot
             auto remainingPlayers = static_cast<int32_t>(playersNum.size());
 
@@ -384,7 +389,6 @@ namespace GameHandler {
                 auto  winAmount = std::min(player.maxWinnable, pot / remainingPlayers--);
 
                 player.winChips(winAmount);
-                _getPlayer(player.getNumber()).setStack(player.getStack());
 
                 pot -= winAmount;
             }
@@ -410,34 +414,5 @@ namespace GameHandler {
                 playerStatus.maxWinnable = _frozenPot + streetWinnable;
             }
         }
-    }
-
-    auto Round::_toJson(const ranking_t& ranking) const -> json {
-        auto rankingJson = json::array();
-        auto rankingCopy = ranking;
-
-        while (!rankingCopy.empty()) {
-            auto rankStepJson = json::array();
-            auto rankStep     = rankingCopy.top();
-
-            for (const auto& playerNum : rankStep) { rankStepJson.emplace_back(fmt::format("player_{}", playerNum)); }
-
-            rankingJson.emplace_back(rankStepJson);
-            rankingCopy.pop();
-        }
-
-        return rankingJson;
-    }
-
-    auto Round::_getStacksVariation() const -> json {
-        auto playersStack = json::array();
-
-        for (const auto& player : *_playersStatus) {
-            playersStack.emplace_back(json::object({{"player", fmt::format("player_{}", player.getNumber())},
-                                                    {"stack", player.getStack()},
-                                                    {"balance", player.getStack() - player.initialStack}}));
-        }
-
-        return playersStack;
     }
 }  // namespace GameHandler

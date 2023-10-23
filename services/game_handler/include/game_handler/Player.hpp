@@ -16,14 +16,14 @@ namespace GameHandler {
             auto operator=(Player&& other) noexcept -> Player&;
             auto operator==(const Player& other) const -> bool { return _name == other._name; }
 
-            [[nodiscard]] auto getName() const -> std::string { return _name; }
-            [[nodiscard]] auto getNumber() const -> int32_t { return _number; }
-            [[nodiscard]] auto getStack() const -> int32_t { return _stack; }
-            [[nodiscard]] auto isEliminated() const -> bool { return _eliminated; }
-            [[nodiscard]] auto isHero() const -> bool { return _number == 1; }  // The player with number 1 is the hero
+            [[nodiscard]] virtual auto getName() const -> std::string { return _name; }
+            [[nodiscard]] virtual auto getNumber() const -> int32_t { return _number; }
+            [[nodiscard]] virtual auto getStack() const -> int32_t { return _stack; }
+            [[nodiscard]] virtual auto isEliminated() const -> bool { return _eliminated; }
+            [[nodiscard]] virtual auto isHero() const -> bool { return _number == 1; }  // The player with number 1 is the hero
 
-            auto setStack(int32_t stack) -> void { _stack = stack; }
-            auto bust() -> void { _eliminated = true; }
+            virtual auto setStack(int32_t stack) -> void { _stack = stack; }
+            virtual auto bust() -> void { _eliminated = true; }
 
         private:
             std::string _name       = "DEFAULT_PLAYER";
