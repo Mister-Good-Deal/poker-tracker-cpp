@@ -318,6 +318,12 @@ namespace GameHandler {
         _processRanking();
         _updateStacks();
 
+        for (auto& player : *_playersStatus) {
+            if (player.getStack() == 0) { 
+                _getPlayer(player.getNumber()).bust(); // @todo call bust() in the playerStatus
+            }
+        }
+
         _ended = true;
     }
 

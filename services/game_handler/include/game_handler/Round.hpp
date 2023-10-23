@@ -46,7 +46,7 @@ namespace GameHandler {
               : position(static_cast<Position>((player.getNumber() - dealerNumber + 3) % 3))
               , inRound(!player.isEliminated())
               , initialStack(player.getStack())
-              , Player(player) {};
+              , Player(player) {}; // @todo extends Player with a way the actual player can be modified
 
             auto payBlind(int32_t amount) -> void {
                 auto payAmount = std::min(amount, getStack());
