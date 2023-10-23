@@ -134,11 +134,8 @@ namespace GameSession {
             case BET: round.bet(playerNum, _ocr->readPlayerBet(_playerBetImg.getImg(playerNum))); break;
             case RAISE: round.raiseTo(playerNum, _ocr->readPlayerBet(_playerBetImg.getImg(playerNum))); break;
             case PAY_BIG_BLIND:
-            case PAY_SMALL_BLIND:
-                _currentAction = NONE;
-                return;
-            case NONE:
-                throw CannotReadGameActionImageException(actionImg, "NONE");
+            case PAY_SMALL_BLIND: _currentAction = NONE; return;
+            case NONE: throw CannotReadGameActionImageException(actionImg, "NONE");
         }
 
         LOG_INFO(Logger::getLogger(), "{}", round.getLastAction());

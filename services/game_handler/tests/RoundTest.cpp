@@ -802,7 +802,7 @@ TEST(RoundTest, case9JsonRepresentationShouldBeCorrect) {
     Player player1("player 1", 1);
     Player player2("player 2", 2);
     Player player3("player 3", 3);
-    
+
     player1.setStack(340);
     player2.setStack(330);
     player3.setStack(230);
