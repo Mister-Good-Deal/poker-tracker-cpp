@@ -148,7 +148,7 @@ namespace GameHandler {
             [[nodiscard]] auto toJson() const -> json;
 
             [[nodiscard]] static auto toJson(const ranking_t& ranking) -> json;
-            [[nodiscard]] static auto getStacksVariation(const players_round_recap_t& playersRoundRecap) -> json;
+            [[nodiscard]] static auto toJson(const players_round_recap_t& playersRoundRecap) -> json;
 
         private:
             round_actions_t          _actions;

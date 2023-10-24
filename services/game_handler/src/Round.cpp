@@ -153,7 +153,7 @@ namespace GameHandler {
                 {"pot", _pot},
                 {"won", _hasWon()},
                 {"positions", positions},
-                {"stacks", getStacksVariation(_playersRoundRecap)},
+                {"stacks", toJson(_playersRoundRecap)},
                 {"ranking", toJson(_ranking)}};
     }
 
@@ -174,7 +174,7 @@ namespace GameHandler {
         return rankingJson;
     }
 
-    auto Round::getStacksVariation(const players_round_recap_t& playersRoundRecap) -> json {
+    auto Round::toJson(const players_round_recap_t& playersRoundRecap) -> json {
         auto playersStack = json::array();
 
         for (const auto& recap : playersRoundRecap) {

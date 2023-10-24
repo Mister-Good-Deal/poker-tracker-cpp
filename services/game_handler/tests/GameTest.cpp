@@ -79,7 +79,7 @@ TEST(GameTest, jsonRepresentationShouldBeCorrect) {
                     "actions": {
                         "pre_flop": [
                             { "action": "Check", "player": "player_1", "elapsed_time": 0 },
-                            { "action": "Raise", "player": "player_2", "elapsed_time": 0, "amount": 300 },
+                            { "action": "Raise", "player": "player_2", "elapsed_time": 0, "amount": 250 },
                             { "action": "Fold", "player": "player_3", "elapsed_time": 0 },
                             { "action": "Call", "player": "player_1", "elapsed_time": 0, "amount": 300 }
                         ],
@@ -125,7 +125,7 @@ TEST(GameTest, jsonRepresentationShouldBeCorrect) {
                         "pre_flop": [
                             { "action": "Raise", "player": "player_2", "elapsed_time": 0, "amount": 500 },
                             { "action": "Call", "player": "player_3", "elapsed_time": 0, "amount": 400 },
-                            { "action": "Raise", "player": "player_1", "elapsed_time": 0, "amount": 1600 },
+                            { "action": "Raise", "player": "player_1", "elapsed_time": 0, "amount": 1400 },
                             { "action": "Call", "player": "player_3", "elapsed_time": 0, "amount": 400 }
                         ],
                         "flop": [],
