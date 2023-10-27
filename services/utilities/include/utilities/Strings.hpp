@@ -42,10 +42,10 @@ namespace Utilities::Strings {
         ltrim(s);
     }
 
-    static inline auto containsInCharacters(const std::string& str, const std::string& chars) -> bool {
-        std::unordered_set<char> charsSet(chars.begin(), chars.end());
+    static inline auto containsAnyCharacterInSet(const std::string& inputString, const std::string& characterSet) -> bool {
+        std::unordered_set<char> uniqueCharsSet(characterSet.begin(), characterSet.end());
 
-        return std::any_of(str.begin(), str.end(), [&](char c) { return charsSet.count(c); });
+        return std::any_of(inputString.begin(), inputString.end(), [&](char character) { return uniqueCharsSet.count(character); });
     }
 
     static inline auto toFloat(std::string_view s) -> double {

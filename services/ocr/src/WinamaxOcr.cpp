@@ -8,7 +8,7 @@ namespace OCR {
     using std::min;
     using Utilities::Image::isSimilar;
     using Utilities::Image::writeLearningImage;
-    using Utilities::Strings::containsInCharacters;
+    using Utilities::Strings::containsAnyCharacterInSet;
     using Utilities::Strings::InvalidNumberException;
     using Utilities::Time::getMsTimestamp;
 
@@ -164,7 +164,7 @@ namespace OCR {
         }
 
         // Characters that are hard to read by OCR
-        if (containsInCharacters(playerName, "oO0Il_")) {
+        if (containsAnyCharacterInSet(playerName, "oO0Il_")) {
             writeLearningImage(playerNameImage, LEARNING_DATA_DIR, "player_name", playerName);
         }
 
