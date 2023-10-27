@@ -14,39 +14,59 @@ namespace GameHandler {
     using std::ranges::find_if;
     using std::ranges::for_each;
     using std::ranges::sort;
+    using std::views::filter;
 
     using enum Round::Street;
+
+    namespace {
+        auto playerIsInRound   = [](const PlayerStatus& player) { return player.inRound; };
+        auto playerIsAllIn     = [](const PlayerStatus& player) { return player.isAllIn; };
+        auto playerIsNotBusted = [](const PlayerStatus& player) { return !player.isEliminated(); };
+    }  // namespace
 
     Round::Round(const Blinds& blinds, std::array<Player, 3>& players, Hand hand, int32_t dealerNumber)
       : _blinds(blinds)
       , _players(&players)
       , _lastActionTime(system_clock::now())
       , _hand(hand)
-      , _dealerNumber(dealerNumber)
+      , _dealerPlayerNum(dealerNumber)
       , _currentPlayerNum(dealerNumber)
       , _playersStatus(std::make_unique<players_status_t>(players_status_t {{PlayerStatus {&players[0], dealerNumber},
                                                                              PlayerStatus {&players[1], dealerNumber},
                                                                              PlayerStatus {&players[2], dealerNumber}}})) {
+        auto remainingPlayers = count_if(*_playersStatus, playerIsNotBusted);
+
+        if (remainingPlayers == 3) {
+            _smallBlindPlayerNum = _getNextPlayerNum(dealerNumber);
+        } else {
+            _smallBlindPlayerNum = dealerNumber;
+        }
+
+        _bigBlindPlayerNum = _getNextPlayerNum(_smallBlindPlayerNum);
+
         _getPlayerStatus(1).hand = std::move(hand);
         _payBlinds();
     }
 
     auto Round::operator=(const Round& other) -> Round& {
         if (this != &other) {
-            _actions           = other._actions;
-            _board             = other._board;
-            _ranking           = other._ranking;
-            _playersRoundRecap = other._playersRoundRecap;
-            _blinds            = other._blinds;
-            _pot               = other._pot;
-            _currentStreet     = other._currentStreet;
-            _lastActionTime    = other._lastActionTime;
-            _players           = other._players;
-            _ended             = other._ended;
-            _hand              = other._hand;
-            _dealerNumber      = other._dealerNumber;
-            _currentPlayerNum  = other._currentPlayerNum;
-            _playersStatus     = std::make_unique<players_status_t>(*_playersStatus);
+            _actions             = other._actions;
+            _board               = other._board;
+            _ranking             = other._ranking;
+            _playersRoundRecap   = other._playersRoundRecap;
+            _blinds              = other._blinds;
+            _pot                 = other._pot;
+            _currentStreet       = other._currentStreet;
+            _lastActionTime      = other._lastActionTime;
+            _players             = other._players;
+            _ended               = other._ended;
+            _hand                = other._hand;
+            _dealerPlayerNum     = other._dealerPlayerNum;
+            _smallBlindPlayerNum = other._smallBlindPlayerNum;
+            _bigBlindPlayerNum   = other._bigBlindPlayerNum;
+            _currentPlayerNum    = other._currentPlayerNum;
+            _playerGotBusted     = other._playerGotBusted;
+            _playersStatus       = std::make_unique<players_status_t>(*_playersStatus);
         }
 
         return *this;
@@ -54,20 +74,23 @@ namespace GameHandler {
 
     auto Round::operator=(Round&& other) noexcept -> Round& {
         if (this != &other) {
-            _actions           = std::move(other._actions);
-            _board             = std::move(other._board);
-            _ranking           = std::move(other._ranking);
-            _playersStatus     = std::move(other._playersStatus);
-            _hand              = std::move(other._hand);
-            _playersRoundRecap = other._playersRoundRecap;
-            _dealerNumber      = other._dealerNumber;
-            _currentPlayerNum  = other._currentPlayerNum;
-            _blinds            = other._blinds;
-            _pot               = other._pot;
-            _currentStreet     = other._currentStreet;
-            _lastActionTime    = other._lastActionTime;
-            _players           = other._players;
-            _ended             = other._ended;
+            _actions             = std::move(other._actions);
+            _board               = std::move(other._board);
+            _ranking             = std::move(other._ranking);
+            _playersStatus       = std::move(other._playersStatus);
+            _hand                = std::move(other._hand);
+            _playersRoundRecap   = other._playersRoundRecap;
+            _dealerPlayerNum     = other._dealerPlayerNum;
+            _smallBlindPlayerNum = other._smallBlindPlayerNum;
+            _bigBlindPlayerNum   = other._bigBlindPlayerNum;
+            _currentPlayerNum    = other._currentPlayerNum;
+            _blinds              = other._blinds;
+            _pot                 = other._pot;
+            _currentStreet       = other._currentStreet;
+            _lastActionTime      = other._lastActionTime;
+            _players             = other._players;
+            _ended               = other._ended;
+            _playerGotBusted     = other._playerGotBusted;
         }
 
         return *this;
@@ -133,16 +156,11 @@ namespace GameHandler {
         auto turnActions    = json::array();
         auto riverActions   = json::array();
         auto hands          = json::object();
-        auto positions      = json::object();
 
         for_each(_actions[PREFLOP], [&](const RoundAction& action) { preFlopActions.emplace_back(action.toJson()); });
         for_each(_actions[FLOP], [&](const RoundAction& action) { flopActions.emplace_back(action.toJson()); });
         for_each(_actions[TURN], [&](const RoundAction& action) { turnActions.emplace_back(action.toJson()); });
         for_each(_actions[RIVER], [&](const RoundAction& action) { riverActions.emplace_back(action.toJson()); });
-
-        for (const auto& player : *_playersStatus) {
-            positions.emplace(format("{}", player.position), format("player_{}", player.getNumber()));
-        }
 
         for (const auto& player : *_playersStatus) { hands.emplace(format("player_{}", player.getNumber()), player.hand.toJson()); }
 
@@ -152,7 +170,10 @@ namespace GameHandler {
                 {"blinds", {{"small", _blinds.SB()}, {"big", _blinds.BB()}}},
                 {"pot", _pot},
                 {"won", _hasWon()},
-                {"positions", positions},
+                {"positions",
+                 {{"dealer", format("player_{}", _dealerPlayerNum)},
+                  {"small_blind", format("player_{}", _smallBlindPlayerNum)},
+                  {"big_blind", format("player_{}", _bigBlindPlayerNum)}}},
                 {"stacks", toJson(_playersRoundRecap)},
                 {"ranking", toJson(_ranking)}};
     }
@@ -222,11 +243,10 @@ namespace GameHandler {
     }
 
     auto Round::_isStreetOver() const -> bool {
-        auto isInRound  = [](const PlayerStatus& player) { return player.inRound; };
         auto hasChecked = [](const PlayerStatus& player) { return !player.inRound || player.isAllIn || player.lastAction == CHECK; };
         auto hasPlayed  = [](const PlayerStatus& player) { return !player.inRound || player.isAllIn || player.lastAction != NONE; };
         // All in players are considered in the round, hasPlayed and hasChecked
-        auto roundPlayersCount    = count_if(*_playersStatus, isInRound);
+        auto roundPlayersCount    = count_if(*_playersStatus, playerIsInRound);
         auto allPlayersPlayed     = all_of(*_playersStatus, hasPlayed);
         auto allPlayersHasChecked = all_of(*_playersStatus, hasChecked);
 
@@ -284,16 +304,14 @@ namespace GameHandler {
     }
 
     auto Round::_determineRoundOver() -> void {
-        auto winnerFinder = [](const PlayerStatus& playerStatus) { return playerStatus.inRound; };
-
-        if (std::count_if(_playersStatus->begin(), _playersStatus->end(), winnerFinder) == 1) { _endRound(); }
+        if (count_if(*_playersStatus, playerIsInRound) == 1) { _endRound(); }
     }
 
     auto Round::_endStreet() -> void {
         _updatePlayersMaxWinnable();
 
-        auto playersInRound = count_if(*_playersStatus, [](const PlayerStatus& player) { return player.inRound; });
-        auto playersAllIn   = count_if(*_playersStatus, [](const PlayerStatus& player) { return player.isAllIn; });
+        auto playersInRound = count_if(*_playersStatus, playerIsInRound);
+        auto playersAllIn   = count_if(*_playersStatus, playerIsAllIn);
 
         if (playersInRound >= 2 && playersInRound - playersAllIn <= 1) { _currentStreet = SHOWDOWN; }
 
@@ -311,9 +329,9 @@ namespace GameHandler {
             _lastAction       = RoundAction();
             _streetPot        = 0;
             _frozenPot        = _pot;
-            _currentPlayerNum = _getNextPlayerNum(_dealerNumber);
+            _currentPlayerNum = _getNextPlayerNum(_dealerPlayerNum);
 
-            for (auto& player : *_playersStatus) { player.streetReset(); }
+            for (auto& player : *_playersStatus | filter(playerIsInRound)) { player.streetReset(); }
         }
     }
 
@@ -323,7 +341,10 @@ namespace GameHandler {
 
         for (auto& player : *_playersStatus) {
             // Bust players with no stack left
-            if (player.getStack() == 0) { player.bust(); }
+            if (!player.isEliminated() && player.getStack() == 0) {
+                player.bust();
+                _playerGotBusted = true;
+            }
             // Store the stacks variation for each player
             _playersRoundRecap[player.getNumber() - 1] = {player.getNumber(), player.initialStack, player.getStack()};
         }
@@ -341,9 +362,7 @@ namespace GameHandler {
         std::vector<PlayerStatus> players;
         players.reserve(_playersStatus->size());
         // Add in round players to the players vector
-        for (const auto& playerStatus : *_playersStatus) {
-            if (playerStatus.inRound) { players.push_back(playerStatus); }
-        }
+        for (const auto& playerStatus : *_playersStatus | filter(playerIsInRound)) { players.push_back(playerStatus); }
         // Sort players by hand strength desc
         sort(players, [&](const PlayerStatus& p1, const PlayerStatus& p2) { return _board.compareHands(p2.hand, p1.hand) > 0; });
         // Add the first player to the _ranking stack
@@ -359,8 +378,8 @@ namespace GameHandler {
     }
 
     auto Round::_payBlinds() -> void {
-        auto& SBPlayer = _getPlayerStatus(_getNextPlayerNum(_dealerNumber));
-        auto& BBPlayer = _getPlayerStatus(_getNextPlayerNum(SBPlayer.getNumber()));  // Can be the dealer if there are only 2 players
+        auto& SBPlayer = _getPlayerStatus(_smallBlindPlayerNum);
+        auto& BBPlayer = _getPlayerStatus(_bigBlindPlayerNum);  // Can be the dealer if there are only 2 players
 
         SBPlayer.paySmallBlind(_blinds.SB());
         BBPlayer.payBigBlind(_blinds.BB());

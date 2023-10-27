@@ -284,7 +284,7 @@ TEST(RoundTest, case2JsonRepresentationShouldBeCorrect) {
         }
     )"_json;
 
-    EXPECT_JSON_EQ(expectedJson, round.toJson());
+    EXPECT_JSON_EQ(round.toJson(), expectedJson);
 }
 
 TEST(RoundTest, case3JsonRepresentationShouldBeCorrect) {
@@ -384,7 +384,7 @@ TEST(RoundTest, case3JsonRepresentationShouldBeCorrect) {
         }
     )"_json;
 
-    EXPECT_JSON_EQ(expectedJson, round.toJson());
+    EXPECT_JSON_EQ(round.toJson(), expectedJson);
 }
 
 TEST(RoundTest, case4JsonRepresentationShouldBeCorrect) {
@@ -446,7 +446,7 @@ TEST(RoundTest, case4JsonRepresentationShouldBeCorrect) {
         }
     )"_json;
 
-    EXPECT_JSON_EQ(expectedJson, round.toJson());
+    EXPECT_JSON_EQ(round.toJson(), expectedJson);
 }
 
 TEST(RoundTest, case5JsonRepresentationShouldBeCorrect) {
@@ -512,7 +512,7 @@ TEST(RoundTest, case5JsonRepresentationShouldBeCorrect) {
         }
     )"_json;
 
-    EXPECT_JSON_EQ(expectedJson, round.toJson());
+    EXPECT_JSON_EQ(round.toJson(), expectedJson);
 }
 
 TEST(RoundTest, case6JsonRepresentationShouldBeCorrect) {
@@ -615,7 +615,7 @@ TEST(RoundTest, case6JsonRepresentationShouldBeCorrect) {
         }
     )"_json;
 
-    EXPECT_JSON_EQ(expectedJson, round.toJson());
+    EXPECT_JSON_EQ(round.toJson(), expectedJson);
 }
 
 TEST(RoundTest, case7JsonRepresentationShouldBeCorrect) {
@@ -705,7 +705,7 @@ TEST(RoundTest, case7JsonRepresentationShouldBeCorrect) {
         }
     )"_json;
 
-    EXPECT_JSON_EQ(expectedJson, round.toJson());
+    EXPECT_JSON_EQ(round.toJson(), expectedJson);
 }
 
 TEST(RoundTest, case8JsonRepresentationShouldBeCorrect) {
@@ -795,7 +795,7 @@ TEST(RoundTest, case8JsonRepresentationShouldBeCorrect) {
         }
     )"_json;
 
-    EXPECT_JSON_EQ(expectedJson, round.toJson());
+    EXPECT_JSON_EQ(round.toJson(), expectedJson);
 }
 
 TEST(RoundTest, case9JsonRepresentationShouldBeCorrect) {
@@ -885,7 +885,109 @@ TEST(RoundTest, case9JsonRepresentationShouldBeCorrect) {
         }
     )"_json;
 
-    EXPECT_JSON_EQ(expectedJson, round.toJson());
+    EXPECT_JSON_EQ(round.toJson(), expectedJson);
+}
+
+TEST(RoundTest, case10JsonRepresentationShouldBeCorrect) {
+    Player player1("player 1", 1);
+    Player player2("player 2", 2);
+    Player player3("player 3", 3);
+
+    player1.setStack(255);
+    player2.setStack(0);
+    player2.bust();
+    player3.setStack(645);
+
+    std::array<Player, 3> players = {player1, player2, player3};
+
+    Round round(Blinds {15, 30}, players, {card("4S"), card("QD")}, 3);
+
+    // Run a scenario
+
+    // Pre-flop
+    round.call(3);
+    round.check(1);
+
+    // Flop
+    round.getBoard().setFlop({card("TH"), card("TC"), card("TD")});
+    round.check(1);
+    round.check(3);
+
+    // Turn
+    round.getBoard().setTurn(card("9C"));
+    round.check(1);
+    round.check(3);
+
+    // River
+    round.getBoard().setRiver(card("3H"));
+    round.bet(1, 30);
+    round.raiseTo(3, 615);
+    round.call(1);
+
+    // Showdown
+    EXPECT_TRUE(round.waitingShowdown());
+
+    round.setPlayerHand({card("TS"), card("JD")}, 3);
+    round.showdown();
+
+    // language=json
+    auto expectedJson = R"(
+        {
+            "actions": {
+                "pre_flop": [
+                    { "action": "Call", "player": "player_3", "elapsed_time": 0, "amount": 15 },
+                    { "action": "Check", "player": "player_1", "elapsed_time": 0 }
+                ],
+                "flop": [
+                    { "action": "Check", "player": "player_1", "elapsed_time": 0 },
+                    { "action": "Check", "player": "player_3", "elapsed_time": 0 }
+                ],
+                "turn": [
+                    { "action": "Check", "player": "player_1", "elapsed_time": 0 },
+                    { "action": "Check", "player": "player_3", "elapsed_time": 0 }
+                ],
+                "river": [
+                    { "action": "Bet", "player": "player_1", "elapsed_time": 0, "amount": 30 },
+                    { "action": "Raise", "player": "player_3", "elapsed_time": 0, "amount": 615 },
+                    { "action": "Call", "player": "player_1", "elapsed_time": 0, "amount": 195 }
+                ]
+            },
+            "board": [
+                { "shortName": "TH", "rank": "Ten", "suit": "Heart" },
+                { "shortName": "TC", "rank": "Ten", "suit": "Club" },
+                { "shortName": "TD", "rank": "Ten", "suit": "Diamond" },
+                { "shortName": "9C", "rank": "Nine", "suit": "Club" },
+                { "shortName": "3H", "rank": "Three", "suit": "Heart" }
+            ],
+            "hands": {
+                "player_1": [
+                    { "shortName": "4S", "rank": "Four", "suit": "Spade" },
+                    { "shortName": "QD", "rank": "Queen", "suit": "Diamond" }
+                ],
+                "player_2": [],
+                "player_3": [
+                    { "shortName": "TS", "rank": "Ten", "suit": "Spade" },
+                    { "shortName": "JD", "rank": "Jack", "suit": "Diamond" }
+                ]
+            },
+            "pot": 900,
+            "blinds": { "small": 15, "big": 30 },
+            "won": false,
+            "positions": {
+                "dealer": "player_3",
+                "small_blind": "player_3",
+                "big_blind": "player_1"
+            },
+            "ranking": [["player_3"], ["player_1"]],
+            "stacks": [
+                { "player": "player_1", "stack": 0, "balance": -255 },
+                { "player": "player_2", "stack": 0, "balance": 0 },
+                { "player": "player_3", "stack": 900, "balance": 255 }
+            ]
+        }
+    )"_json;
+
+    EXPECT_JSON_EQ(round.toJson(), expectedJson);
 }
 
 TEST(RoundTest, GeneratedByAI_case1JsonRepresentationShouldBeCorrect) {
@@ -1002,7 +1104,7 @@ TEST(RoundTest, GeneratedByAI_case1JsonRepresentationShouldBeCorrect) {
         }
     )"_json;
 
-    EXPECT_JSON_EQ(expectedJson, round.toJson());
+    EXPECT_JSON_EQ(round.toJson(), expectedJson);
 }
 
 TEST(RoundTest, GeneratedByAI_case6JsonRepresentationShouldBeCorrect) {
@@ -1090,7 +1192,7 @@ TEST(RoundTest, GeneratedByAI_case6JsonRepresentationShouldBeCorrect) {
         }
     )"_json;
 
-    EXPECT_JSON_EQ(expectedJson, round.toJson());
+    EXPECT_JSON_EQ(round.toJson(), expectedJson);
 }
 
 TEST(RoundTest, GeneratedByAI_case11JsonRepresentationShouldBeCorrect) {
@@ -1176,7 +1278,7 @@ TEST(RoundTest, GeneratedByAI_case11JsonRepresentationShouldBeCorrect) {
         }
     )"_json;
 
-    EXPECT_JSON_EQ(expectedJson, round.toJson());
+    EXPECT_JSON_EQ(round.toJson(), expectedJson);
 }
 
 //  @todo add all-in scenario and showdown case
