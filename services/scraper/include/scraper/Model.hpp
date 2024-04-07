@@ -25,7 +25,7 @@ namespace Scraper {
     using json         = nlohmann::json;
     using windowSize_t = cv::Size_<int32_t>;
 
-    static constexpr std::string_view MODEL_PATH_FORMAT = "{dir}/models/{size}.json";
+    static constexpr std::string_view MODEL_PATH_FORMAT = "{dir}/models/{size}x8.json";
 
     struct WindowInfo {
             std::string title;

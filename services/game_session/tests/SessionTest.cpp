@@ -13,7 +13,7 @@ using nlohmann::json;
 using Scraper::windowSize_t;
 using std::chrono::milliseconds;
 using ::testing::AtLeast;
-using ::testing::Invoke;
+using ::testing::InvokeWithoutArgs;
 
 using sharedConstMat_t = Scraper::Model::sharedConstMat_t;
 
@@ -25,18 +25,17 @@ class SessionMock : public Session {
         // Mocked methods
         MOCK_METHOD(sharedConstMat_t, _getScreenshot, (), (override));
 
-        auto getNextFrame() -> sharedConstMat_t {
-            const int FAST_FORWARD = 35;
-
+        auto getNextFrame(const std::string& videoFileName, int fastForward = 0) -> sharedConstMat_t {
             if (!_video.isOpened()) {
-                if (!_video.open(std::string(WINAMAX_RESOURCES_DIR) + "/game_1_3840x1080x8_25cts.mkv")) {
+                // @todo use std::filesystem
+                if (!_video.open(std::string(WINAMAX_RESOURCES_DIR) + "/" + videoFileName)) {
                     LOG_ERROR(Logger::Quill::getLogger(),
                               "Failed to open video in `{}`",
-                              std::string(WINAMAX_RESOURCES_DIR) + "/game_1_3840x1080x8_25cts.mkv");
+                              std::string(WINAMAX_RESOURCES_DIR) + "/" + videoFileName);
                 }
             }
 
-            if (!_video.set(cv::CAP_PROP_POS_MSEC, GameSession::TICK_RATE.count() * (++_tickCount + FAST_FORWARD))) {
+            if (!_video.set(cv::CAP_PROP_POS_MSEC, GameSession::TICK_RATE.count() * (++_tickCount + fastForward))) {
                 LOG_ERROR(Logger::Quill::getLogger(), "Failed to set video position");
             }
 
@@ -61,12 +60,31 @@ TEST(SessionTest, shouldReadTheWholeGameCorrectlyFromVideo_game1) {
     session.getGame().setBuyIn(10);
 
     // Tell Google Mock to return consecutive frames
-    EXPECT_CALL(session, _getScreenshot()).Times(AtLeast(1)).WillRepeatedly(Invoke(&session, &SessionMock::getNextFrame));
+    EXPECT_CALL(session, _getScreenshot()).Times(AtLeast(1)).WillRepeatedly(InvokeWithoutArgs([&session] {
+        return session.getNextFrame("game_1_3840x1080x8_25cts.mkv", 35);
+    }));
     // Run the session
-    session.run();
-    // Read expected json result from file
+    session.run();    // Read expected json result from file
     std::ifstream fileReader(std::filesystem::path(WINAMAX_RESOURCES_DIR) /= "game_1_3840x1080x8_25cts.json");
     json          expectedJson = json::parse(fileReader);
 
     EXPECT_JSON_EQ(session.getGame().toJson(), expectedJson);
+}
+
+TEST(SessionTest, shouldReadTheWholeGameCorrectlyFromVideo_game2) {
+    SessionMock session("Winamax", 0, {3840, 1080});
+
+    session.getGame().setBuyIn(10);
+
+    // Tell Google Mock to return consecutive frames
+    EXPECT_CALL(session, _getScreenshot()).Times(AtLeast(1)).WillRepeatedly(InvokeWithoutArgs([&session] {
+         return session.getNextFrame("game_2.mkv", 20);
+    }));
+    // Run the session
+    session.run();
+    // Read expected json result from file
+    //    std::ifstream fileReader(std::filesystem::path(WINAMAX_RESOURCES_DIR) /= "game_1_3840x1080x8_25cts.json");
+    //    json          expectedJson = json::parse(fileReader);
+    //
+    //    EXPECT_JSON_EQ(session.getGame().toJson(), expectedJson);
 }

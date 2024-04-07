@@ -37,6 +37,11 @@ namespace GameSession {
             [[nodiscard]] auto what() const noexcept -> const char* override { return "Cannot find the button"; }
     };
 
+    /**
+     * @brief This class is used to store the images that we need to check if they are the same as the last frame.
+     *
+     * @tparam ScrapperFn
+     */
     template<typename ScrapperFn> struct CheckedImg {
         public:
             explicit CheckedImg(ScrapperFn getterFn, double similarityThreshold = 0.01)
@@ -73,11 +78,14 @@ namespace GameSession {
             [[nodiscard]] auto hasChanged(const cv::Mat& currentFrame, int32_t playerNum = 0) const -> bool {
                 cv::Mat currentImg;
 
+                if (_comparisonImg.empty()) { return true; }
+
                 if constexpr (std::is_same_v<ScrapperFn, F1>) {
                     currentImg = _getterFn(currentFrame);
                 } else if constexpr (std::is_same_v<ScrapperFn, F2>) {
                     currentImg = _getterFn(currentFrame, playerNum);
                 }
+
                 return !isSimilar(currentImg, _comparisonImg, _similarityThreshold);
             }
 
@@ -105,6 +113,15 @@ namespace GameSession {
                     case 1: return _player1.getImg();
                     case 2: return _player2.getImg();
                     case 3: return _player3.getImg();
+                    default: throw std::invalid_argument("Invalid player number");
+                }
+            }
+
+            [[nodiscard]] auto getComparisonImg(int32_t playerNum) const -> const cv::Mat& {
+                switch (playerNum) {
+                    case 1: return _player1.getComparisonImg();
+                    case 2: return _player2.getComparisonImg();
+                    case 3: return _player3.getComparisonImg();
                     default: throw std::invalid_argument("Invalid player number");
                 }
             }
@@ -187,22 +204,24 @@ namespace GameSession {
             ActionType                    _currentAction     = ActionType::NONE;
             bool                          _showdownTriggered = false;
             cv::Mat                       _lastWaitingActionImg;
-            // All read images that we need to check if they are the same as the last frame
-            CheckedImgN<F2> _playerActionImg {[&](const cv::Mat& img, int32_t num) { return _scraper.getPlayerActionImg(img, num); }};
-            CheckedImgN<F2> _playerBetImg {[&](const cv::Mat& img, int32_t num) { return _scraper.getPlayerBetImg(img, num); }};
+            // All read images that we need to check if they are the same as the last frame because text appears slowly on the screen
             CheckedImg<F1>  _board1CardImg {[&](const cv::Mat& img) { return _scraper.getBoardCard1Img(img); }};
             CheckedImg<F1>  _board2CardImg {[&](const cv::Mat& img) { return _scraper.getBoardCard2Img(img); }};
             CheckedImg<F1>  _board3CardImg {[&](const cv::Mat& img) { return _scraper.getBoardCard3Img(img); }};
             CheckedImg<F1>  _board4CardImg {[&](const cv::Mat& img) { return _scraper.getBoardCard4Img(img); }};
             CheckedImg<F1>  _board5CardImg {[&](const cv::Mat& img) { return _scraper.getBoardCard5Img(img); }};
+            CheckedImgN<F2> _playerBetImg {[&](const cv::Mat& img, int32_t num) { return _scraper.getPlayerBetImg(img, num); }};
+            CheckedImgN<F2> _playerActionImg {[&](const cv::Mat& img, int32_t num) { return _scraper.getPlayerActionImg(img, num); },
+                                              ACTION_SIMILARITY_THRESHOLD};
 
             auto _determineGameOver() -> void;
-            auto _determinePlayerAction(const cv::Mat& screenshot, const cv::Mat& actionImg, int32_t playerNum) -> void;
-            auto _determinePlayerActionFallback(const cv::Mat& screenshot, int32_t playerNum) -> ActionType;
+            auto _processPlayerAction(const cv::Mat& screenshot, const cv::Mat& actionImg, int32_t playerNum) -> void;
+            auto _readPlayerAction(const cv::Mat& screenshot, const cv::Mat& actionImg, int32_t playerNum) -> ActionType;
+            auto _readPlayerActionFallback(const cv::Mat& screenshot, int32_t playerNum) -> ActionType;
             auto _getButtonPosition(const cv::Mat& screenshot) -> int32_t;
-            auto _getFlop(const cv::Mat& screenshot, bool checkHasChanged = false) -> void;
-            auto _getTurn(const cv::Mat& screenshot, bool checkHasChanged = false) -> void;
-            auto _getRiver(const cv::Mat& screenshot, bool checkHasChanged = false) -> void;
+            auto _getFlop(const cv::Mat& screenshot) -> void;
+            auto _getTurn(const cv::Mat& screenshot) -> void;
+            auto _getRiver(const cv::Mat& screenshot) -> void;
             auto _getStreetCards(const cv::Mat& screenshot, const Round& round) -> void;
             auto _harvestGameInfo(const cv::Mat& screenshot) -> void;
             auto _isNextActionTriggered(const cv::Mat& screenshot) -> bool;

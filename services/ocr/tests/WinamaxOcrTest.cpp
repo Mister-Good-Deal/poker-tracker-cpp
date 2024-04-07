@@ -79,6 +79,8 @@ TEST(WinamaxOcrTest, readCardShouldWork) {
     auto aceOfSpade      = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards/AS.png");
     auto twoOfHeart      = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards/2H.png");
     auto kingOfClub      = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards/KC.png");
+    auto jackOfSpade     = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards/JS.png");
+    auto tenOfDiamond    = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards/TD.png");
     auto unknown         = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards/unknown.png");
 
     EXPECT_EQ(Env::winamaxOcr().readPlayerCard(heightOfDiamond), card("8D"));
@@ -86,6 +88,8 @@ TEST(WinamaxOcrTest, readCardShouldWork) {
     EXPECT_EQ(Env::winamaxOcr().readPlayerCard(aceOfSpade), card("AS"));
     EXPECT_EQ(Env::winamaxOcr().readPlayerCard(twoOfHeart), card("2H"));
     EXPECT_EQ(Env::winamaxOcr().readPlayerCard(kingOfClub), card("KC"));
+    EXPECT_EQ(Env::winamaxOcr().readPlayerCard(jackOfSpade), card("JS"));
+    EXPECT_EQ(Env::winamaxOcr().readPlayerCard(tenOfDiamond), card("TD"));
 
     EXPECT_ANY_THROW(auto readCard = Env::winamaxOcr().readPlayerCard(unknown));
 }
