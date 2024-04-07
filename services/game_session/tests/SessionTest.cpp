@@ -1,29 +1,90 @@
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include <game_session/Session.hpp>
+#include <opencv4/opencv2/videoio.hpp>
 
-using GameSession::Game;
+#include <game_session/Session.hpp>
+#include <logger/Logger.hpp>
+#include <utilities/GtestMacros.hpp>
+
+using GameHandler::Game;
 using GameSession::Session;
+using nlohmann::json;
+using Scraper::windowSize_t;
+using std::chrono::milliseconds;
+using ::testing::AtLeast;
+using ::testing::InvokeWithoutArgs;
+
+using sharedConstMat_t = Scraper::Model::sharedConstMat_t;
 
 class SessionMock : public Session {
     public:
-        SessionMock(const std::string_view& roomName, uint64_t windowId) : Session(roomName, windowId) {}
+        SessionMock(const std::string_view& roomName, uint64_t windowId, windowSize_t windowSize)
+          : Session(roomName, windowId, windowSize) {}
 
-        // Proxy protected methods
-        auto harvestGameInfo(const cv::Mat& screenshot) -> void { _harvestGameInfo(screenshot); }
+        // Mocked methods
+        MOCK_METHOD(sharedConstMat_t, _getScreenshot, (), (override));
+
+        auto getNextFrame(const std::string& videoFileName, int fastForward = 0) -> sharedConstMat_t {
+            if (!_video.isOpened()) {
+                // @todo use std::filesystem
+                if (!_video.open(std::string(WINAMAX_RESOURCES_DIR) + "/" + videoFileName)) {
+                    LOG_ERROR(Logger::Quill::getLogger(),
+                              "Failed to open video in `{}`",
+                              std::string(WINAMAX_RESOURCES_DIR) + "/" + videoFileName);
+                }
+            }
+
+            if (!_video.set(cv::CAP_PROP_POS_MSEC, GameSession::TICK_RATE.count() * (++_tickCount + fastForward))) {
+                LOG_ERROR(Logger::Quill::getLogger(), "Failed to set video position");
+            }
+
+            cv::Mat frame;
+
+            if (!_video.read(frame)) { LOG_ERROR(Logger::Quill::getLogger(), "Cannot read video frame"); }
+            if (frame.empty()) { LOG_ERROR(Logger::Quill::getLogger(), "Empty frame"); }
+
+            return std::make_shared<const cv::Mat>(frame);
+        }
+
+    private:
+        cv::VideoCapture _video;
+        int32_t          _tickCount = 0;
 };
 
 class SessionTest : public ::testing::Test {};
 
-TEST(SessionTest, winamaxHarvestInfo) {
-    SessionMock session("Winamax", 0);
+TEST(SessionTest, shouldReadTheWholeGameCorrectlyFromVideo_game1) {
+    SessionMock session("Winamax", 0, {3840, 1080});
 
     session.getGame().setBuyIn(10);
 
-    cv::Mat screenshot = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/screen_4.png");
+    // Tell Google Mock to return consecutive frames
+    EXPECT_CALL(session, _getScreenshot()).Times(AtLeast(1)).WillRepeatedly(InvokeWithoutArgs([&session] {
+        return session.getNextFrame("game_1_3840x1080x8_25cts.mkv", 35);
+    }));
+    // Run the session
+    session.run();    // Read expected json result from file
+    std::ifstream fileReader(std::filesystem::path(WINAMAX_RESOURCES_DIR) /= "game_1_3840x1080x8_25cts.json");
+    json          expectedJson = json::parse(fileReader);
 
-    session.harvestGameInfo(screenshot);
+    EXPECT_JSON_EQ(session.getGame().toJson(), expectedJson);
+}
 
-    EXPECT_STREQ(session.getGame().getPlayer1().getName().c_str(), "_Mister_");
-    EXPECT_STREQ(session.getGame().getPlayer2().getName().c_str(), "sucre_461406");
+TEST(SessionTest, shouldReadTheWholeGameCorrectlyFromVideo_game2) {
+    SessionMock session("Winamax", 0, {3840, 1080});
+
+    session.getGame().setBuyIn(10);
+
+    // Tell Google Mock to return consecutive frames
+    EXPECT_CALL(session, _getScreenshot()).Times(AtLeast(1)).WillRepeatedly(InvokeWithoutArgs([&session] {
+         return session.getNextFrame("game_2.mkv", 20);
+    }));
+    // Run the session
+    session.run();
+    // Read expected json result from file
+    //    std::ifstream fileReader(std::filesystem::path(WINAMAX_RESOURCES_DIR) /= "game_1_3840x1080x8_25cts.json");
+    //    json          expectedJson = json::parse(fileReader);
+    //
+    //    EXPECT_JSON_EQ(session.getGame().toJson(), expectedJson);
 }

@@ -5,15 +5,16 @@
 namespace GameHandler {
     using enum Card::Rank;
 
-    static const int8_t PREMIUM_NUMBER    = 5;
-    static const int8_t HAND_CARDS_NUMBER = 2;
+    static const int32_t PREMIUM_NUMBER    = 5;
+    static const int32_t HAND_CARDS_NUMBER = 2;
 
     static constexpr std::array<std::array<Card::Rank, HAND_CARDS_NUMBER>, PREMIUM_NUMBER> PREMIUM = {
         {{{QUEEN, QUEEN}}, {{KING, ACE}}, {{ACE, KING}}, {{KING, KING}}, {{ACE, ACE}}}};
 
     class invalid_hand : public std::runtime_error {
         public:
-            explicit invalid_hand(const std::string& arg) : runtime_error(arg){};
+            explicit invalid_hand(const std::string& arg)
+              : runtime_error(arg) {};
     };
 
     class Hand {
@@ -41,6 +42,7 @@ namespace GameHandler {
             [[nodiscard]] auto isPlur() const -> bool { return _plur; };
             [[nodiscard]] auto isConnected() const -> bool { return _connected; };
             [[nodiscard]] auto isPremium() const -> bool { return _premium; };
+            [[nodiscard]] auto isSet() const -> bool { return !_firstCard.isUnknown() && !_secondCard.isUnknown(); };
 
             [[nodiscard]] auto toJson() const -> json;
             [[nodiscard]] auto toDetailedJson() const -> json;
@@ -68,3 +70,30 @@ namespace GameHandler {
             auto _processHand() -> void;
     };
 }  // namespace GameHandler
+
+// Custom formatter for Hand
+namespace fmt {
+    template<> struct formatter<GameHandler::Hand> : formatter<string_view> {
+            char presentation = 's';  // Default presentation type: short
+
+            // Parsing function to support different presentations short and long
+            constexpr auto parse(auto& ctx) {
+                auto it = ctx.begin(), end = ctx.end();
+
+                if (it != end && (*it == 's' || *it == 'l')) { presentation = *it++; }
+                if (it != end && *it != '}') { throw format_error("invalid format"); }
+
+                return it;
+            }
+
+            template<typename FormatContext> auto format(const GameHandler::Hand& hand, FormatContext& ctx) const {
+                return presentation == 's' ? fmt::format_to(ctx.out(), "({:s}, {:s})", hand.getCards()[0], hand.getCards()[1])
+                                           : fmt::format_to(ctx.out(), "({:l}, {:l})", hand.getCards()[0], hand.getCards()[1]);
+            }
+    };
+}  // namespace fmt
+
+// Registered as safe to copy for Quill logger
+namespace quill {
+    template<> struct copy_loggable<GameHandler::Hand> : std::true_type {};
+}  // namespace quill

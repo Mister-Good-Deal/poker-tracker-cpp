@@ -2,7 +2,7 @@
 <project version="4">
   <component name="CMakeSharedSettings">
     <configurations>
-      <configuration PROFILE_NAME="Release - Docker poker-bot - gcc" ENABLED="false" GENERATION_DIR="build-gcc-release" CONFIG_NAME="Release" TOOLCHAIN_NAME="Docker poker-bot gcc" GENERATION_OPTIONS="-DCMAKE_CXX_COMPILER=/usr/bin/g++ -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON">
+      <configuration PROFILE_NAME="Release - Docker poker-bot - gcc" ENABLED="true" GENERATION_DIR="build-gcc-release" CONFIG_NAME="Release" TOOLCHAIN_NAME="Docker poker-bot gcc" GENERATION_OPTIONS="-DCMAKE_CXX_COMPILER=/usr/bin/g++ -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON" NO_GENERATOR="true">
         <ADDITIONAL_GENERATION_ENVIRONMENT>
           <envs>
             <env name="CXX" value="/usr/bin/g++ CC=/usr/bin/gcc" />
@@ -17,6 +17,13 @@
         </ADDITIONAL_GENERATION_ENVIRONMENT>
       </configuration>
       <configuration PROFILE_NAME="Release - Docker poker-bot - clang" ENABLED="true" GENERATION_DIR="build-clang-release" CONFIG_NAME="Release" TOOLCHAIN_NAME="Docker poker-bot clang" GENERATION_OPTIONS="-DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON">
+        <ADDITIONAL_GENERATION_ENVIRONMENT>
+          <envs>
+            <env name="CXX" value="/usr/bin/clang++ CC=/usr/bin/clang" />
+          </envs>
+        </ADDITIONAL_GENERATION_ENVIRONMENT>
+      </configuration>
+      <configuration PROFILE_NAME="Release with video - Docker poker-bot - clang" ENABLED="true" GENERATION_DIR="build-clang-release-video" CONFIG_NAME="Release" TOOLCHAIN_NAME="Docker poker-bot clang" GENERATION_OPTIONS="-DCMAKE_CXX_COMPILER=/usr/bin/g++ -DBUILD_TESTS=1 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DDISPLAY_OPENCV_IMG=1" NO_GENERATOR="true">
         <ADDITIONAL_GENERATION_ENVIRONMENT>
           <envs>
             <env name="CXX" value="/usr/bin/clang++ CC=/usr/bin/clang" />

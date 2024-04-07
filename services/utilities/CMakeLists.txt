@@ -10,7 +10,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Libs dependencies
 #-----------------------------------------------------------------------------------------------------------------------
 
+find_package(nlohmann_json CONFIG REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(GTest REQUIRED)
 
 #-----------------------------------------------------------------------------------------------------------------------
 # Source files definition
@@ -18,7 +20,10 @@ find_package(OpenCV REQUIRED)
 
 set(
         SRC
-        include/utilities/Macros.hpp
+        include/utilities/GtestMacros.hpp
+        include/utilities/Image.hpp
+        include/utilities/Strings.hpp
+        include/utilities/Time.hpp
 )
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -32,11 +37,9 @@ target_include_directories(
         PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
-        PRIVATE
-        logger
 )
 
-target_link_libraries(utilities PUBLIC logger opencv_core opencv_imgproc opencv_imgcodecs opencv_highgui)
+target_link_libraries(utilities PUBLIC opencv_core opencv_imgproc opencv_imgcodecs opencv_highgui opencv_videoio GTest::gtest GTest::gmock nlohmann_json::nlohmann_json)
 
 # @todo needed until no .cpp file extension in SRC files
 set_target_properties(utilities PROPERTIES LINKER_LANGUAGE CXX)
