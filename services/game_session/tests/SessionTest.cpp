@@ -12,6 +12,7 @@ using GameSession::Session;
 using nlohmann::json;
 using Scraper::windowSize_t;
 using std::chrono::milliseconds;
+using std::filesystem::path;
 using ::testing::AtLeast;
 using ::testing::InvokeWithoutArgs;
 
@@ -27,8 +28,7 @@ class SessionMock : public Session {
 
         auto getNextFrame(const std::string& videoFileName, int fastForward = 0) -> sharedConstMat_t {
             if (!_video.isOpened()) {
-                // @todo use std::filesystem
-                if (!_video.open(std::string(WINAMAX_RESOURCES_DIR) + "/" + videoFileName)) {
+                if (!_video.open(path(WINAMAX_RESOURCES_DIR) /= videoFileName)) {
                     LOG_ERROR(Logger::Quill::getLogger(),
                               "Failed to open video in `{}`",
                               std::string(WINAMAX_RESOURCES_DIR) + "/" + videoFileName);
@@ -64,8 +64,8 @@ TEST(SessionTest, shouldReadTheWholeGameCorrectlyFromVideo_game1) {
         return session.getNextFrame("game_1_3840x1080x8_25cts.mkv", 35);
     }));
     // Run the session
-    session.run();    // Read expected json result from file
-    std::ifstream fileReader(std::filesystem::path(WINAMAX_RESOURCES_DIR) /= "game_1_3840x1080x8_25cts.json");
+    session.run();  // Read expected json result from file
+    std::ifstream fileReader(path(WINAMAX_RESOURCES_DIR) /= "game_1_3840x1080x8_25cts.json");
     json          expectedJson = json::parse(fileReader);
 
     EXPECT_JSON_EQ(session.getGame().toJson(), expectedJson);
@@ -78,12 +78,12 @@ TEST(SessionTest, shouldReadTheWholeGameCorrectlyFromVideo_game2) {
 
     // Tell Google Mock to return consecutive frames
     EXPECT_CALL(session, _getScreenshot()).Times(AtLeast(1)).WillRepeatedly(InvokeWithoutArgs([&session] {
-         return session.getNextFrame("game_2.mkv", 20);
+        return session.getNextFrame("game_2.mkv", 20);
     }));
     // Run the session
     session.run();
     // Read expected json result from file
-    //    std::ifstream fileReader(std::filesystem::path(WINAMAX_RESOURCES_DIR) /= "game_1_3840x1080x8_25cts.json");
+    //    std::ifstream fileReader(path(WINAMAX_RESOURCES_DIR) /= "game_1_3840x1080x8_25cts.json");
     //    json          expectedJson = json::parse(fileReader);
     //
     //    EXPECT_JSON_EQ(session.getGame().toJson(), expectedJson);

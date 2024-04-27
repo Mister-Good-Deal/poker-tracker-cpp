@@ -22,14 +22,14 @@ ARG GOOGLETEST_VERSION
 ARG MAX_CPU_CORES
 
 # Install from APK
-RUN apk add --no-cache bash make gcc=~${GCC_VERSION} g++=~${GCC_VERSION} mingw-w64-gcc=~${MINGW_VERSION} \
+RUN apk add --no-cache bash make tar gcc=~${GCC_VERSION} g++=~${GCC_VERSION} mingw-w64-gcc=~${MINGW_VERSION} \
     mingw-w64-binutils=~${BINUTILS_VERSION} mingw-w64-headers mingw-w64-winpthreads mingw-w64-crt cmake=~${CMAKE_VERSION}
 
 ENV INSTALL_PREFIX=/usr/x86_64-w64-mingw32
 ENV CMAKE_TOOLCHAIN=/tmp/mingw-w64-x86_64.cmake
 ENV CMAKE_COMMON_OPTION="--install-prefix ${INSTALL_PREFIX} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON"
 
-# Copy cmake toolchain from windows cross compiling
+# Copy cmake toolchain for windows cross compilation
 COPY cmake/mingw-w64-x86_64.cmake /tmp
 
 # Install zlib with the given ZLIB_VERSION version from https://github.com/madler/zlib

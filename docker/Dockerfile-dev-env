@@ -1,9 +1,23 @@
 ARG CI_REGISTRY
-ARG CI_REGISTRY_BUILDER_ROOT_IMAGE
+ARG CI_REGISTRY_MINGW_BUILDER
+ARG CI_REGISTRY_ROOT_IMAGE
 
-FROM ${CI_REGISTRY}/${CI_REGISTRY_BUILDER_ROOT_IMAGE}:latest
+# Import mingw builder image
+FROM ${CI_REGISTRY}/${CI_REGISTRY_MINGW_BUILDER}:latest as mingw-builder
 
+FROM ${CI_REGISTRY}/${CI_REGISTRY_ROOT_IMAGE}:latest
+
+ARG MINGW_VERSION
+ARG BINUTILS_VERSION
 ARG GDB_VERSION
+
+# Import mingw built libs from the builder image
+RUN mkdir -p /usr/x86_64-w64-mingw32
+COPY --from=mingw-builder /usr/x86_64-w64-mingw32 /usr/x86_64-w64-mingw32
+
+# Install MinGW with the given version
+RUN apk add --no-cache mingw-w64-gcc=~${MINGW_VERSION} mingw-w64-binutils=~${BINUTILS_VERSION} mingw-w64-headers \
+    mingw-w64-winpthreads mingw-w64-crt
 
 # Install GDB with the given GDB_VERSION version
 RUN apk add --no-cache bash make gdb=~${GDB_VERSION}

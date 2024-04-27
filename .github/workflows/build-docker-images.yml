@@ -1,0 +1,342 @@
+# https://docs.docker.com/build/ci/github-actions
+
+name: Build Docker Images
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - release/*
+      - feature/*
+    paths:
+      - 'docker/Dockerfile-*'
+      - '.env'
+      - '.github/workflows/build-docker-images.yml'
+  pull_request:
+    branches:
+      - main
+      - develop
+      - release/*
+      - feature/*
+    paths:
+      - 'docker/Dockerfile-*'
+      - '.env'
+      - '.github/workflows/build-docker-images.yml'
+
+jobs:
+  build-builder-linux-gcc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Log in to GitHub Docker registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.DOCKER_GITHUB_ACCESS_TOKEN }}
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Load .env to ENV
+        uses: c-py/action-dotenv-to-setenv@v5
+        with:
+          env-file: .env
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Get Docker metadata
+        id: docker-meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.actor }}/${{ env.REPOSITORY_NAME }}/builder-linux-gcc
+          tags: |
+            type=semver,pattern={{version}}
+            type=sha,prefix=sha-,format=short
+            type=raw,value=latest,enable={{is_default_branch}}
+          labels: |
+            org.opencontainers.image.title=${{ env.REPOSITORY_NAME }} builder-linux-gcc
+            org.opencontainers.image.description=C++ builder linux gcc image for ${{ env.REPOSITORY_NAME }} project
+            org.opencontainers.image.documentation=https://github.com/mister-good-deal/poker-tracker-cpp/tree/main/docker
+
+      - name: Build and push builder-linux-gcc
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile-builder-linux-gcc
+          push: ${{ github.event_name != 'pull_request' }}
+          cache-from: type=gha
+          cache-to: type=gha, mode=max
+          tags: ${{ steps.docker-meta.outputs.tags }}
+          labels: ${{ steps.docker-meta.outputs.labels }}
+          annotations: ${{ steps.docker-meta.outputs.annotations }}
+          build-args: |
+            GCC_VERSION=${{ env.GCC_VERSION }}
+            CMAKE_VERSION=${{ env.CMAKE_VERSION }}
+            OPENJPEG_VERSION=${{ env.OPENJPEG_VERSION }}
+            WEBP_VERSION=${{ env.WEBP_VERSION }}
+            TIFF_VERSION=${{ env.TIFF_VERSION }}
+            PNG_VERSION=${{ env.PNG_VERSION }}
+            ZLIB_VERSION=${{ env.ZLIB_VERSION }}
+            LEPTONICA_VERSION=${{ env.LEPTONICA_VERSION }}
+            TESSERACT_VERSION=${{ env.TESSERACT_VERSION }}
+            OPENCV_VERSION=${{ env.OPENCV_VERSION }}
+            NLOHMANN_JSON_VERSION=${{ env.NLOHMANN_JSON_VERSION }}
+            JSON_SCHEMA_VALIDATOR_VERSION=${{ env.JSON_SCHEMA_VALIDATOR_VERSION }}
+            FMT_VERSION=${{ env.FMT_VERSION }}
+            QUILL_VERSION=${{ env.QUILL_VERSION }}
+            LIBUV_VERSION=${{ env.LIBUV_VERSION }}
+            U_WEB_SOCKETS_VERSION=${{ env.U_WEB_SOCKETS_VERSION }}
+            GOOGLETEST_VERSION=${{ env.GOOGLETEST_VERSION }}
+            MAX_CPU_CORES=${{ env.MAX_CPU_CORES }}
+
+  build-builder-linux-clang:
+    runs-on: ubuntu-latest
+    needs: build-builder-linux-gcc
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Log in to GitHub Docker registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.DOCKER_GITHUB_ACCESS_TOKEN }}
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Load .env to ENV
+        uses: c-py/action-dotenv-to-setenv@v5
+        with:
+          env-file: .env
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Get Docker metadata
+        id: docker-meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.actor }}/${{ env.REPOSITORY_NAME }}/builder-linux-clang
+          tags: |
+            type=semver,pattern={{version}}
+            type=sha,prefix=sha-,format=short
+            type=raw,value=latest,enable={{is_default_branch}}
+          labels: |
+            org.opencontainers.image.title=${{ env.REPOSITORY_NAME }} builder-linux-clang
+            org.opencontainers.image.description=C++ builder linux clang image for ${{ env.REPOSITORY_NAME }} project
+            org.opencontainers.image.documentation=https://github.com/mister-good-deal/poker-tracker-cpp/tree/main/docker
+
+      - name: Build and push builder-linux-clang
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile-builder-linux-clang
+          push: ${{ github.event_name != 'pull_request' }}
+          cache-from: type=gha
+          cache-to: type=gha, mode=max
+          tags: ${{ steps.docker-meta.outputs.tags }}
+          labels: ${{ steps.docker-meta.outputs.labels }}
+          annotations: ${{ steps.docker-meta.outputs.annotations }}
+          build-args: |
+            CI_REGISTRY=${{ env.REGISTRY_HOST }}
+            CI_REGISTRY_ROOT_IMAGE=${{ github.actor }}/${{ env.REPOSITORY_NAME }}/builder-linux-gcc
+            CLANG_VERSION=${{ env.CLANG_VERSION }}
+
+  build-builder-linux-mingw:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Log in to GitHub Docker registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.DOCKER_GITHUB_ACCESS_TOKEN }}
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Load .env to ENV
+        uses: c-py/action-dotenv-to-setenv@v5
+        with:
+          env-file: .env
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Get Docker metadata
+        id: docker-meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.actor }}/${{ env.REPOSITORY_NAME }}/builder-linux-mingw
+          tags: |
+            type=semver,pattern={{version}}
+            type=sha,prefix=sha-,format=short
+            type=raw,value=latest,enable={{is_default_branch}}
+          labels: |
+            org.opencontainers.image.title=${{ env.REPOSITORY_NAME }} builder-linux-mingw
+            org.opencontainers.image.description=C++ builder linux mingw image for ${{ env.REPOSITORY_NAME }} project
+            org.opencontainers.image.documentation=https://github.com/mister-good-deal/poker-tracker-cpp/tree/main/docker
+      
+      - name: Build and push builder-linux-mingw
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile-builder-linux-mingw
+          push: ${{ github.event_name != 'pull_request' }}
+          cache-from: type=gha
+          cache-to: type=gha, mode=max
+          tags: ${{ steps.docker-meta.outputs.tags }}
+          labels: ${{ steps.docker-meta.outputs.labels }}
+          annotations: ${{ steps.docker-meta.outputs.annotations }}
+          build-args: |
+            GCC_VERSION=${{ env.GCC_VERSION }}
+            CMAKE_VERSION=${{ env.CMAKE_VERSION }}
+            MINGW_VERSION=${{ env.MINGW_VERSION }}
+            BINUTILS_VERSION=${{ env.BINUTILS_VERSION }}
+            OPENJPEG_VERSION=${{ env.OPENJPEG_VERSION }}
+            WEBP_VERSION=${{ env.WEBP_VERSION }}
+            TIFF_VERSION=${{ env.TIFF_VERSION }}
+            PNG_VERSION=${{ env.PNG_VERSION }}
+            ZLIB_VERSION=${{ env.ZLIB_VERSION }}
+            LEPTONICA_VERSION=${{ env.LEPTONICA_VERSION }}
+            TESSERACT_VERSION=${{ env.TESSERACT_VERSION }}
+            OPENCV_VERSION=${{ env.OPENCV_VERSION }}
+            NLOHMANN_JSON_VERSION=${{ env.NLOHMANN_JSON_VERSION }}
+            JSON_SCHEMA_VALIDATOR_VERSION=${{ env.JSON_SCHEMA_VALIDATOR_VERSION }}
+            FMT_VERSION=${{ env.FMT_VERSION }}
+            QUILL_VERSION=${{ env.QUILL_VERSION }}
+            LIBUV_VERSION=${{ env.LIBUV_VERSION }}
+            U_WEB_SOCKETS_VERSION=${{ env.U_WEB_SOCKETS_VERSION }}
+            GOOGLETEST_VERSION=${{ env.GOOGLETEST_VERSION }}
+            MAX_CPU_CORES=${{ env.MAX_CPU_CORES }}
+            
+  build-dev-env:
+    runs-on: ubuntu-latest
+    needs: 
+      - build-builder-linux-clang
+      - build-builder-linux-mingw
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Docker registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.DOCKER_GITHUB_ACCESS_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Load .env to ENV
+        uses: c-py/action-dotenv-to-setenv@v5
+        with:
+          env-file: .env
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Get Docker metadata
+        id: docker-meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.actor }}/${{ env.REPOSITORY_NAME }}/dev-env
+          tags: |
+            type=semver,pattern={{version}}
+            type=sha,prefix=sha-,format=short
+            type=raw,value=latest,enable={{is_default_branch}}
+          labels: |
+            org.opencontainers.image.title=${{ env.REPOSITORY_NAME }} builder-linux-clang-dev
+            org.opencontainers.image.description=C++ linux gcc/clang/mingw devlopment environnement image for ${{ env.REPOSITORY_NAME }} project
+            org.opencontainers.image.documentation=https://github.com/mister-good-deal/poker-tracker-cpp/tree/main/docker
+
+      - name: Build and push dev-env
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile-dev-env
+          push: ${{ github.event_name != 'pull_request' }}
+          cache-from: type=gha
+          tags: ${{ steps.docker-meta.outputs.tags }}
+          labels: ${{ steps.docker-meta.outputs.labels }}
+          annotations: ${{ steps.docker-meta.outputs.annotations }}
+          build-args: |
+            CI_REGISTRY=${{ env.REGISTRY_HOST }}
+            CI_REGISTRY_MINGW_BUILDER=${{ github.actor }}/${{ env.REPOSITORY_NAME }}/builder-linux-mingw
+            CI_REGISTRY_ROOT_IMAGE=${{ github.actor }}/${{ env.REPOSITORY_NAME }}/builder-linux-clang
+            MINGW_VERSION=${{ env.MINGW_VERSION }}
+            BINUTILS_VERSION=${{ env.BINUTILS_VERSION }}
+            GDB_VERSION=${{ env.GDB_VERSION }}
+            
+  build-ci-linux-runner:
+    runs-on: ubuntu-latest
+    needs: build-builder-linux-clang
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Log in to GitHub Docker registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.DOCKER_GITHUB_ACCESS_TOKEN }}
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Load .env to ENV
+        uses: c-py/action-dotenv-to-setenv@v5
+        with:
+          env-file: .env
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Get Docker metadata
+        id: docker-meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.actor }}/${{ env.REPOSITORY_NAME }}/ci-linux-runner
+          tags: |
+            type=semver,pattern={{version}}
+            type=sha,prefix=sha-,format=short
+            type=raw,value=latest,enable={{is_default_branch}}
+          labels: |
+            org.opencontainers.image.title=${{ env.REPOSITORY_NAME }} ci-linux-runner
+            org.opencontainers.image.description=CI runner image for ${{ env.REPOSITORY_NAME }} project
+            org.opencontainers.image.documentation=https://github.com/mister-good-deal/poker-tracker-cpp/tree/main/docker
+
+      - name: Build and push ci-linux-runner
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile-ci-linux-runner
+          push: ${{ github.event_name != 'pull_request' }}
+          cache-from: type=gha
+          tags: ${{ steps.docker-meta.outputs.tags }}
+          labels: ${{ steps.docker-meta.outputs.labels }}
+          annotations: ${{ steps.docker-meta.outputs.annotations }}
+          build-args: |
+            CI_REGISTRY=${{ env.REGISTRY_HOST }}
+            CI_REGISTRY_ROOT_IMAGE=${{ github.actor }}/${{ env.REPOSITORY_NAME }}/builder-linux-clang
+            CLANG_VERSION=${{ env.CLANG_VERSION }}
+            CPP_CHECK_VERSION=${{ env.CPP_CHECK_VERSION }}
+            CODE_CHECKER_VERSION=${{ env.CODE_CHECKER_VERSION }}
+            MAX_CPU_CORES=${{ env.MAX_CPU_CORES }}
