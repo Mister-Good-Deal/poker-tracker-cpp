@@ -1,13 +1,14 @@
 ARG CI_REGISTRY
-ARG CI_REGISTRY_BUILDER_ROOT_IMAGE
+ARG CI_REGISTRY_ROOT_IMAGE
 
-FROM ${CI_REGISTRY}/${CI_REGISTRY_BUILDER_ROOT_IMAGE}:latest
+FROM ${CI_REGISTRY}/${CI_REGISTRY_ROOT_IMAGE}:latest
 
+ARG CLANG_VERSION
 ARG CODE_CHECKER_VERSION
 ARG CPP_CHECK_VERSION
 ARG MAX_CPU_CORES
 
-RUN apk add --no-cache clang16-headers git curl python3-dev py3-virtualenv py3-setuptools
+RUN apk add --no-cache clang${CLANG_VERSION}-headers git curl python3-dev py3-virtualenv py3-setuptools
 
 # Install cpp-check with the given CPP_CHECK_VERSION version from https://github.com/danmar/cppcheck
 RUN wget https://github.com/danmar/cppcheck/archive/refs/tags/${CPP_CHECK_VERSION}.tar.gz \
@@ -19,11 +20,10 @@ RUN wget https://github.com/danmar/cppcheck/archive/refs/tags/${CPP_CHECK_VERSIO
     rm -rf /tmp/cppcheck-${CPP_CHECK_VERSION}.tar.gz /tmp/cppcheck-${CPP_CHECK_VERSION}
 
 # Install codeChecker with the given CODE_CHECKER_VERSION version from https://github.com/Ericsson/codechecker
-# @fixme Use a forked version of codeChecker to fix logger compilation issue https://github.com/ZiperRom1/codechecker/tree/master
-RUN wget https://github.com/ZiperRom1/codechecker/archive/refs/tags/v${CODE_CHECKER_VERSION}.tar.gz \
+RUN wget https://github.com/Ericsson/codechecker/archive/refs/tags/v${CODE_CHECKER_VERSION}.tar.gz \
     -q -O /opt/codechecker-${CODE_CHECKER_VERSION}.tar.gz && \
     cd /opt && tar -xvzf codechecker-${CODE_CHECKER_VERSION}.tar.gz && cd codechecker-${CODE_CHECKER_VERSION} && \
-    make venv && source venv/bin/activate && \
+    make venv && source $PWD/venv/bin/activate && pip install --upgrade setuptools && \
     BUILD_LOGGER_64_BIT_ONLY=YES BUILD_UI_DIST=NO make standalone_package && \
     rm -rf /opt/codechecker-${CODE_CHECKER_VERSION}.tar.gz
 

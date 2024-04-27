@@ -1,12 +1,12 @@
 ARG CI_REGISTRY
-ARG CI_REGISTRY_BUILDER_ROOT_IMAGE
+ARG CI_REGISTRY_ROOT_IMAGE
 
-FROM ${CI_REGISTRY}/${CI_REGISTRY_BUILDER_ROOT_IMAGE}:latest
+FROM ${CI_REGISTRY}/${CI_REGISTRY_ROOT_IMAGE}:latest
 
 ARG CLANG_VERSION
 
 # Install Clang with the given CLANG_VERSION version from APK package manager
-RUN apk add --no-cache clang16 clang16-extra-tools clang16-analyzer
+RUN apk add --no-cache clang${CLANG_VERSION} clang${CLANG_VERSION}-extra-tools clang${CLANG_VERSION}-analyzer
 
 WORKDIR /app
 
