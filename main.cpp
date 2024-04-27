@@ -38,8 +38,7 @@ auto main() -> int {
 
         auto windows = json::array();
 
-        for (const auto& [id, window] : scraper.getActiveWindows())
-        {
+        for (const auto& [id, window] : scraper.getActiveWindows()) {
             json windowObject = {{"title", window.title}, {"id", std::to_string(window.id)}};
 
             windows.emplace_back(windowObject);
@@ -53,24 +52,22 @@ auto main() -> int {
     };
 
     auto getScreenshotHandler = [&](HttpResponse* response, HttpRequest* request) {
-        try
-        {
+        try {
             LOG_DEBUG(Logger::Quill::getLogger(), "[{}] {}", request->getCaseSensitiveMethod(), request->getFullUrl());
             LOG_DEBUG(Logger::Quill::getLogger(), "window_id = {}", request->getQuery("window_id"));
 
             if (request->getQuery("window_id").empty()) { throw std::invalid_argument("window_id param is empty"); }
 
-            auto                 image = scraper.getScreenshot(std::stoul(request->getQuery("window_id").data()));
-            std::vector<uint8_t> buffer;
-            std::string          data;
+            auto               image = scraper.getScreenshot(std::stoul(request->getQuery("window_id").data()));
+            std::vector<uchar> buffer; // @todo originally it was std::vector<uint32_t> buffer;
+            std::string        data;
 
-            cv::imencode(".jpeg", image, buffer);
+            cv::imencode(".jpeg", *image, buffer);
 
             std::copy(buffer.cbegin(), buffer.cend(), std::back_inserter(data));
 
             response->writeHeader("Content-Type", "image/jpeg")->writeHeader("Access-Control-Allow-Origin", "*")->end(data);
-        } catch (const std::invalid_argument& error)
-        {
+        } catch (const std::invalid_argument& error) {
             response->writeStatus("500 Error")
                 ->writeHeader("Content-Type", "text/plain")
                 ->writeHeader("Access-Control-Allow-Origin", "*")
@@ -79,8 +76,7 @@ auto main() -> int {
     };
 
     auto getGameInfoHandler = [&](HttpResponse* response, HttpRequest* request) {
-        try
-        {
+        try {
             LOG_DEBUG(Logger::Quill::getLogger(), "[{}] {}", request->getCaseSensitiveMethod(), request->getFullUrl());
             LOG_DEBUG(Logger::Quill::getLogger(), "window_id = {}", request->getQuery("window_id"));
 
@@ -88,13 +84,12 @@ auto main() -> int {
 
             auto image = scraper.getScreenshot(std::stoul(request->getQuery("window_id").data()));
 
-            json windowInfo = {{"window", {{"width", image.cols}, {"height", image.rows}}}};
+            json windowInfo = {{"window", {{"width", image->cols}, {"height", image->rows}}}};
 
             response->writeHeader("Content-Type", "application/json")
                 ->writeHeader("Access-Control-Allow-Origin", "*")
                 ->end(windowInfo.dump());
-        } catch (const std::invalid_argument& error)
-        {
+        } catch (const std::invalid_argument& error) {
             response->writeStatus("500 Error")
                 ->writeHeader("Content-Type", "text/plain")
                 ->writeHeader("Access-Control-Allow-Origin", "*")
@@ -144,13 +139,10 @@ auto main() -> int {
 
     int i = 0;
 
-    while (true)
-    {
+    while (true) {
         std::this_thread::sleep_for(std::chrono::seconds(10));
 
         json test = {{"message", fmt::format("test data {}", ++i)}};
         serverPtr->publish("test", test.dump());
     }
-
-    return EXIT_SUCCESS;
 }

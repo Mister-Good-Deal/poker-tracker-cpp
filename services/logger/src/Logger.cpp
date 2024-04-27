@@ -7,8 +7,7 @@ namespace Logger {
     quill::Logger* Quill::_instance = nullptr;
 
     auto Quill::getLogger() -> quill::Logger* {
-        if (_instance == nullptr)
-        {
+        if (_instance == nullptr) {
             _initLogger();
             _instance = quill::get_logger("custom");
         }

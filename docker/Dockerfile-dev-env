@@ -1,0 +1,40 @@
+ARG CI_REGISTRY
+ARG CI_REGISTRY_MINGW_BUILDER
+ARG CI_REGISTRY_ROOT_IMAGE
+
+# Import mingw builder image
+FROM ${CI_REGISTRY}/${CI_REGISTRY_MINGW_BUILDER}:latest as mingw-builder
+
+FROM ${CI_REGISTRY}/${CI_REGISTRY_ROOT_IMAGE}:latest
+
+ARG MINGW_VERSION
+ARG BINUTILS_VERSION
+ARG GDB_VERSION
+
+# Import mingw built libs from the builder image
+RUN mkdir -p /usr/x86_64-w64-mingw32
+COPY --from=mingw-builder /usr/x86_64-w64-mingw32 /usr/x86_64-w64-mingw32
+
+# Install MinGW with the given version
+RUN apk add --no-cache mingw-w64-gcc=~${MINGW_VERSION} mingw-w64-binutils=~${BINUTILS_VERSION} mingw-w64-headers \
+    mingw-w64-winpthreads mingw-w64-crt
+
+# Install GDB with the given GDB_VERSION version
+RUN apk add --no-cache bash make gdb=~${GDB_VERSION}
+
+# Install Rsync and SSH configuration to be able to use remote SSH from IDE with login root:root
+RUN apk add --no-cache openssh rsync && \
+    echo "root:root" | chpasswd && \
+    sed -i 's/#PermitRootLogin.*/PermitRootLogin\ yes/' /etc/ssh/sshd_config && \
+    sed -ie 's/#Port 22/Port 22/g' /etc/ssh/sshd_config && \
+    sed -ri 's/#HostKey \/etc\/ssh\/ssh_host_key/HostKey \/etc\/ssh\/ssh_host_key/g' /etc/ssh/sshd_config && \
+    sed -ir 's/#HostKey \/etc\/ssh\/ssh_host_rsa_key/HostKey \/etc\/ssh\/ssh_host_rsa_key/g' /etc/ssh/sshd_config && \
+    sed -ir 's/#HostKey \/etc\/ssh\/ssh_host_dsa_key/HostKey \/etc\/ssh\/ssh_host_dsa_key/g' /etc/ssh/sshd_config && \
+    sed -ir 's/#HostKey \/etc\/ssh\/ssh_host_ecdsa_key/HostKey \/etc\/ssh\/ssh_host_ecdsa_key/g' /etc/ssh/sshd_config && \
+    sed -ir 's/#HostKey \/etc\/ssh\/ssh_host_ed25519_key/HostKey \/etc\/ssh\/ssh_host_ed25519_key/g' /etc/ssh/sshd_config && \
+    /usr/bin/ssh-keygen -A && \
+    ssh-keygen -t rsa -b 4096 -f  /etc/ssh/ssh_host_key
+
+WORKDIR /app
+
+CMD ["/bin/bash"]

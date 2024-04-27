@@ -9,8 +9,7 @@ namespace Websockets {
     using uWS::OpCode;
 
     static constexpr auto opCodeToString(OpCode code) -> std::string_view {
-        switch (code)
-        {
+        switch (code) {
             case OpCode::BINARY: return "BINARY";
             case OpCode::CLOSE: return "CLOSE";
             case OpCode::CONTINUATION: return "CONTINUATION";

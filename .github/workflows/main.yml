@@ -1,0 +1,387 @@
+name: poker-tracker-cpp
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+      - feature/*
+      - hotfix/*
+      - release/*
+  pull_request:
+    branches:
+      - master
+      - develop
+      - feature/*
+      - hotfix/*
+      - release/*
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PROJECT_PATH: ${{ github.workspace }}
+  BUILD_PATH: ${{ github.workspace }}/build
+  MAX_CODE_QUALITY_ISSUE_PER_FILE: 20
+  MAX_MULTI_THREADS_CORE: 8
+
+jobs:
+  computed_vars:
+    runs-on: ubuntu-latest
+    outputs:
+      WORKFLOW_RUN_DATE_TIME: ${{ steps.workflow_run_date_time.outputs.WORKFLOW_RUN_DATE_TIME }}
+    container:
+      image: ghcr.io/mister-good-deal/poker-tracker-cpp/ci-linux-runner
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Get the workflow run date time with YYYY_MM_DD_HH_MM_SS format
+        id: workflow_run_date_time
+        run: echo "WORKFLOW_RUN_DATE_TIME=$(date +'%Y_%m_%d_%H_%M_%S')" >> "$GITHUB_OUTPUT"
+      - name: Print the workflow run date time
+        run: echo "WORKFLOW_RUN_DATE_TIME = ${{ steps.workflow_run_date_time.outputs.WORKFLOW_RUN_DATE_TIME }}"
+  
+  build_gcc:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/mister-good-deal/poker-tracker-cpp/builder-linux-gcc
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Cache GCC release build
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.BUILD_PATH }}/gcc/release
+          key: gcc-build-release-${{ github.sha }}
+      - name: Configure GCC with CMake
+        run: >
+          cmake -S . -B $BUILD_PATH/gcc/release -DCMAKE_BUILD_TYPE=Release -DCMAKE_MAKE_PROGRAM=/usr/bin/make
+          -DCMAKE_CXX_COMPILER=/usr/bin/g++ -DBUILD_TESTS=ON
+      - name: Build GCC
+        run: cmake --build $BUILD_PATH/gcc/release --parallel $MAX_MULTI_THREADS_CORE
+      - name: Upload artifacts - release build
+        uses: actions/upload-artifact@v4
+        with:
+          name: gcc-release
+          path: ${{ env.BUILD_PATH }}/gcc/release
+          
+  build_clang:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/mister-good-deal/poker-tracker-cpp/builder-linux-clang
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Cache Clang debug build
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.BUILD_PATH }}/clang/debug
+          key: clang-build-debug-${{ github.sha }}
+      - name: Configure Clang Release with CMake
+        run: >
+          cmake -S . -B $BUILD_PATH/clang/release -DCMAKE_BUILD_TYPE=Release -DCMAKE_MAKE_PROGRAM=/usr/bin/make
+          -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DBUILD_TESTS=ON
+      - name: Configure Clang Debug with CMake
+        run: >
+          cmake -S . -B $BUILD_PATH/clang/debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/usr/bin/make
+          -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DBUILD_TESTS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --log-context
+      - name: Build Clang Release
+        run: cmake --build $BUILD_PATH/clang/release --parallel $MAX_MULTI_THREADS_CORE
+      - name: Build Clang Debug
+        run: cmake --build $BUILD_PATH/clang/debug --parallel $MAX_MULTI_THREADS_CORE
+      - name: Upload artifacts - release build
+        uses: actions/upload-artifact@v4
+        with:
+          name: clang-release
+          path: ${{ env.BUILD_PATH }}/clang/release
+      - name: Upload artifacts - debug build
+        uses: actions/upload-artifact@v4
+        with:
+          name: clang-debug
+          path: ${{ env.BUILD_PATH }}/clang/debug
+          
+  build_mingw:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/mister-good-deal/poker-tracker-cpp/builder-linux-mingw
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Cache mingw release build
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.BUILD_PATH }}/mingw/release
+          key: mingw-build-release-${{ github.sha }}
+      - name: Configure mingw Release with CMake
+        run: >
+          cmake -S . -B $BUILD_PATH/mingw/release -DCMAKE_BUILD_TYPE=Release -DCMAKE_MAKE_PROGRAM=/usr/bin/make
+          -DCMAKE_TOOLCHAIN_FILE=cmake/mingw-w64-x86_64.cmake
+      - name: Configure mingw Debug with CMake
+        run: >
+          cmake -S . -B $BUILD_PATH/mingw/debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/usr/bin/make
+          -DCMAKE_TOOLCHAIN_FILE=cmake/mingw-w64-x86_64.cmake
+      - name: Build mingw Release
+        run: cmake --build $BUILD_PATH/mingw/release --parallel $MAX_MULTI_THREADS_CORE
+      - name: Build mingw Debug
+        run: cmake --build $BUILD_PATH/mingw/debug --parallel $MAX_MULTI_THREADS_CORE
+      - name: Upload artifacts - release build
+        uses: actions/upload-artifact@v4
+        with:
+          name: mingw-release
+          path: ${{ env.BUILD_PATH }}/mingw/release
+      - name: Upload artifacts - debug build
+        uses: actions/upload-artifact@v4
+        with:
+          name: mingw-debug
+          path: ${{ env.BUILD_PATH }}/mingw/debug
+        
+  clang_format:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/mister-good-deal/poker-tracker-cpp/ci-linux-runner
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Run clang-format
+        run: |
+          CPP_SRC_FILES=$(find ${PROJECT_PATH}/services -regex '.*\.\(cpp\|hpp\)' | tr "\n" " ")
+          clang-format --Werror --Wclang-format-violations --dry-run $CPP_SRC_FILES
+
+  code_quality:
+    needs: 
+     - build_clang
+     - computed_vars
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/mister-good-deal/poker-tracker-cpp/ci-linux-runner
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Restore Clang debug build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.BUILD_PATH }}/clang/debug
+          key: clang-build-debug-${{ github.sha }}
+      - name: Run CodeChecker analyze
+        run: >
+          CodeChecker analyze $BUILD_PATH/clang/debug/compile_commands.json -o $BUILD_PATH/clang/debug/code_checker_report
+          -j $MAX_MULTI_THREADS_CORE --ctu --tidy-config $PROJECT_PATH/.clang-tidy --skip $PROJECT_PATH/.code-checker-skip-files
+      - name: Run CodeChecker parse HTML report
+        run: |
+          set +e
+          CodeChecker parse $BUILD_PATH/clang/debug/code_checker_report -e html -o $BUILD_PATH/clang/debug/code_checker_html_report \
+          --trim-path-prefix $PROJECT_PATH
+          exit 0
+      - name: Run CodeChecker parse JSON report
+        run: |
+          set +e
+          CodeChecker parse $BUILD_PATH/clang/debug/code_checker_report -e codeclimate -o $BUILD_PATH/clang/debug/gl-code-quality-report.json \
+          --trim-path-prefix $PROJECT_PATH
+          exit 0
+      - name: Upload artifacts - code quality reports
+        uses: actions/upload-artifact@v4
+        env:
+          WORKFLOW_RUN_DATE_TIME: ${{ needs.computed_vars.outputs.WORKFLOW_RUN_DATE_TIME }}
+        with:
+          name: code_quality_report_${{ env.WORKFLOW_RUN_DATE_TIME }}
+          path: |-
+            ${{ env.BUILD_PATH }}/clang/debug/gl-code-quality-report.json
+            ${{ env.BUILD_PATH }}/clang/debug/code_checker_html_report/
+    
+  test_game_handler:
+    needs: 
+      - build_gcc
+      - computed_vars
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/mister-good-deal/poker-tracker-cpp/builder-linux-gcc
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Restore GCC release build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.BUILD_PATH }}/gcc/release
+          key: gcc-build-release-${{ github.sha }}
+      - name: Run CTest
+        run: >
+          ctest --test-dir $BUILD_PATH/gcc/release/services/game_handler --output-on-failure --extra-verbose
+          -j $MAX_MULTI_THREADS_CORE --output-junit game_handler_ctest.xml --no-compress-output
+      - name: Upload artifacts - test report
+        uses: actions/upload-artifact@v4
+        env:
+          WORKFLOW_RUN_DATE_TIME: ${{ needs.computed_vars.outputs.WORKFLOW_RUN_DATE_TIME }}
+        with:
+          name: game_handler_test_report_${{ env.WORKFLOW_RUN_DATE_TIME }}
+          path: ${{ env.BUILD_PATH }}/gcc/release/services/game_handler/game_handler_ctest.xml
+          
+  test_ocr:
+    needs:
+      - build_gcc
+      - computed_vars
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/mister-good-deal/poker-tracker-cpp/builder-linux-gcc
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Restore GCC release build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.BUILD_PATH }}/gcc/release
+          key: gcc-build-release-${{ github.sha }}
+      - name: Run CTest
+        run: >
+          ctest --test-dir $BUILD_PATH/gcc/release/services/ocr --output-on-failure --extra-verbose
+          -j $MAX_MULTI_THREADS_CORE --output-junit ocr_ctest.xml --no-compress-output
+      - name: Upload artifacts - test report
+        uses: actions/upload-artifact@v4
+        env:
+          WORKFLOW_RUN_DATE_TIME: ${{ needs.computed_vars.outputs.WORKFLOW_RUN_DATE_TIME }}
+        with:
+          name: ocr_test_report_${{ env.WORKFLOW_RUN_DATE_TIME }}
+          path: ${{ env.BUILD_PATH }}/gcc/release/services/ocr/ocr_ctest.xml
+          
+  test_scraper:
+    needs:
+      - build_gcc
+      - computed_vars
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/mister-good-deal/poker-tracker-cpp/builder-linux-gcc
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Restore GCC release build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.BUILD_PATH }}/gcc/release
+          key: gcc-build-release-${{ github.sha }}
+      - name: Run CTest
+        run: >
+          ctest --test-dir $BUILD_PATH/gcc/release/services/scraper --output-on-failure --extra-verbose
+          -j $MAX_MULTI_THREADS_CORE --output-junit scraper_ctest.xml --no-compress-output
+      - name: Upload artifacts - test report
+        uses: actions/upload-artifact@v4
+        env:
+          WORKFLOW_RUN_DATE_TIME: ${{ needs.computed_vars.outputs.WORKFLOW_RUN_DATE_TIME }}
+        with:
+          name: scraper_test_report_${{ env.WORKFLOW_RUN_DATE_TIME }}
+          path: ${{ env.BUILD_PATH }}/gcc/release/services/scraper/scraper_ctest.xml
+          
+  test_game_session:
+    needs:
+      - build_gcc
+      - computed_vars
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/mister-good-deal/poker-tracker-cpp/builder-linux-gcc
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Restore GCC release build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.BUILD_PATH }}/gcc/release
+          key: gcc-build-release-${{ github.sha }}
+      - name: Run CTest
+        run: >
+          ctest --test-dir $BUILD_PATH/gcc/release/services/game_session --output-on-failure --extra-verbose
+          -j $MAX_MULTI_THREADS_CORE --output-junit game_session_ctest.xml --no-compress-output
+      - name: Upload artifacts - test report
+        uses: actions/upload-artifact@v4
+        env:
+          WORKFLOW_RUN_DATE_TIME: ${{ needs.computed_vars.outputs.WORKFLOW_RUN_DATE_TIME }}
+        with:
+          name: game_session_test_report_${{ env.WORKFLOW_RUN_DATE_TIME }}
+          path: ${{ env.BUILD_PATH }}/gcc/release/services/game_session/game_session_ctest.xml
+
+  packaging_linux:
+    needs:
+      - build_gcc
+      - test_game_handler
+      - test_ocr
+      - test_scraper
+      - test_game_session
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/mister-good-deal/poker-tracker-cpp/builder-linux-gcc
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Restore GCC release build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.BUILD_PATH }}/gcc/release
+          key: gcc-build-release-${{ github.sha }}
+      - name: Run CPack
+        run: cpack --config $PROJECT_PATH/MultiCPackConfigLinux.cmake
+      - name: Upload artifacts - package
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-package
+          path: ${{ env.BUILD_PATH }}/gcc/release/*.tar.gz
+
+  packaging_windows:
+    needs: 
+      - build_mingw
+      # @todo : Add tests for windows
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/mister-good-deal/poker-tracker-cpp/builder-linux-mingw
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Restore mingw release build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.BUILD_PATH }}/mingw/release
+          key: mingw-build-release-${{ github.sha }}
+      - name: Run CPack
+        run: cpack --config $PROJECT_PATH/MultiCPackConfigWindows.cmake
+      - name: Upload artifacts - package
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-package
+          path: ${{ env.BUILD_PATH }}/mingw/release/*.zip
+
+  #todo : Release action
+  #todo : Deploy action
+  

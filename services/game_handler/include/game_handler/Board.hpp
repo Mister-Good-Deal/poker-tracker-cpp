@@ -3,18 +3,29 @@
 #include <game_handler/Hand.hpp>
 
 namespace GameHandler {
-    static const int8_t BOARD_CARDS_NUMBER = 5;
-    static const int8_t FLOP_CARDS_NUMBER  = 3;
-    static const int8_t STRAIGHT_SIZE      = 5;
-    static const int8_t FLUSH_SIZE         = 5;
+    static const int32_t BOARD_CARDS_NUMBER      = 5;
+    static const int32_t COMPARISON_CARDS_NUMBER = 5;
+    static const int32_t FLOP_CARDS_NUMBER       = 3;
+    static const int32_t STRAIGHT_SIZE           = 5;
+    static const int32_t FLUSH_SIZE              = 5;
+    static const int32_t QUADS_SIZE              = 4;
+    static const int32_t FULL_SIZE               = 5;
+    static const int32_t TRIPS_SIZE              = 3;
+    static const int32_t TWO_PAIR_SIZE           = 4;
+    static const int32_t PAIR_SIZE               = 2;
+    static const int32_t TOTAL_CARDS_SIZE        = BOARD_CARDS_NUMBER + HAND_CARDS_NUMBER;
 
-    enum class HandRank : int8_t { HIGH_CARD = 0, PAIR, TWO_PAIR, TRIPS, STRAIGHT, FLUSH, FULL, QUADS, STRAIGHT_FLUSH };
+    enum class HandRank : int32_t { HIGH_CARD = 0, PAIR, TWO_PAIR, TRIPS, STRAIGHT, FLUSH, FULL, QUADS, STRAIGHT_FLUSH };
 
     class Board {
         public:
-            using board_t            = std::array<Card, BOARD_CARDS_NUMBER>;
-            using rank_frequencies_t = std::array<int8_t, RANK_CARDS_NUMBER + 1>;
-            using suit_frequencies_t = std::array<int8_t, SUIT_CARDS_NUMBER>;
+            using board_t     = std::array<Card, BOARD_CARDS_NUMBER>;        // Flop + turn + river
+            using flop_t      = std::array<Card, FLOP_CARDS_NUMBER>;         // Flop
+            using best_hand_t = std::array<Card, COMPARISON_CARDS_NUMBER>;   // 5 best cards of hand + board cards
+            using all_cards_t = std::array<Card, TOTAL_CARDS_SIZE>;          // Hand + board cards
+            using rank_f_t    = std::array<int32_t, RANK_CARDS_NUMBER + 1>;  // Ranks frequencies +1 for the ace
+            using suit_f_t    = std::array<int32_t, SUIT_CARDS_NUMBER>;      // Suits frequencies
+            using combo_t     = std::vector<Card>;  // 2 cards for pair, 3 for trips, 4 for quads, 5 for flush, straight, full
 
             Board()                   = default;
             Board(const Board& other) = default;
@@ -27,6 +38,10 @@ namespace GameHandler {
             auto operator=(Board&& other) noexcept -> Board&;
 
             [[nodiscard]] auto getCards() const -> board_t { return _cards; }
+            [[nodiscard]] auto isFlopEmpty() const -> bool;
+            [[nodiscard]] auto getFlop() const -> flop_t { return {_cards[0], _cards[1], _cards[2]}; }
+            [[nodiscard]] auto getTurn() const -> Card { return _cards[3]; }
+            [[nodiscard]] auto getRiver() const -> Card { return _cards[4]; }
             [[nodiscard]] auto hasPossibleStraight() const -> bool { return _possibleStraight; }
             [[nodiscard]] auto hasPossibleFlush() const -> bool { return _possibleFlush; }
             [[nodiscard]] auto hasPossibleFlushDraw() const -> bool { return _possibleFlushDraw; }
@@ -46,29 +61,31 @@ namespace GameHandler {
 
             auto getHighCardRank() -> Card::Rank;
             auto getHandRank(const Hand& hand) -> HandRank;
+            auto compareHands(const Hand& hand1, const Hand& hand2) -> int;
 
             [[nodiscard]] auto toJson() const -> json;
             [[nodiscard]] auto toDetailedJson() const -> json;
 
         private:
-            board_t            _cards;
-            rank_frequencies_t _rankFrequencies{};
-            suit_frequencies_t _suitFrequencies{};
-            bool               _possibleStraight  = false;
-            bool               _possibleFlush     = false;
-            bool               _possibleFlushDraw = false;
-            bool               _pair              = false;
-            bool               _twoPair           = false;
-            bool               _trips             = false;
-            bool               _straight          = false;
-            bool               _flush             = false;
-            bool               _full              = false;
-            bool               _quads             = false;
-            bool               _straightFlush     = false;
+            board_t  _cards;
+            rank_f_t _rankFrequencies {};
+            suit_f_t _suitFrequencies {};
+            bool     _possibleStraight  = false;
+            bool     _possibleFlush     = false;
+            bool     _possibleFlushDraw = false;
+            bool     _pair              = false;
+            bool     _twoPair           = false;
+            bool     _trips             = false;
+            bool     _straight          = false;
+            bool     _flush             = false;
+            bool     _full              = false;
+            bool     _quads             = false;
+            bool     _straightFlush     = false;
 
-            auto _countPossibleStraights(int8_t otherCards, std::optional<rank_frequencies_t> frequencies = std::nullopt) -> int8_t;
-            auto _computeRankFrequencies(std::optional<Hand> hand = std::nullopt) -> rank_frequencies_t;
-            auto _computeSuitFrequencies(std::optional<Hand> hand = std::nullopt) -> suit_frequencies_t;
+            auto _countPossibleStraights(int32_t otherCards, std::optional<rank_f_t> frequencies = std::nullopt) -> int32_t;
+            auto _computeRankFrequencies(std::optional<Hand> hand = std::nullopt) -> rank_f_t;
+            auto _computeSuitFrequencies(std::optional<Hand> hand = std::nullopt) -> suit_f_t;
+            auto _isStraightFlush(const all_cards_t& cards, rank_f_t& rankF, suit_f_t& suitF) -> bool;
 
             auto _hasPossibleFlush() -> bool;
             auto _hasPossibleFlushDraw() -> bool;
@@ -82,5 +99,12 @@ namespace GameHandler {
             auto _hasQuads() -> bool;
 
             auto _updateStats() -> void;
+            auto _extractComboFromPairsLike(const all_cards_t& cards, HandRank rank, rank_f_t& rankFrequencies) -> combo_t;
+            auto _extractComboFromStraightOrFlush(const all_cards_t& cards, HandRank rank, rank_f_t& rankF, suit_f_t& suitF)
+                -> combo_t;
+            auto _trimCombo(HandRank rank, combo_t& combo) -> void;
+            auto _extractCombo(const all_cards_t& cards, HandRank rank, rank_f_t& rankF, suit_f_t& suitF) -> combo_t;
+            auto _extractHigherCards(all_cards_t& cards, HandRank rank, const combo_t& combo) -> best_hand_t;
+            auto _getHandRankAndBestCombo(const Hand& value) -> std::pair<HandRank, best_hand_t>;
     };
 }  // namespace GameHandler

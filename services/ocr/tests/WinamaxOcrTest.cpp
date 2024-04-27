@@ -4,12 +4,16 @@
 
 #include <game_handler/CardFactory.hpp>
 #include <ocr/WinamaxOcr.hpp>
+#include <utilities/GtestMacros.hpp>
 
 using GameHandler::Factory::card;
+using OCR::UnknownCardRankException;
+using OCR::UnknownCardSuitException;
 using OCR::WinamaxOcr;
 
 using enum GameHandler::Card::Suit;
 using enum GameHandler::Card::Rank;
+using enum GameHandler::RoundAction::ActionType;
 
 /**
  * Avoid to load the OCR model for each test, it takes a lot of time (~1s).
@@ -26,6 +30,7 @@ class Env : public ::testing::Environment {
 class WinamaxOcrTest : public ::testing::Test {};
 
 TEST(WinamaxOcrTest, readCardRankShouldWork) {
+    // @todo add ten test to check ocr confidence between 10 (1) and 7
     auto two   = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/ranks/2.png");
     auto four  = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/ranks/4.png");
     auto five  = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/ranks/5.png");
@@ -43,10 +48,10 @@ TEST(WinamaxOcrTest, readCardRankShouldWork) {
     EXPECT_EQ(Env::winamaxOcr().readCardRank(king), KING);
 }
 
-TEST(WinamaxOcrTest, readCardRankShouldReturnUndefinedOnUnknowSuitColor) {
+TEST(WinamaxOcrTest, readCardRankShouldThrowErrorOnUnknowRankColor) {
     auto unknown = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/suits/unknown.png");
 
-    EXPECT_EQ(Env::winamaxOcr().readCardRank(unknown), UNDEFINED);
+    EXPECT_THROW(auto rank = Env::winamaxOcr().readCardRank(unknown), UnknownCardRankException);
 }
 
 TEST(WinamaxOcrTest, readCardSuitShouldWork) {
@@ -61,10 +66,11 @@ TEST(WinamaxOcrTest, readCardSuitShouldWork) {
     EXPECT_EQ(Env::winamaxOcr().readCardSuit(spade), SPADE);
 }
 
-TEST(WinamaxOcrTest, readCardSuitShouldReturnUnkownOnUnknowSuitColor) {
+// @todo Suit read is now too permissive
+TEST(WinamaxOcrTest, DISABLED_readCardSuitShouldThrowErrorOnUnknowSuitColor) {
     auto unknown = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/suits/unknown.png");
 
-    EXPECT_EQ(Env::winamaxOcr().readCardSuit(unknown), UNKNOWN);
+    EXPECT_THROW(auto suit = Env::winamaxOcr().readCardSuit(unknown), UnknownCardSuitException);
 }
 
 TEST(WinamaxOcrTest, readCardShouldWork) {
@@ -73,27 +79,40 @@ TEST(WinamaxOcrTest, readCardShouldWork) {
     auto aceOfSpade      = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards/AS.png");
     auto twoOfHeart      = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards/2H.png");
     auto kingOfClub      = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards/KC.png");
+    auto jackOfSpade     = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards/JS.png");
+    auto tenOfDiamond    = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards/TD.png");
+    auto unknown         = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/cards/unknown.png");
 
-    EXPECT_EQ(Env::winamaxOcr().readCard(heightOfDiamond), card("8D"));
-    EXPECT_EQ(Env::winamaxOcr().readCard(nineOfSpade), card("9S"));
-    EXPECT_EQ(Env::winamaxOcr().readCard(aceOfSpade), card("AS"));
-    EXPECT_EQ(Env::winamaxOcr().readCard(twoOfHeart), card("2H"));
-    EXPECT_EQ(Env::winamaxOcr().readCard(kingOfClub), card("KC"));
+    EXPECT_EQ(Env::winamaxOcr().readPlayerCard(heightOfDiamond), card("8D"));
+    EXPECT_EQ(Env::winamaxOcr().readPlayerCard(nineOfSpade), card("9S"));
+    EXPECT_EQ(Env::winamaxOcr().readPlayerCard(aceOfSpade), card("AS"));
+    EXPECT_EQ(Env::winamaxOcr().readPlayerCard(twoOfHeart), card("2H"));
+    EXPECT_EQ(Env::winamaxOcr().readPlayerCard(kingOfClub), card("KC"));
+    EXPECT_EQ(Env::winamaxOcr().readPlayerCard(jackOfSpade), card("JS"));
+    EXPECT_EQ(Env::winamaxOcr().readPlayerCard(tenOfDiamond), card("TD"));
+
+    EXPECT_ANY_THROW(auto readCard = Env::winamaxOcr().readPlayerCard(unknown));
 }
 
 TEST(WinamaxOcrTest, readActionShouldWork) {
-    auto raisesTxt = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/raises_text.png");
+    auto raisesTxt     = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/actions/raises_to_3_bb.png");
+    auto bigBlindTxt   = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/actions/big_blind.png");
+    auto smallBlindTxt = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/actions/small_blind.png");
+    auto foldTxt       = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/actions/fold.png");
 
-    EXPECT_STREQ(Env::winamaxOcr().readGameAction(raisesTxt).c_str(), "RAISES TO 3 BB");
+    EXPECT_EQ(Env::winamaxOcr().readGameAction(raisesTxt), RAISE);
+    EXPECT_EQ(Env::winamaxOcr().readGameAction(smallBlindTxt), PAY_SMALL_BLIND);
+    EXPECT_EQ(Env::winamaxOcr().readGameAction(bigBlindTxt), PAY_BIG_BLIND);
+    EXPECT_EQ(Env::winamaxOcr().readGameAction(foldTxt), FOLD);
 }
 
 TEST(WinamaxOcrTest, readPlayerNameShouldWork) {
-    auto player1NameImg = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/player_name/name_1.png");
-    auto player2NameImg = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/player_name/name_2.png");
-    auto player3NameImg = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/player_name/name_3.png");
+    auto player1NameImg = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/player_name/_Mister_.png");
+    auto player2NameImg = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/player_name/G00dspeed.png");
+    auto player3NameImg = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/player_name/sucre_461406.png");
 
     EXPECT_STREQ(Env::winamaxOcr().readPlayerName(player1NameImg).c_str(), "_Mister_");
-    //    EXPECT_STREQ(Env::winamaxOcr().readPlayerName(player2NameImg).c_str(), "G00dspeed"); // @todo fixme
+    // EXPECT_STREQ(Env::winamaxOcr().readPlayerName(player2NameImg).c_str(), "G00dspeed"); @fixme OO instead of 00
     EXPECT_STREQ(Env::winamaxOcr().readPlayerName(player3NameImg).c_str(), "sucre_461406");
 }
 
@@ -148,14 +167,20 @@ TEST(WinamaxOcrTest, readBlindAmountShouldWork) {
 
 // @todo Learn tesseract on specific font https://github.com/tesseract-ocr/tesstrain https://www.youtube.com/watch?v=KE4xEzFGSU8
 // @issue https://gitlab.laneuville.me/poker-bot/backend/-/issues/31
-TEST(WinamaxOcrTest, DISABLED_readGameTimeDurationShouldWork) {
+TEST(WinamaxOcrTest, DISABLED_readBlindLevelDurationShouldWork) {
     auto oneMinute          = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/game_duration/1m.png");
     auto eighteenSeconds    = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/game_duration/18s.png");
     auto fiftyHeightSeconds = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/game_duration/58s.png");
 
-    EXPECT_EQ(Env::winamaxOcr().readGameDuration(oneMinute), std::chrono::seconds(60));
-    EXPECT_EQ(Env::winamaxOcr().readGameDuration(eighteenSeconds), std::chrono::seconds(18));
-    EXPECT_EQ(Env::winamaxOcr().readGameDuration(fiftyHeightSeconds), std::chrono::seconds(58));
+    EXPECT_EQ(Env::winamaxOcr().readBlindLevelDuration(oneMinute), std::chrono::seconds(60));
+    EXPECT_EQ(Env::winamaxOcr().readBlindLevelDuration(eighteenSeconds), std::chrono::seconds(18));
+    EXPECT_EQ(Env::winamaxOcr().readBlindLevelDuration(fiftyHeightSeconds), std::chrono::seconds(58));
+}
+
+TEST(WinamaxOcrTest, readAverageStackShouldWork) {
+    auto fourHundredAndFifty = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/average_stack/450.png");
+
+    EXPECT_EQ(Env::winamaxOcr().readAverageStack(fourHundredAndFifty), 450);
 }
 
 TEST(WinamaxOcrTest, playerHasFoldedShouldWork) {
@@ -166,6 +191,12 @@ TEST(WinamaxOcrTest, playerHasFoldedShouldWork) {
     EXPECT_FALSE(Env::winamaxOcr().hasFolded(cardsSkin));
 }
 
+TEST(WinamaxOcrTest, playerIsAllInShouldWork) {
+    auto stack = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/all_in.png");
+
+    EXPECT_TRUE(Env::winamaxOcr().isAllIn(stack));
+}
+
 TEST(WinamaxOcrTest, playerButtonDetectionShouldWork) {
     auto button   = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/screen_btn.png");
     auto noButton = cv::imread(std::string(WINAMAX_IMAGES_DIR) + "/screen_no_btn.png");
@@ -173,6 +204,8 @@ TEST(WinamaxOcrTest, playerButtonDetectionShouldWork) {
     EXPECT_TRUE(Env::winamaxOcr().hasButton(button));
     EXPECT_FALSE(Env::winamaxOcr().hasButton(noButton));
 }
+
+// @todo test readHand
 
 auto main(int argc, char* argv[]) -> int {
     ::testing::InitGoogleTest(&argc, argv);

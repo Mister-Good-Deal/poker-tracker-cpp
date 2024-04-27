@@ -2,9 +2,12 @@
 
 #include <game_handler/CardFactory.hpp>
 #include <game_handler/Game.hpp>
+#include <utilities/GtestMacros.hpp>
 
+using GameHandler::Blinds;
 using GameHandler::Board;
 using GameHandler::Game;
+using GameHandler::Hand;
 using GameHandler::Player;
 using GameHandler::seconds;
 using GameHandler::Factory::card;
@@ -17,60 +20,55 @@ TEST(GameTest, jsonRepresentationShouldBeCorrect) {
 
     game.setBuyIn(10);
     game.setMultipliers(3);
-    game.init("player_1", "player_2", "player_3");
-
-    // Shortcuts for players names
-    Player& player1 = game.getPlayer1();
-    Player& player2 = game.getPlayer2();
-    Player& player3 = game.getPlayer3();
+    game.setInitialStack(1000);
+    game.init("player 1", "player 2", "player 3");
 
     // Run a scenario
 
     // Round 1
-    auto& round1 = game.getCurrentRound();
+    {
+        auto& round1 = game.newRound({50, 100}, {card("AH"), card("KH")}, 1);
 
-    // Pre-flop
-    round1.start();
-    player1.setHand(card("AH"), card("KH"));
-    round1.setHand(player1.getHand());
-    round1.check(player1);
-    round1.bet(player2, 100);
-    round1.fold(player3);
-    round1.call(player1, 100);
-    round1.endStreet();
-    // Flop
-    round1.getBoard().setFlop({card("AS"), card("AC"), card("3C")});
-    round1.check(player1);
-    round1.bet(player2, 200);
-    round1.bet(player1, 600);
-    round1.fold(player2);
-    round1.end(player1);
+        // Pre-flop
+        round1.check(1);
+        round1.raiseTo(2, 300);
+        round1.fold(3);
+        round1.call(1);
+        // Flop
+        round1.getBoard().setFlop({card("AS"), card("AC"), card("3C")});
+        round1.check(1);
+        round1.raiseTo(2, 200);
+        round1.raiseTo(1, 700);
+        round1.fold(2);
+        // Stacks
+        // Player 1: 1000 + 1600 - 1000 = 1600
+        // Player 2: 1000 - 500 = 500
+        // Player 3: 1000 - 100 = 900
+    }
 
     // Round 2
+    {
+        // Dealer is player 2
+        auto& round2 = game.newRound({100, 200}, {card("AH"), card("AS")}, 2);
 
-    game.newRound();
-
-    auto& round2 = game.getCurrentRound();
-
-    // Pre-flop
-    round2.start();
-    player1.setHand(card("AH"), card("AS"));
-    round2.setHand(player1.getHand());
-    round2.bet(player1, 200);
-    round2.bet(player2, 5000);
-    round2.bet(player3, 5000);
-    round2.call(player1, 4800);
-    round2.endStreet();
-    // Flop
-    round2.getBoard().setFlop({card("AS"), card("KS"), card("KH")});
-    // Turn
-    round2.getBoard().setTurn(card("8C"));
-    // River
-    round2.getBoard().setRiver(card("7C"));
-    round2.end(player1);
+        // Pre-flop
+        round2.raiseTo(2, 500);
+        round2.call(3);
+        round2.raiseTo(1, 1600);
+        round2.call(3);
+        // Flop
+        round2.getBoard().setFlop({card("AS"), card("KS"), card("KH")});
+        // Turn
+        round2.getBoard().setTurn(card("8C"));
+        // River
+        round2.getBoard().setRiver(card("7C"));
+        // Showdown
+        round2.setPlayerHand({card("TS"), card("TH")}, 2);
+        round2.setPlayerHand({card("9S"), card("9H")}, 3);
+        round2.showdown();
+    }
 
     // End game
-    game.setWinner(player1);
     game.end();
 
     // language=json
@@ -80,16 +78,16 @@ TEST(GameTest, jsonRepresentationShouldBeCorrect) {
                 {
                     "actions": {
                         "pre_flop": [
-                            { "action": "Check", "player_name": "player_1", "elapsed_time": 0 },
-                            { "action": "Bet", "player_name": "player_2", "elapsed_time": 0, "amount": 100 },
-                            { "action": "Fold", "player_name": "player_3", "elapsed_time": 0 },
-                            { "action": "Call", "player_name": "player_1", "elapsed_time": 0, "amount": 100 }
+                            { "action": "Check", "player": "player_1", "elapsed_time": 0 },
+                            { "action": "Raise", "player": "player_2", "elapsed_time": 0, "amount": 250 },
+                            { "action": "Fold", "player": "player_3", "elapsed_time": 0 },
+                            { "action": "Call", "player": "player_1", "elapsed_time": 0, "amount": 300 }
                         ],
                         "flop": [
-                            { "action": "Check", "player_name": "player_1", "elapsed_time": 0 },
-                            { "action": "Bet", "player_name": "player_2", "elapsed_time": 0, "amount": 200 },
-                            { "action": "Bet", "player_name": "player_1", "elapsed_time": 0, "amount": 600 },
-                            { "action": "Fold", "player_name": "player_2", "elapsed_time": 0 }
+                            { "action": "Check", "player": "player_1", "elapsed_time": 0 },
+                            { "action": "Raise", "player": "player_2", "elapsed_time": 0, "amount": 200 },
+                            { "action": "Raise", "player": "player_1", "elapsed_time": 0, "amount": 700 },
+                            { "action": "Fold", "player": "player_2", "elapsed_time": 0 }
                         ],
                         "turn": [],
                         "river": []
@@ -99,22 +97,36 @@ TEST(GameTest, jsonRepresentationShouldBeCorrect) {
                         { "shortName": "AC", "rank": "Ace", "suit": "Club" },
                         { "shortName": "3C", "rank": "Three", "suit": "Club" }
                     ],
-                    "hand": [
-                        { "shortName": "AH", "rank": "Ace", "suit": "Heart" },
-                        { "shortName": "KH", "rank": "King", "suit": "Heart" }
-                    ],
-                    "pot": 1000,
-                    "bet": 700,
+                    "hands": {
+                        "player_1": [
+                            { "shortName": "AH", "rank": "Ace", "suit": "Heart" },
+                            { "shortName": "KH", "rank": "King", "suit": "Heart" }
+                        ],
+                        "player_2": [],
+                        "player_3": []
+                    },
+                    "pot": 1600,
+                    "blinds": { "small": 50, "big": 100 },
                     "won": true,
-                    "winner": "player_1"
+                    "positions": {
+                        "dealer": "player_1",
+                        "small_blind": "player_2",
+                        "big_blind": "player_3"
+                    },
+                    "ranking": [["player_1"], ["player_2"], ["player_3"]],            
+                    "stacks": [
+                        { "player": "player_1", "stack": 1600, "balance": 600 },
+                        { "player": "player_2", "stack": 500, "balance": -500 },
+                        { "player": "player_3", "stack": 900, "balance": -100 }
+                    ]
                 },
                 {
                     "actions": {
                         "pre_flop": [
-                            { "action": "Bet", "player_name": "player_1", "elapsed_time": 0, "amount": 200 },
-                            { "action": "Bet", "player_name": "player_2", "elapsed_time": 0, "amount": 5000 },
-                            { "action": "Bet", "player_name": "player_3", "elapsed_time": 0, "amount": 5000 },
-                            { "action": "Call", "player_name": "player_1", "elapsed_time": 0, "amount": 4800 }
+                            { "action": "Raise", "player": "player_2", "elapsed_time": 0, "amount": 500 },
+                            { "action": "Call", "player": "player_3", "elapsed_time": 0, "amount": 400 },
+                            { "action": "Raise", "player": "player_1", "elapsed_time": 0, "amount": 1400 },
+                            { "action": "Call", "player": "player_3", "elapsed_time": 0, "amount": 400 }
                         ],
                         "flop": [],
                         "turn": [],
@@ -127,26 +139,46 @@ TEST(GameTest, jsonRepresentationShouldBeCorrect) {
                         { "shortName": "8C", "rank": "Eight", "suit": "Club" },
                         { "shortName": "7C", "rank": "Seven", "suit": "Club" }
                     ],
-                    "hand": [
-                        { "shortName": "AH", "rank": "Ace", "suit": "Heart" },
-                        { "shortName": "AS", "rank": "Ace", "suit": "Spade" }
-                    ],
-                    "pot": 15000,
-                    "bet": 5000,
+                    "hands": {
+                        "player_1": [
+                            { "shortName": "AH", "rank": "Ace", "suit": "Heart" },
+                            { "shortName": "AS", "rank": "Ace", "suit": "Spade" }
+                        ],
+                        "player_2": [
+                            { "shortName": "TS", "rank": "Ten", "suit": "Spade" },
+                            { "shortName": "TH", "rank": "Ten", "suit": "Heart" }
+                        ],
+                        "player_3": [
+                            { "shortName": "9S", "rank": "Nine", "suit": "Spade" },
+                            { "shortName": "9H", "rank": "Nine", "suit": "Heart" }
+                        ]
+                    },
+                    "pot": 3000,
+                    "blinds": { "small": 100, "big": 200 },
                     "won": true,
-                    "winner": "player_1"
+                    "positions": {
+                        "dealer": "player_2",
+                        "small_blind": "player_3",
+                        "big_blind": "player_1"
+                    },
+                    "ranking": [["player_1"], ["player_2"], ["player_3"]],
+                    "stacks": [
+                        { "player": "player_1", "stack": 3000, "balance": 1400 },
+                        { "player": "player_2", "stack": 0, "balance": -500 },
+                        { "player": "player_3", "stack": 0, "balance": -900 }
+                    ]
                 }
             ],
-            "players": ["player_1", "player_2", "player_3"],
-            "winner": "player_1",
+            "players": ["player 1", "player 2", "player 3"],
             "buy_in": 10,
             "multipliers": 3,
             "won": true,
             "balance": 20,
-            "duration": 0
+            "duration": 0,            
+            "complete": true            
         }
     )"_json;
 
-    EXPECT_EQ(game.toJson(), expectedJson);
+    EXPECT_JSON_EQ(game.toJson(), expectedJson);
 }
 // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)

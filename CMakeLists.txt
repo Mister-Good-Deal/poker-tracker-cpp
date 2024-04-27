@@ -62,8 +62,8 @@ endif ()
 # Configure the debug mode
 #-----------------------------------------------------------------------------------------------------------------------
 
-if (${build_type} STREQUAL debug)
-    message(STATUS "DISPLAY_OPENCV_IMG is set to 1 in DEBUG mode")
+if (${build_type} STREQUAL debug OR DISPLAY_OPENCV_IMG)
+    message(STATUS "DISPLAY_OPENCV_IMG is set to 1")
 
     add_compile_definitions(DISPLAY_OPENCV_IMG=1)
 endif ()

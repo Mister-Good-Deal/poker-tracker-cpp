@@ -8,7 +8,10 @@ namespace Websockets {
     using Logger = Logger::Quill;
 
     // Configure the server at constructor level to get the resource in class param (_server);
-    Server::Server() : _server(uWS::App()) { configureWebsockets(); }
+    Server::Server()
+      : _server(uWS::App()) {
+        configureWebsockets();
+    }
 
     auto Server::publish(std::string_view topic, std::string_view data, OpCode code, bool compress) -> bool {
         LOG_DEBUG(Logger::getLogger(), "Websocket server send `{}` on topic `{}`", data, topic);
@@ -20,8 +23,7 @@ namespace Websockets {
         _server
             .listen(SERVER_LISTENING_PORT,
                     [](auto* listenSocket) {
-                        if (listenSocket)
-                        {
+                        if (listenSocket) {
                             LOG_INFO(Logger::getLogger(), "Websocket server listening on port {} ...", SERVER_LISTENING_PORT);
                         } else {
                             LOG_ERROR(Logger::getLogger(), "Websocket server failed to bind to port {}", SERVER_LISTENING_PORT);

@@ -1,17 +1,15 @@
 stages:
-  - init
   - build
   - lint
   - test
+  - test-long-running
   - documentation
   - packaging
   - deploy
 
 variables:
   PROJECT_PATH: $CI_PROJECT_DIR
-  BUILD_PATH_LINUX: ${PROJECT_PATH}/build-linux
-  BUILD_PATH_WINDOWS: ${PROJECT_PATH}/build-windows
-  COMPILER_PATH: /usr/bin/clang++ # either /usr/bin/clang++ or /usr/bin/g++
+  BUILD_PATH: ${PROJECT_PATH}/build
   MAX_CODE_QUALITY_ISSUE_PER_FILE: 20
   MAX_MULTI_THREADS_CORE: 8
 
@@ -20,186 +18,255 @@ default:
   tags:
     - host
     - runner
-  cache:
-    # Enable per-branch caching
-    key: $CI_COMMIT_REF_SLUG
-    paths:
-      - $BUILD_PATH_LINUX-debug
 
-cmake_init:
-  stage: init
-  cache: [ ] # Needed to make a new CMake build without cache about CXX compiler
-  dependencies: [ ] # Needed to make a new CMake build without cache about CXX compiler
-  script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX-debug -DCMAKE_CXX_COMPILER=${COMPILER_PATH}
-      -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --log-context
-    - CPP_SRC_FILES=$(find ${PROJECT_PATH}/services -regex '.*\.\(cpp\|hpp\)' | tr "\n" " ")
-    - echo "CPP_SRC_FILES=${CPP_SRC_FILES}" >> vars.env
-    # - clang-check -analyze -extra-arg=-std=c++20 -p $BUILD_PATH_LINUX-debug --analyzer-output-path=${PROJECT_PATH}/clang-check-report.plist ${CPP_SRC_FILES}
-  artifacts:
-    reports:
-      dotenv: vars.env
-    paths:
-      # - clang-check-report.plist
-      - $BUILD_PATH_LINUX-debug
-
-build_linux:
+build_gcc:
   stage: build
-  image: registry.gitlab.laneuville.me/poker-bot/backend/builder-linux-clang:latest
+  image: registry.gitlab.laneuville.me/poker-bot/backend/builder-linux-gcc:latest
   tags:
     - build
+  cache:
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - $BUILD_PATH/gcc/release
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX-release -DCMAKE_BUILD_TYPE=Release -DCMAKE_MAKE_PROGRAM=/usr/bin/make
-      -DCMAKE_CXX_COMPILER=${COMPILER_PATH} -DBUILD_TESTS=ON
-    - cmake --build $BUILD_PATH_LINUX-release --parallel ${MAX_MULTI_THREADS_CORE}
-    - cmake --build $BUILD_PATH_LINUX-debug --parallel ${MAX_MULTI_THREADS_CORE}
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH/gcc/release -DCMAKE_BUILD_TYPE=Release -DCMAKE_MAKE_PROGRAM=/usr/bin/make
+      -DCMAKE_CXX_COMPILER=/usr/bin/g++ -DBUILD_TESTS=ON
+    - cmake --build $BUILD_PATH/gcc/release --parallel ${MAX_MULTI_THREADS_CORE}
   artifacts:
     paths:
-      - $BUILD_PATH_LINUX-release
-      - $BUILD_PATH_LINUX-debug
+      - $BUILD_PATH/gcc/release
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /\/build\-windows\-only/m
       when: never
     - if: $CI_COMMIT_BRANCH =~ /^(main|release|feature)/
     - if: $CI_COMMIT_MESSAGE =~ /\/packaging(\-only)?/m
-  needs:
-    - cmake_init
-
-build_windows:
+      
+build_clang:
   stage: build
-  image: registry.gitlab.laneuville.me/poker-bot/backend/builder-windows-mingw:latest
+  image: registry.gitlab.laneuville.me/poker-bot/backend/builder-linux-clang:latest
+  tags:
+    - build
+  cache:
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - $BUILD_PATH/clang/release
+      - $BUILD_PATH/clang/debug
+  script:
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH/clang/release -DCMAKE_BUILD_TYPE=Release -DCMAKE_MAKE_PROGRAM=/usr/bin/make
+      -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DBUILD_TESTS=ON
+    - cmake --build $BUILD_PATH/clang/release --parallel ${MAX_MULTI_THREADS_CORE}
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH/clang/debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/usr/bin/make
+      -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DBUILD_TESTS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --log-context
+    - cmake --build $BUILD_PATH/clang/debug --parallel ${MAX_MULTI_THREADS_CORE}
+  artifacts:
+    paths:
+      - $BUILD_PATH/clang/release
+      - $BUILD_PATH/clang/debug
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /\/build\-windows\-only/m
+      when: never
+    - if: $CI_COMMIT_BRANCH =~ /^(main|release|feature)/
+    - if: $CI_COMMIT_MESSAGE =~ /\/packaging(\-only)?/m
+
+build_mingw:
+  stage: build
+  image: registry.gitlab.laneuville.me/poker-bot/backend/builder-linux-mingw:latest
   tags:
     - build
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH_WINDOWS-release -DCMAKE_BUILD_TYPE=Release -DCMAKE_MAKE_PROGRAM=/usr/bin/make
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH/mingw/release -DCMAKE_BUILD_TYPE=Release -DCMAKE_MAKE_PROGRAM=/usr/bin/make
       -DCMAKE_TOOLCHAIN_FILE=cmake/mingw-w64-x86_64.cmake
-    - cmake --build $BUILD_PATH_WINDOWS-release --parallel ${MAX_MULTI_THREADS_CORE}
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH_WINDOWS-debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/usr/bin/make
+    - cmake --build $BUILD_PATH/mingw/release --parallel ${MAX_MULTI_THREADS_CORE}
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH/mingw/debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/usr/bin/make
       -DCMAKE_TOOLCHAIN_FILE=cmake/mingw-w64-x86_64.cmake
-    - cmake --build $BUILD_PATH_WINDOWS-debug --parallel ${MAX_MULTI_THREADS_CORE}
+    - cmake --build $BUILD_PATH/mingw/debug --parallel ${MAX_MULTI_THREADS_CORE}
   artifacts:
     paths:
-      - $BUILD_PATH_WINDOWS-release
-      - $BUILD_PATH_WINDOWS-debug
+      - $BUILD_PATH/mingw/release
+      - $BUILD_PATH/mingw/debug
   rules:
     - if: $CI_COMMIT_BRANCH =~ /^(main|release)/
     - if: $CI_COMMIT_MESSAGE =~ /\/build\-windows/m
     - if: $CI_COMMIT_MESSAGE =~ /\/packaging(\-only)?/m
-  needs:
-    - cmake_init
 
 clang_format:
   stage: lint
   script:
+    - CPP_SRC_FILES=$(find ${PROJECT_PATH}/services -regex '.*\.\(cpp\|hpp\)' | tr "\n" " ")
     - clang-format --Werror --Wclang-format-violations --dry-run $CPP_SRC_FILES
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /\/(build|packaging)\-only/m
       when: never
     - if: $CI_COMMIT_MESSAGE !~ /\/no\-lint/m
-  needs:
-    - cmake_init
 
 code_quality:
   stage: test
   tags:
     - code-quality
+  cache:
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - $BUILD_PATH/clang/debug
   script:
-    - CodeChecker analyze $BUILD_PATH_LINUX-debug/compile_commands.json -o $BUILD_PATH_LINUX-debug/code_checker_report
+    - CodeChecker analyze $BUILD_PATH/clang/debug/compile_commands.json -o $BUILD_PATH/clang/debug/code_checker_report
       -j ${MAX_MULTI_THREADS_CORE} --ctu --tidy-config $PROJECT_PATH/.clang-tidy --skip $PROJECT_PATH/.code-checker-skip-files
     - set +e
-    - CodeChecker parse $BUILD_PATH_LINUX-debug/code_checker_report -e html -o $BUILD_PATH_LINUX-debug/code_checker_html_report --trim-path-prefix $PROJECT_PATH
-    - CodeChecker parse $BUILD_PATH_LINUX-debug/code_checker_report -e codeclimate -o $BUILD_PATH_LINUX-debug/gl-code-quality-report.json --trim-path-prefix $PROJECT_PATH
+    - CodeChecker parse $BUILD_PATH/clang/debug/code_checker_report -e html -o $BUILD_PATH/clang/debug/code_checker_html_report --trim-path-prefix $PROJECT_PATH
+    - CodeChecker parse $BUILD_PATH/clang/debug/code_checker_report -e codeclimate -o $BUILD_PATH/clang/debug/gl-code-quality-report.json --trim-path-prefix $PROJECT_PATH
     - exit 0
   artifacts:
     name: code_quality_${CI_COMMIT_TIMESTAMP}
     paths:
-      - $BUILD_PATH_LINUX-debug/gl-code-quality-report.json
-      - $BUILD_PATH_LINUX-debug/code_checker_html_report/
+      - $BUILD_PATH/clang/debug/gl-code-quality-report.json
+      - $BUILD_PATH/clang/debug/code_checker_html_report/
     expose_as: 'Code quality HTML and json reports'
     reports:
-      codequality: $BUILD_PATH_LINUX-debug/gl-code-quality-report.json
+      codequality: $BUILD_PATH/clang/debug/gl-code-quality-report.json
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /\/(build|packaging)\-only/m
       when: never
     - if: $CI_COMMIT_MESSAGE !~ /\/no\-code\-quality/m
   needs:
-    - cmake_init
+    - build_clang
 
 test_game_handler:
   stage: test
   tags:
     - tests
+  cache:
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - $BUILD_PATH/gcc/release
   script:
-    # @fixme Need to required tests for all subproject with --test-dir
-    - ctest --test-dir $BUILD_PATH_LINUX-release/services/game_handler --output-on-failure --extra-verbose -j ${MAX_MULTI_THREADS_CORE}
+    - ctest --test-dir $BUILD_PATH/gcc/release/services/game_handler --output-on-failure --extra-verbose -j ${MAX_MULTI_THREADS_CORE}
       --output-junit game_handler_ctest.xml --no-compress-output
   artifacts:
     reports:
-      junit: $BUILD_PATH_LINUX-release/services/game_handler/game_handler_ctest.xml
+      junit: $BUILD_PATH/gcc/release/services/game_handler/game_handler_ctest.xml
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /\/(build|packaging)\-only/m
       when: never
     - if: $CI_COMMIT_MESSAGE !~ /\/no\-test/m
   needs:
-    - build_linux
+    - build_gcc
 
 test_ocr:
   stage: test
   tags:
     - tests
+  cache:
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - $BUILD_PATH/gcc/release
   script:
-    # @fixme Need to required tests for all subproject with --test-dir
-    - ctest --test-dir $BUILD_PATH_LINUX-release/services/ocr --output-on-failure --extra-verbose -j ${MAX_MULTI_THREADS_CORE}
+    - ctest --test-dir $BUILD_PATH/gcc/release/services/ocr --output-on-failure --extra-verbose -j ${MAX_MULTI_THREADS_CORE}
       --output-junit ocr_ctest.xml --no-compress-output
   artifacts:
     reports:
-      junit: $BUILD_PATH_LINUX-release/services/ocr/ocr_ctest.xml
+      junit: $BUILD_PATH/gcc/release/services/ocr/ocr_ctest.xml
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /\/(build|packaging)\-only/m
       when: never
     - if: $CI_COMMIT_MESSAGE !~ /\/no\-test/m
   needs:
-    - build_linux
+    - build_gcc
+      
+test_scraper:
+  stage: test
+  tags:
+    - tests
+  cache:
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - $BUILD_PATH/gcc/release
+  script:
+    - ctest --test-dir $BUILD_PATH/gcc/release/services/scraper --output-on-failure --extra-verbose -j ${MAX_MULTI_THREADS_CORE}
+      --output-junit scraper_ctest.xml --no-compress-output
+  artifacts:
+    reports:
+      junit: $BUILD_PATH/gcc/release/services/scraper/scraper_ctest.xml
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /\/(build|packaging)\-only/m
+      when: never
+    - if: $CI_COMMIT_MESSAGE !~ /\/no\-test/m
+  needs:
+    - build_gcc
+  
+test_game_session:
+  stage: test-long-running
+  tags:
+    - tests
+  cache:
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - $BUILD_PATH/gcc/release
+  script:
+    - ctest --test-dir $BUILD_PATH/gcc/release/services/game_session --output-on-failure --extra-verbose -j ${MAX_MULTI_THREADS_CORE}
+      --output-junit game_session_ctest.xml --no-compress-output
+  artifacts:
+    reports:
+      junit: $BUILD_PATH/gcc/release/services/game_session/game_session_ctest.xml
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /\/(build|packaging)\-only/m
+      when: never
+    - if: $CI_COMMIT_MESSAGE !~ /\/no\-test/m
+  needs:
+    - build_gcc
 
 graph_dependencies:
   stage: documentation
   script:
-    - cmake -S $PROJECT_PATH -B $BUILD_PATH_LINUX-debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=/usr/bin/clang++
-      --graphviz=$BUILD_PATH_LINUX-debug/dependencies_graph.dot
-    - dot -Tpng -o $BUILD_PATH_LINUX-debug/dependencies_graph.png $BUILD_PATH_LINUX-debug/dependencies_graph.dot
+    - cmake -S $PROJECT_PATH -B $BUILD_PATH/clang/debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=/usr/bin/clang++
+      --graphviz=$BUILD_PATH/clang/debug/dependencies_graph.dot
+    - dot -Tpng -o $BUILD_PATH/clang/debug/dependencies_graph.png $BUILD_PATH/clang/debug/dependencies_graph.dot
   artifacts:
     paths:
-      - $BUILD_PATH_LINUX-debug/dependencies_graph.png
+      - $BUILD_PATH/clang/debug/dependencies_graph.png
   rules:
     - if: $CI_COMMIT_MESSAGE =~ /\/graph/m
+  needs:
+    - build_clang
 
 packaging_linux:
   stage: packaging
   image: registry.gitlab.laneuville.me/poker-bot/backend/builder-linux-gcc:latest
+  cache:
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - $BUILD_PATH/gcc/release
   script:
     - cpack --config $PROJECT_PATH/MultiCPackConfigLinux.cmake
   artifacts:
     paths:
-      - $BUILD_PATH_LINUX-release/poker-bot*.tar.gz
+      - $BUILD_PATH/gcc/release/poker-bot*.tar.gz
   rules:
     - if: $CI_COMMIT_BRANCH =~ /^(main|release)/
     - if: $CI_COMMIT_MESSAGE =~ /\/packaging(\-only)?/m
   needs:
-    - build_linux
+    - build_gcc
+    - test_game_handler
+    - test_ocr
+    - test_scraper
+    - test_game_session
 
 packaging_windows:
   stage: packaging
-  image: registry.gitlab.laneuville.me/poker-bot/backend/builder-windows-mingw:latest
+  image: registry.gitlab.laneuville.me/poker-bot/backend/builder-linux-mingw:latest
+  cache:
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - $BUILD_PATH/mingw/release
   script:
     - cpack --config $PROJECT_PATH/MultiCPackConfigWindows.cmake
   artifacts:
     paths:
-      - $BUILD_PATH_WINDOWS-release/poker-bot*.zip
+      - $BUILD_PATH/mingw/release/poker-bot*.zip
   rules:
     - if: $CI_COMMIT_BRANCH =~ /^(main|release)/
     - if: $CI_COMMIT_MESSAGE =~ /\/packaging(\-only)?/m
   needs:
-    - build_windows
+    - build_mingw
+    # @todo : Add tests for windows
 
 deploy:
   stage: deploy
@@ -214,7 +281,7 @@ deploy:
       echo "VERSION.txt (${NEW_VERSION}) is lower or equals to current git version tag (${GIT_VERSION})." && exit 1
       fi
     - echo "Creating release for ${CI_PROJECT_NAME} v${NEW_VERSION}"
-    - gitlab-artifacts download build_windows build_linux
+    - gitlab-artifacts download build_gcc build_mingw
     - git tag ${NEW_VERSION}
     - git push --tags
   rules:
